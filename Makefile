@@ -1,11 +1,11 @@
 NAME = Server
 
-CHAB_SRC =
+CHAB_SRC = CHEBCHOUB/main.cpp
 
 AYOUB_SRC = 
 
 SWIRI_SRC = 
-
+ 
 SRC = $(CHAB_SRC) $(AYOUB_SRC) $(SWIRI_SRC)
 
 FLAGS = -Wall -Wextra -Werror -std=c++98

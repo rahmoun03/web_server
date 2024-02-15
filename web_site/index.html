@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <title>Portfolio</title>
+</head>
+<body>
+    
+    
+    
+    <header>
+        <nav class="header-container">
+            <div class="header-options">
+                <!-- <div class="logo">
+                    <img src="https://cdn.intra.42.fr/users/7d6ece176a0ad174e2b3aa903ba9418b/arahmoun.JPG"  alt="logo">
+                </div> -->
+                <button><a href="/nfs/homes/arahmoun/Documents/projects/index.html">home</a></button>
+            </div>
+            
+            <div class="media-links">
+                <button ><a href="https://github.com/rahmoun03">github</a></button>
+                <button><a href="https://www.facebook.com/profile.php?id=100010813159059">facebook</a></button>
+                <button><a href="https://www.instagram.com/rahmoun_03/">instagram</a></button>
+                <button><a href="https://www.linkedin.com/in/ayoub-rahmoun-332097185/">linkedin</a></button>
+            </div>
+        </nav>
+    </header>
+    <nav class="lwast">
+        <nav class="lwast_lisr">
+            <nav class="search">
+                <input type="text" value="Search">
+            </nav>
+            <nav class="list_items">
+                <div class="content">
+                    <h1>Main Content</h1>
+                    <p>Your website content goes here.</p>
+                </div>
+                <div class="content">
+                    <h1>Main Content</h1>
+                    <p>Your website content goes here.</p>
+                </div>
+                <div class="content">
+                    <h1>Main Content</h1>
+                    <p>Your website content goes here.</p>
+                </div>
+                <div class="content">
+                    <h1>Main Content</h1>
+                    <p>Your website content goes here.</p>
+                </div>
+                <div class="content">
+                    <h1>Main Content</h1>
+                    <p>Your website content goes here.</p>
+                </div>
+                <div class="content">
+                    <h1>Main Content</h1>
+                    <p>Your website content goes here.</p>
+                </div>
+                <div class="content">
+                    <h1>Main Content</h1>
+                    <p>Your website content goes here.</p>
+                </div>
+                <div class="content">
+                    <h1>Main Content</h1>
+                    <p>Your website content goes here.</p>
+                </div>
+                <div class="content">
+                    <h1>Main Content</h1>
+                    <p>Your website content goes here.</p>
+                </div>
+                <div class="content">
+                    <h1>Main Content</h1>
+                    <p>Your website content goes here.</p>
+                </div>
+            </nav>
+        </nav>
+        <nav class="lwast_limn">
+            <div class="chat">
+
+                <div class="emoji_table">
+                    <i class="fa fa-file" style="font-size: 24px;"></i>
+                    <i class="fa fa-home" style="font-size: 24px;"></i>
+                    <i class="fa fa-frown" style="font-size: 24px;"></i>
+                    <i class="fa fa-file" style="font-size: 24px;"></i>
+                    <i class="fa fa-car" style="font-size: 24px;"></i>
+                    <i class="fa fa-frown" style="font-size: 24px;"></i>
+                    <i class="fa fa-smile" style="font-size: 24px;"></i>
+                    <i class="fa fa-file" style="font-size: 24px;"></i>
+                    <i class="fa fa-key" style="font-size: 24px;"></i>
+                    <i class="fa fa-angry" style="font-size: 24px;"></i>
+                    <i class="fa fa-smile" style="font-size: 24px;"></i>
+                    <i class="fa fa-search" style="font-size: 24px;"></i>
+                    <i class="fa fa-poo" style="font-size: 24px;"></i>
+                    <i class="fa fa-smile" style="font-size: 24px;"></i>
+                    <i class="fa fa-ring" style="font-size: 24px;"></i>
+                </div>
+                <div class="chat_content">
+                    
+                </div>
+                <div class="chat_bottom">
+                    <div class="chat_input">
+                        <input type="text" >
+                        <button class="emoji">
+                            <i class='fas fa-poo' style='font-size:24px'></i>
+                        </button>
+                        <button class="send">
+                            send
+                        </button>
+                    </div>
+                    
+                </div>
+            </div>
+        </nav>
+    </nav>
+    <footer>
+        <nav class="footer-container" >
+            <div id="additionalButtons" style="display: none;" class="more_buttons">
+                <button id="about" class="about">about</button>
+                <button id="projects" class="projects">projects</button>
+                <button id="blog" class=" blog">blog</button>
+            </div>
+            <button id="menu-button" class="menu-button">menu</button>
+        </div>
+    </nav>
+</footer>
+
+</body>
+</html>
+
+<script>
+    const showMoreBtn = document.getElementById('menu-button');
+    const additionalButtons = document.getElementById('additionalButtons');
+    const projects = document.getElementById('projects');
+
+    showMoreBtn.addEventListener('click', function() {
+    if (additionalButtons.style.display === 'none') {
+        additionalButtons.style.display = 'flex';
+        showMoreBtn.textContent = 'close';
+    } else {
+        additionalButtons.style.display = 'none';
+        showMoreBtn.textContent = 'menu';
+    }
+    });
+</script>

@@ -6,8 +6,8 @@
       "type": "lldb",
       "request": "launch",
       "args": [],
-      "cwd": "/Users/arahmoun/Desktop/web/AYOUB",
-      "program": "/Users/arahmoun/Desktop/web/AYOUB/build/Debug/outDebug"
+      "cwd": "/Users/arahmoun/Desktop/web_server/CHEBCHOUB",
+      "program": "/Users/arahmoun/Desktop/web_server/CHEBCHOUB/build/Debug/outDebug"
     }
   ]
 }

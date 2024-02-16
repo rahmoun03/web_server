@@ -1,72 +1,80 @@
-
-// Server side C program to demonstrate Socket
-// programming
 #include <netinet/in.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <fcntl.h>
 #include <sys/socket.h>
 #include <unistd.h>
-#include <iostream>
+
 #define PORT 8081
-int main(int argc, char const* argv[])
-{
-    (void)argv;
-    (void)argc;
-	int server_fd, new_socket;
-	ssize_t valread;
-	struct sockaddr_in address;
-	// int opt = 1;
-	socklen_t addrlen = sizeof(address);
-	char buffer[1024] = { 0 };
-	const char* hello = "Hello from server";
 
-	// Creating socket file descriptor
-	if ((server_fd = socket(AF_INET, SOCK_STREAM, 0)) < 0) {
-		perror("socket failed");
-		exit(EXIT_FAILURE);
-	}
+int main() {
+    int server_fd, new_socket, opt = 1;
+    struct sockaddr_in address;
+    socklen_t addrlen = sizeof(address);
+    char buffer[1024] = {0};
+    char hello[100000] = {0};
+    const char *ok_status = "HTTP/1.1 200 OK\r\nContent-Type: text/html\r\n\r\n";
 
-	// Forcefully attaching socket to the port 8080
-       // Forcefully attaching socket to the port 8080
-    // if (setsockopt(server_fd, SOL_SOCKET,
-    //                SO_REUSEADDR | SO_REUSEPORT, &opt,
-    //                sizeof(opt))) {
-    //     perror("setsockopt");
-    //     exit(EXIT_FAILURE);
-    // }
-	address.sin_family = AF_INET;
-	address.sin_addr.s_addr = INADDR_ANY;
-	address.sin_port = htons(PORT);
+    if ((server_fd = socket(AF_INET, SOCK_STREAM, 0)) < 0) {
+        perror("socket failed");
+        exit(EXIT_FAILURE);
+    }
+    setsockopt(server_fd, SOL_SOCKET, SO_REUSEPORT, &opt,sizeof(opt));
 
-	// Forcefully attaching socket to the port 8080
-	if (bind(server_fd, (struct sockaddr*)&address,
-			sizeof(address))
-		< 0) {
-		perror("bind failed");
-		exit(EXIT_FAILURE);
-	}
-	if (listen(server_fd, 3) < 0) {
-		perror("listen");
-		exit(EXIT_FAILURE);
-	}
-	if ((new_socket
-		= accept(server_fd, (struct sockaddr*)&address,
-				&addrlen))
-		< 0) {
-		perror("accept");
-		exit(EXIT_FAILURE);
-	}
-	valread = read(new_socket, buffer,
-				1024 - 1); // subtract 1 for the null
-							// terminator at the end
-	printf("%s\n", buffer);
-	send(new_socket, hello, strlen(hello), 0);
-	printf("Hello message sent\n");
+    address.sin_family = AF_INET;
+    address.sin_addr.s_addr = INADDR_ANY;
+    address.sin_port = htons(PORT);
 
-	// closing the connected socket
-	close(new_socket);
-	// closing the listening socket
-	close(server_fd);
-	return 0;
+    if (bind(server_fd, (struct sockaddr *)&address, sizeof(address)) < 0) {
+        perror("bind failed");
+        exit(EXIT_FAILURE);
+    }
+    if (listen(server_fd, 9) < 0) {
+        perror("listen");
+        exit(EXIT_FAILURE);
+    }
+
+    if ((new_socket = accept(server_fd, (struct sockaddr *)&address, &addrlen)) < 0) {
+        perror("accept");
+        exit(EXIT_FAILURE);
+    }
+
+    ssize_t valread = read(new_socket, buffer, sizeof(buffer) - 1);
+    if (valread < 0) {
+        perror("read error");
+        exit(EXIT_FAILURE);
+    }
+    buffer[valread] = '\0';
+    printf("Requist :\n%s\n", buffer);
+
+
+    // TODO  response 
+    // int fd = open("./web_site/index.html", O_RDONLY);
+    int fd = open("./test.html", O_RDONLY);
+    ssize_t va = read(fd, hello, sizeof(hello) - 1);
+    printf("Response :\n");
+    send(new_socket, ok_status, strlen(ok_status), 0);
+    while (va > 0)
+    {
+        printf("%s", hello);
+
+        hello[va] = '\0';
+        if (send(new_socket, hello, strlen(hello), 0) != (ssize_t)strlen(hello)) {
+            perror("send error");
+            exit(EXIT_FAILURE);
+        }
+        va = read(fd, hello, sizeof(hello) - 1);
+    }
+    if (va < 0) {
+        perror("read error");
+        exit(EXIT_FAILURE);
+    }
+    /**********************************************/
+
+    printf("Hello message sent\n");
+
+    close(new_socket);
+    close(server_fd);
+    return 0;
 }

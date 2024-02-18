@@ -6,7 +6,7 @@
 /*   By: arahmoun <arahmoun@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/17 11:26:36 by arahmoun          #+#    #+#             */
-/*   Updated: 2024/02/17 13:42:48 by arahmoun         ###   ########.fr       */
+/*   Updated: 2024/02/18 16:36:36 by arahmoun         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -18,6 +18,7 @@ Request::Request(/* args */)
 
 Request::Request(char *str)
 {
+	std::cout << str << std::endl;
 	ss << str;
 	ss >> method;
 	ss >> path;

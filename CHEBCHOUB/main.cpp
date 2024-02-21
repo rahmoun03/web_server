@@ -8,7 +8,9 @@
 #include <sys/types.h>
 #include <sys/socket.h>
 #include <netinet/in.h>
-#include <sys/time.h> //FD_SET, FD_ISSET, FD_ZERO macros
+#include <sys/time.h>
+#include "conf.hpp"
+ //FD_SET, FD_ISSET, FD_ZERO macros
  
 #define TRUE   1
 #define FALSE  0
@@ -17,7 +19,9 @@
 int main(int ac , char *av[])
 {
     (void)ac;
-    (void)av;
+    // (void)av;
+    Conf c(av[1]);
+    exit(0);
     int opt = TRUE;
     int master_socket , addrlen , new_socket , client_socket[30] , max_clients = 30 , activity, i , valread , sd;
 	int max_sd;

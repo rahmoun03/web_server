@@ -10,22 +10,33 @@ class Conf
     private :
         std::map<std::string, std::string> map;
         std::string name;
+        int flag;
     public :
         Conf(char * os)
         {
-            std::cout << os << std::endl;
+            // std::cout << os << std::endl;
             (void)os;
              std::ifstream fg(os);
+             flag  = 0;
             if (fg.is_open())
             {
-                while (getline(fg,name))
-                {
-                    if (name.find("server") != std::string::npos)
+                getline(fg,name);
+                if (name.find("server") == std::string::npos)
                     {
-                        std::cout << name << std::endl;
+                        perror("server not found");
                         exit(0);
                     }
-                    std::cout << name << std::endl;
+                if (name.find("{") == std::string::npos )//|| (getline(fg,name) && name.find("{") == std::string::npos))
+                    {
+                        if (getline(fg,name) && name.find("{") == std::string::npos)
+                        {
+                            perror("{");
+                            exit(0);
+                        }
+                    }
+                while (getline(fg,name))
+                {
+                    std::cout << "-->" << name << std::endl;
                 }
             }
             else

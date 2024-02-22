@@ -5,13 +5,22 @@
 #include <fcntl.h>
 #include <sys/socket.h>
 #include <unistd.h>
+#include "conf.hpp"
 
 #define PORT 8081
 
-int main() {
+int main(int ac,char *av[]) {
+
+    if (ac != 2)
+        {
+            std::cout << "argument less\n";
+            exit(0);
+        }
+    Conf co(av[1]);
+    exit(0);
     int server_fd, new_socket, opt = 1;
     struct sockaddr_in address;
-    int max_sock = 2; 
+    // int max_sock = 2; 
     socklen_t addrlen = sizeof(address);
     char buffer[1024] = {0};
     char hello[100000] = {0};

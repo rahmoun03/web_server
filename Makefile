@@ -1,8 +1,8 @@
 NAME = Server
 
-CHAB_SRC = CHEBCHOUB/main.cpp
+CHAB_SRC = CHEBCHOUB/main2.cpp
 
-AYOUB_SRC = 
+AYOUB_SRC = AYOUB/Request.cpp 
 
 SWIRI_SRC = 
  

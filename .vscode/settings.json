@@ -122,6 +122,14 @@
     "fstream": "cpp",
     "iomanip": "cpp",
     "map": "cpp",
-    "stack": "cpp"
+    "stack": "cpp",
+    "*.tcc": "cpp",
+    "clocale": "cpp",
+    "compare": "cpp",
+    "concepts": "cpp",
+    "memory_resource": "cpp",
+    "numeric": "cpp",
+    "random": "cpp",
+    "numbers": "cpp"
   }
 }

@@ -6,6 +6,26 @@
 #include <algorithm>
 #include <map>
 
+
+class location
+{
+    private :
+        std::map<std::string, std::map<std::string,std::string> > loc;
+        //check map for locaton , don't forget
+    public :
+        location( std::ifstream &fg,std::string name)
+        {
+            std::cout << "----" << name << std::endl;
+            if (name.find("[") == std::string::npos )
+            {
+                if (getline(fg,name) && name.find("[") == std::string::npos)
+                {
+                    perror("[");
+                    exit(0);
+                }
+            }
+        }
+};
 class Conf
 {
     private :
@@ -29,7 +49,7 @@ class Conf
                         perror("server not found");
                         exit(0);
                     }
-                if (name.find("{") == std::string::npos )//|| (getline(fg,name) && name.find("{") == std::string::npos))
+                if (name.find("{") == std::string::npos )
                     {
                         if (getline(fg,name) && name.find("{") == std::string::npos)
                         {
@@ -43,6 +63,7 @@ class Conf
                         map[name.substr(0,name.find("="))] = name.substr(name.find("=") + 1);
                     if (name.find("location") != std::string::npos)
                     {
+                        location loca(fg,name);
                         break;
                     }
                 }

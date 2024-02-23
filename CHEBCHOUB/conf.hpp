@@ -39,8 +39,7 @@ class Conf
                     }
                 while (getline(fg,name))
                 {
-                        // std::cout << "-->" << name.substr(0,name.find("="))<< "--" << name.substr(name.find("=") + 1) << std::endl;
-                        name.erase(std::remove_if(name.begin(),name.end(),isspace));
+                        name.erase(std::remove_if(name.begin(),name.end(),isspace),name.end());
                         map[name.substr(0,name.find("="))] = name.substr(name.find("=") + 1);
                     if (name.find("location") != std::string::npos)
                     {

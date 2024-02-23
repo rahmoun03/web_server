@@ -3,6 +3,7 @@
 #include <iostream>
 #include <string>
 #include <fstream>
+#include <algorithm>
 #include <map>
 
 class Conf
@@ -18,6 +19,8 @@ class Conf
             (void)os;
              std::ifstream fg(os);
              flag  = 0;
+            //  char *sep = " ";
+
             if (fg.is_open())
             {
                 getline(fg,name);
@@ -36,20 +39,18 @@ class Conf
                     }
                 while (getline(fg,name))
                 {
-                        // map[name.substr(0,name.find("="))] = name.substr(name.find("=") + 1);
-                        map["ahmed"] = "med";
                         // std::cout << "-->" << name.substr(0,name.find("="))<< "--" << name.substr(name.find("=") + 1) << std::endl;
-                    // if (name.find("location") != std::string::npos)
-                    // {
-                    //     exit(0);
-
-                    // }
+                        name.erase(std::remove_if(name.begin(),name.end(),isspace));
+                        map[name.substr(0,name.find("="))] = name.substr(name.find("=") + 1);
+                    if (name.find("location") != std::string::npos)
+                    {
+                        break;
+                    }
                 }
-                std::map<std::string,std::string>::iterator it;
+                std::map<std::string,std::string>::iterator it = map.begin();
                 while (it != map.end())
                 {
-                    std::cout << it->first << "--" << it->second << std::endl;
-                    std::cout << "-------\n";
+                    std::cout <<  "|"<< it->first << "|" << "--" << "|" << it->second<< "|" << std::endl;
                     it++;
                 }
             }

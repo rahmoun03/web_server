@@ -1,4 +1,4 @@
-NAME = Server
+NAME = Web_server
 
 CHAB_SRC = CHEBCHOUB/main.cpp
 

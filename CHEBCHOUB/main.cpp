@@ -15,7 +15,7 @@
  
 #define TRUE   1
 #define FALSE  0
-#define PORT 8888
+#define PORT 80
 
 
 int main(int ac , char *av[])
@@ -29,7 +29,11 @@ int main(int ac , char *av[])
      
     char buffer[1025];  //data buffer of 1K
     const char *ok = "HTTP/1.1 200 OK\r\n";
-    const char *htmlstatus = "Content-Type: text/html\r\n\r\n\r\n";
+    const char *redirect = "HTTP/1.1 302 redirect\r\n";
+    const char *notfount = "HTTP/1.1 404 NOT\r\n";
+    const char *htmlstatus = "Content-Type: text/html\r\n";
+    const char *serverName = "server: chebchoub\r\n\r\n\r\n";
+
     // const char *imgstatus = "Content-Type: image/jpeg\r\n\r\n\r\n";
      
     //set of socket descriptors
@@ -57,7 +61,7 @@ int main(int ac , char *av[])
  
     //type of socket created
     address.sin_family = AF_INET;
-    address.sin_addr.s_addr = inet_addr("10.12.8.2");
+    address.sin_addr.s_addr = 0;
     address.sin_port = htons( PORT );
      
     //bind the socket to localhost port 8888
@@ -131,9 +135,10 @@ int main(int ac , char *av[])
             std::ifstream  file;
             std::string filecontent;
             if(rq->get_path() == "./")
-            {
+            {  
                 std::cout << "Home page" << std::endl;
                 file.open("./assets/home.html");
+                send(new_socket, ok , strlen(ok), 0);
             }
             else
             {
@@ -141,25 +146,26 @@ int main(int ac , char *av[])
                 {
                     std::cout << rq->get_path() <<" page" << std::endl;
                     file.open(rq->get_path().c_str());
+                    send(new_socket, ok , strlen(ok), 0);
                 }
 
                 else
                 {
                     std::cout << "404 page" << std::endl;
                     file.open("./assets/notFound.html");
+                    send(new_socket, notfount , strlen(notfount), 0);
                 }
                     
             }
 
             getline(file, filecontent, '\0');
-            std::cout << "constent : "<<std::endl;
+            std::cout << "content : "<<std::endl;
             std::cout << filecontent <<std::endl;
-            send(new_socket, ok , strlen(ok), 0);
             send(new_socket, htmlstatus , strlen(htmlstatus), 0);
+            send(new_socket, serverName , strlen(serverName), 0);
             send(new_socket, filecontent.c_str() , strlen(filecontent.c_str()), 0);
 
             // puts("Welcome message sent successfully");
-             
             //add new socket to array of sockets
             for (i = 0; i < max_clients; i++) 
             {
@@ -199,6 +205,7 @@ int main(int ac , char *av[])
                     //set the string terminating NULL byte on the end of the data read
                     // buffer[valread] = '\0';
                     // send(sd , buffer , strlen(buffer) , 0 );
+
                 }
             }
         }

@@ -36,7 +36,21 @@ class Conf
                     }
                 while (getline(fg,name))
                 {
-                    std::cout << "-->" << name << std::endl;
+                        // map[name.substr(0,name.find("="))] = name.substr(name.find("=") + 1);
+                        map["ahmed"] = "med";
+                        // std::cout << "-->" << name.substr(0,name.find("="))<< "--" << name.substr(name.find("=") + 1) << std::endl;
+                    // if (name.find("location") != std::string::npos)
+                    // {
+                    //     exit(0);
+
+                    // }
+                }
+                std::map<std::string,std::string>::iterator it;
+                while (it != map.end())
+                {
+                    std::cout << it->first << "--" << it->second << std::endl;
+                    std::cout << "-------\n";
+                    it++;
                 }
             }
             else

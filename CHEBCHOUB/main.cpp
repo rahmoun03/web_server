@@ -84,11 +84,12 @@ int main() {
                         std::cout << "Client closed connection" << std::endl;
                         close(fd);
                         FD_CLR(fd, &readSet);
+                        FD_CLR(fd, &tmpSet);
                     } else {
                         // Handle request and send response
                         std::string httpResponse = generateResponse();
                         send(fd, httpResponse.c_str(), httpResponse.length(), 0);
-                    // }
+                    }
                 }
             }
         }

@@ -6,7 +6,7 @@
 /*   By: arahmoun <arahmoun@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/17 11:26:36 by arahmoun          #+#    #+#             */
-/*   Updated: 2024/02/23 11:16:42 by arahmoun         ###   ########.fr       */
+/*   Updated: 2024/02/24 11:29:08 by arahmoun         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -18,11 +18,25 @@ Request::Request(/* args */)
 
 Request::Request(int fd)
 {
+	char buffer[1024];  //data buffer of 1K
 	ssize_t a;
-	while ((a = read(fd, buffer, sizeof(buffer))))
+
+	// TODO read request
+	a = read(fd, buffer, sizeof(buffer));
+	while (a > 0 && a <= (ssize_t)sizeof(buffer))
+	{
+		std::cout <<"read size : " << a << std::endl;
+		buffer[a] = '\0';
 		ss << buffer;
-	if (a < 0)
-		perror("read :");
+		a = read(fd, buffer, sizeof(buffer));
+	}
+	if (a == -1)
+	{
+		std::cerr << "failure in read request !" << std::endl;
+		exit(0);
+	}
+
+	std::cout << "request : \n" << ss.str() << std::endl;
 	ss >> method;
 	ss >> path;
 	ss >> protocol;

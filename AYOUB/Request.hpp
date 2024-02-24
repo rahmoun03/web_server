@@ -6,7 +6,7 @@
 /*   By: arahmoun <arahmoun@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/17 09:53:30 by arahmoun          #+#    #+#             */
-/*   Updated: 2024/02/23 11:13:34 by arahmoun         ###   ########.fr       */
+/*   Updated: 2024/02/24 11:06:51 by arahmoun         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -23,12 +23,12 @@
 #include <fcntl.h>
 #include <sys/socket.h>
 #include <unistd.h>
+#include <arpa/inet.h>
 
 
 class Request
 {
 	private:
-    	char buffer[1025];  //data buffer of 1K
 		std::stringstream ss;
 		std::string method;
         std::string path;

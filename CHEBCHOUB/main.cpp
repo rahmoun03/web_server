@@ -27,7 +27,7 @@ int main(int ac , char *av[])
 	int max_sd;
     struct sockaddr_in address;
      
-    char buffer[1025];  //data buffer of 1K
+    // char buffer[1025];  //data buffer of 1K
     const char *ok = "HTTP/1.1 200 OK\r\n";
     const char *redirect = "HTTP/1.1 302 redirect\r\n";
     const char *notfount = "HTTP/1.1 404 NOT\r\n";
@@ -128,9 +128,8 @@ int main(int ac , char *av[])
             printf("New connection , socket fd is %d , ip is : %s , port : %d \n" , new_socket , inet_ntoa(address.sin_addr) , ntohs(address.sin_port));
        
             //TODO open
-            if (read(new_socket, buffer, sizeof(buffer)) < 0)
-                perror("read :");
-            Request *rq = new Request(buffer);
+
+            Request *rq = new Request(new_socket);
             //send new connection greeting message
             std::ifstream  file;
             std::string filecontent;
@@ -163,7 +162,7 @@ int main(int ac , char *av[])
             std::cout << filecontent <<std::endl;
             send(new_socket, htmlstatus , strlen(htmlstatus), 0);
             send(new_socket, serverName , strlen(serverName), 0);
-            send(new_socket, filecontent.c_str() , strlen(filecontent.c_str()), 0);
+            send(new_socket, filecontent.c_str()  , strlen(filecontent.c_str()), 0);
 
             // puts("Welcome message sent successfully");
             //add new socket to array of sockets

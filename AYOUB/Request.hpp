@@ -6,7 +6,7 @@
 /*   By: arahmoun <arahmoun@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/17 09:53:30 by arahmoun          #+#    #+#             */
-/*   Updated: 2024/02/18 16:13:44 by arahmoun         ###   ########.fr       */
+/*   Updated: 2024/02/23 11:13:34 by arahmoun         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -28,13 +28,14 @@
 class Request
 {
 	private:
+    	char buffer[1025];  //data buffer of 1K
 		std::stringstream ss;
 		std::string method;
         std::string path;
         std::string protocol;
 	public:
 		Request();
-		Request(char *str);
+		Request(int fd);
 		std::string get_path() const;
 		std::string get_method() const;
 		std::string get_protocol() const;

@@ -6,7 +6,7 @@
 /*   By: arahmoun <arahmoun@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/17 11:26:36 by arahmoun          #+#    #+#             */
-/*   Updated: 2024/02/18 16:36:36 by arahmoun         ###   ########.fr       */
+/*   Updated: 2024/02/23 11:16:42 by arahmoun         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -16,10 +16,13 @@ Request::Request(/* args */)
 {
 }
 
-Request::Request(char *str)
+Request::Request(int fd)
 {
-	std::cout << str << std::endl;
-	ss << str;
+	ssize_t a;
+	while ((a = read(fd, buffer, sizeof(buffer))))
+		ss << buffer;
+	if (a < 0)
+		perror("read :");
 	ss >> method;
 	ss >> path;
 	ss >> protocol;

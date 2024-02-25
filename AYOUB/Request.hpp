@@ -6,16 +6,15 @@
 /*   By: arahmoun <arahmoun@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/17 09:53:30 by arahmoun          #+#    #+#             */
-/*   Updated: 2024/02/24 11:06:51 by arahmoun         ###   ########.fr       */
+/*   Updated: 2024/02/25 16:34:17 by arahmoun         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-
 #ifndef REQUEST_HPP
-# define REQUEST_HPP
+#define REQUEST_HPP
 #include <sstream>
 #include <iostream>
-
+#include <string>
 #include <netinet/in.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -23,26 +22,35 @@
 #include <fcntl.h>
 #include <sys/socket.h>
 #include <unistd.h>
+#include <map>
+#include <iterator>
+#include <algorithm>
 #include <arpa/inet.h>
 
+#define GREEN "\033[0;32m"
+#define RED "\033[0;31m"
+#define YOLLOW "\033[0;33m"
+#define BLUE "\033[0;34m"
+#define DEF "\033[0m"
 
 class Request
 {
-	private:
-		std::stringstream ss;
-		std::string method;
-        std::string path;
-        std::string protocol;
-	public:
-		Request();
-		Request(int fd);
-		std::string get_path() const;
-		std::string get_method() const;
-		std::string get_protocol() const;
-		char *req_headers(int fd);
-		~Request();
-};
-char	*ft_strjoin(char *s1, char *s2);
+private:
+	std::stringstream ss;
+	std::string method;
+	std::string path;
+	std::string protocol;
+	std::map<std::string, std::string> headers;
 
+public:
+	Request();
+	Request(int &fd);
+	const std::string get_path() const;
+	const std::string get_method() const;
+	const std::string get_protocol() const;
+	const std::map<std::string, std::string> &get_headers() const;
+	~Request();
+};
+std::ostream &operator<<(std::ostream &os, const Request &other);
 
 #endif

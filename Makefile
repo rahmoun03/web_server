@@ -2,7 +2,7 @@ NAME = Web_server
 
 CHAB_SRC = CHEBCHOUB/main.cpp
 
-AYOUB_SRC = AYOUB/Request.cpp 
+AYOUB_SRC = AYOUB/Request.cpp AYOUB/Response.cpp
 
 SWIRI_SRC = 
  

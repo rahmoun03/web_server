@@ -6,7 +6,7 @@
 /*   By: arahmoun <arahmoun@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/17 09:53:30 by arahmoun          #+#    #+#             */
-/*   Updated: 2024/02/25 16:34:17 by arahmoun         ###   ########.fr       */
+/*   Updated: 2024/02/26 12:17:37 by arahmoun         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -23,10 +23,12 @@
 #include <sys/socket.h>
 #include <unistd.h>
 #include <map>
+#include <fstream>
 #include <iterator>
 #include <algorithm>
 #include <arpa/inet.h>
 
+#define SERVER_ROOT "./assets"
 #define GREEN "\033[0;32m"
 #define RED "\033[0;31m"
 #define YOLLOW "\033[0;33m"

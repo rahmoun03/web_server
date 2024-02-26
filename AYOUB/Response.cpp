@@ -1,19 +1,24 @@
+/* ************************************************************************** */
+/*                                                                            */
+/*                                                        :::      ::::::::   */
+/*   Response.cpp                                       :+:      :+:    :+:   */
+/*                                                    +:+ +:+         +:+     */
+/*   By: arahmoun <arahmoun@student.42.fr>          +#+  +:+       +#+        */
+/*                                                +#+#+#+#+#+   +#+           */
+/*   Created: 2024/02/26 11:39:33 by arahmoun          #+#    #+#             */
+/*   Updated: 2024/02/26 13:41:07 by arahmoun         ###   ########.fr       */
+/*                                                                            */
+/* ************************************************************************** */
+
 
 #include "Response.hpp"
 
 Response::Response(int &fd, Request *req)
 {
-    int file = open(req->get_path().c_str(), O_RDONLY);
-    if(file == -1)
-        if (req->get_path() == "./")
-            send(fd, homepage().c_str(), homepage().size(), 0);
-        else
-            send(fd, notFound().c_str(), notFound().size(), 0);
+    if(((extension(req->get_path())) == "jpeg") || ((extension(req->get_path())) == "png"))
+        imageFile(fd, req);
     else
-    {
-        std::string content = getResource(fd);
-        send(fd, content.c_str(), content.size(), 0);
-    }
+        htmlFile(fd, req);
 }
 
 Response::Response()
@@ -26,71 +31,115 @@ Response::~Response()
 
 std::string Response::homepage()
 {
-    int file = open("assets/home.html", O_RDONLY);
-    char *buffer = NULL;
-   
-    std::stringstream content;
-    while (true)
+    std::ifstream file("./assets/home.html");
+    if(!file.is_open())
     {
-        ssize_t a = read(file, buffer, 1024);
-        if(a == -1)
-            std::cerr << "fialure in read" << std::endl;
-        else if (a < 1024)
-        {
-            buffer[a] = '\0';
-            content << buffer;
-            break;
-        }
-        else
-        {
-            buffer[a] = '\0';
-            content << buffer;
-        }
+        std::cerr << RED <<"failure in home page" << std::endl;
+        exit(1);
     }
+    std::cout << "the file is excite \n" <<std::endl;
+    std::string buffer((std::istreambuf_iterator<char>(file)), std::istreambuf_iterator<char>());
     std::stringstream response;
-    response << "HTTP/1.1 404 Not Found\r\n"
+    response << "HTTP/1.1 200 OK\r\n"
              << "Content-Type: text/html\r\n"
-             << "Content-Length: "<< content.str().size() <<"\r\n"
+             << "Content-Length: "<< buffer.size() <<"\r\n"
              << "\r\n"
-             << content.str();
+             << buffer.c_str();
     return response.str();
 }
 
 std::string Response::notFound()
 {
-    int file = open("assets/notFound.html", O_RDONLY);
-    char buffer[1024];
-    ssize_t a;
-    std::stringstream content;
-    while ((a = read(file, buffer, sizeof(buffer))) > 0)
+    std::ifstream file("assets/notFound.html");
+    if(!file.is_open())
     {
-        buffer[a] = '\0';
-        content << buffer;
+        std::cerr << RED <<"failure in home page" << std::endl;
+        exit(1);
     }
+    std::string buffer((std::istreambuf_iterator<char>(file)), std::istreambuf_iterator<char>());
     std::stringstream response;
     response << "HTTP/1.1 404 Not Found\r\n"
              << "Content-Type: text/html\r\n"
-             << "Content-Length: "<< content.str().size() <<"\r\n"
+             << "Content-Length: "<< buffer.size() <<"\r\n"
              << "\r\n"
-             << content.str();
+             << buffer.c_str();
     return response.str();
 }
 
-std::string Response::getResource(int &fd)
+std::string Response::getResource(std::ifstream &file, const char *type, std::string ext)
 {
-    char buffer[1024];
-    ssize_t a;
-    std::stringstream content;
-    while ((a = read(fd, buffer, sizeof(buffer))) > 0)
-    {
-        buffer[a] = '\0';
-        content << buffer;
-    }
+    std::string buffer((std::istreambuf_iterator<char>(file)), std::istreambuf_iterator<char>());
     std::stringstream response;
     response << "HTTP/1.1 200 OK\r\n"
-             << "Content-Type: text/html\r\n"
-             << "Content-Length: "<< content.str().size() <<"\r\n"
+             << "Content-Type: "<< type << ext << "\r\n"
+             << "Content-Length: "<< buffer.size() <<"\r\n"
              << "\r\n"
-             << content.str();
+             << buffer.c_str();
     return response.str();
 }
+
+std::string Response::getImage(std::ifstream &file, const char *type, std::string ext)
+{
+    std::string buffer((std::istreambuf_iterator<char>(file)), std::istreambuf_iterator<char>());
+    std::stringstream response;
+    response << "HTTP/1.1 200 OK\r\n"
+             << "Content-Type: "<< type << ext << "\r\n"
+             << "Content-Length: "<< buffer.size() <<"\r\n"
+             << "\r\n"
+             << buffer;
+    return response.str();
+}
+
+void	Response::htmlFile(int &fd, Request *req)
+{
+    if (req->get_path() == ("./assets/"))
+    {
+        std::cout << " <  ---------- home --------->\n" << std::endl;
+        std::string content = homepage();
+        std::cout<< BLUE<<"respone : \n"<<YOLLOW<<content  << std::endl;
+        send(fd, content.c_str(), content.size(), 0);
+    }
+    else
+    {
+        std::ifstream file(req->get_path().c_str());
+        if(!file.is_open())
+        {
+            std::cout << " <  ---------- Error --------->\n" << std::endl;
+            std::string content = notFound();
+            std::cout<< BLUE<<"respone : \n"<<YOLLOW<<content  << std::endl;
+            send(fd, content.c_str(), content.size(), 0);
+        }
+        else
+        {
+            std::cout << " <  ---------- YES --------->\n" << std::endl;
+            std::string content = getResource(file, "text/", extension(req->get_path()));
+            std::cout<< BLUE<<"respone : \n"<<YOLLOW<< content  << std::endl;
+            send(fd, content.c_str(), content.size(), 0);
+        }
+    }
+}
+void	Response::imageFile(int &fd, Request *req)
+{
+    std::ifstream img(req->get_path().c_str(), std::ios::binary);
+    if(!img.is_open())
+    {
+        std::cerr << RED <<"failure in open image" << std::endl;
+        exit (1);
+    }
+    std::string content = getImage(img, "image/", extension(req->get_path()));
+    std::cout<< BLUE<<"respone : \n"<<YOLLOW<< content << std::endl;
+    send(fd, content.c_str(), content.size(), 0);
+
+}
+
+std::string Response::extension(const std::string &path)
+{
+    size_t dot = path.rfind('.');
+    if (dot == std::string::npos)
+    {
+        std::cerr << RED<<"failure to find extension !" << std::endl;
+        exit(1);
+    }
+    return path.substr(dot + 1);
+}
+

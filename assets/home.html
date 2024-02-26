@@ -14,11 +14,10 @@
         gap: 50px;
     }
     h1   {color: rgb(255, 255, 255);}
+    h2   {color: rgb(187, 185, 185);}
     p    {color: rgb(255, 0, 0);}
     img  {
         border-radius: 150px;
-        /* -webkit-border-radius: 150px;
-        -moz-border-radius: 150px; */
         box-shadow: 0px 0px 100px 1px rgb(255, 13, 21);
         background-color: white;
         margin: 70px;
@@ -28,23 +27,22 @@
         justify-content: center;
         align-items: center;
     }
+    .swiri{
+        /* display: flex; */
+        text-decoration: aliceblue;
+        text-align: right;
+        position: fixed;
+        bottom: 1%;
+        right: 1%;
+        justify-content: center;
+        align-items: center;
+        border-radius: 50%;
+    }
     .ayoub{
         justify-content: center;
         align-items: center;
         display: flex;
     }
-    
-    /* .ahmed:hover + .ayoub{
-         background-color: rgb(94, 160, 160);
-         display: none;
-        opacity: 0;
-        transition: visiblity 0s, opacity 0.5s linear;
-        visibility: visible; 
-     } */
-    /*.ayoub:hover + .ahmed{
-        display: none; 
-        background-color: rgb(94, 160, 160);
-    }*/
     </style>
 </head>
 <body>
@@ -55,16 +53,25 @@
         <br>
         <div class="content">
             <div class="ahmed" >
-            <img  src="./assets/ahbajaou.jpeg" width="700" height="400" />
-            <div>
-                <h1>AHMED BAJAOU</h1>
-                <hr>
-                <h2>Student at 1337</h2>
+                <img  src="https://cdn.intra.42.fr/users/40a8f1a4851fda87426233c003e03207/ahbajaou.jpg" width="600" height="330" />
+                <div>
+                    <h1>AHMED BAJAOU</h1>
+                    <hr>
+                    <h2>Student at 1337</h2>
 
+                </div>
             </div>
+            <div class="swiri" >
+                <img class="swiri" src="https://cdn.intra.42.fr/users/acbe2d396a0ce4dec5ef4fc616509c80/himejjad.JPG" width="100" height="100" />
+                <div>
+                    <h3 style="color: azure;">80 DH</h3>
+                    <hr>
+                    <h4>Student at 1337</h4>
+
+                </div>
             </div>
             <div class="ayoub" >
-                <img  src="./assets/arahmoun.jpeg" width="700" height="400" />
+                <img  src="https://cdn.intra.42.fr/users/7d6ece176a0ad174e2b3aa903ba9418b/arahmoun.JPG" width="600" height="330" />
                 <div>
                     <h1>AYOUB RAHMOUN</h1>
                     <hr>
@@ -78,6 +85,8 @@
         <br>
         <p>update : 2024/02/18 , 20:45 AM</p>
         <p>update : 2024/02/20 , 14:33 AM</p>
+        <p>update : 2024/02/26 , 13:52 AM</p>
+
     </center>
 </body>
 </html>

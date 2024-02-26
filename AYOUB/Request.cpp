@@ -6,7 +6,7 @@
 /*   By: arahmoun <arahmoun@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/17 11:26:36 by arahmoun          #+#    #+#             */
-/*   Updated: 2024/02/25 16:25:26 by arahmoun         ###   ########.fr       */
+/*   Updated: 2024/02/26 12:19:15 by arahmoun         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -37,7 +37,7 @@ Request::Request(int &fd)
 		ss >> method;
 		ss >> path;
 		ss >> protocol;
-		path.insert(path.begin(), '.');
+		path = SERVER_ROOT + path;
 		while (ss)
 		{
 			ss >> key;
@@ -52,7 +52,7 @@ std::ostream &operator<<(std::ostream &os, const Request &other)
 {
 	os << other.get_method() << " ";
 	os << other.get_path() << " ";
-	os << other.get_protocol() << "\n\n";
+	os << other.get_protocol() << "\n";
 	std::map<std::string, std::string>::const_iterator it = other.get_headers().begin();
 	std::map<std::string, std::string>::const_iterator ite = other.get_headers().end();
 	for (; it != ite; ++it)

@@ -6,7 +6,7 @@
 /*   By: arahmoun <arahmoun@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/26 11:39:33 by arahmoun          #+#    #+#             */
-/*   Updated: 2024/02/26 13:41:07 by arahmoun         ###   ########.fr       */
+/*   Updated: 2024/02/26 15:14:11 by arahmoun         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -31,7 +31,7 @@ Response::~Response()
 
 std::string Response::homepage()
 {
-    std::ifstream file("./assets/home.html");
+    std::ifstream file("./assets/index.html");
     if(!file.is_open())
     {
         std::cerr << RED <<"failure in home page" << std::endl;
@@ -123,12 +123,17 @@ void	Response::imageFile(int &fd, Request *req)
     std::ifstream img(req->get_path().c_str(), std::ios::binary);
     if(!img.is_open())
     {
-        std::cerr << RED <<"failure in open image" << std::endl;
-        exit (1);
+        std::cout << " <  ---------- Error --------->\n" << std::endl;
+        std::string content = notFound();
+        std::cout<< BLUE<<"respone : \n"<<YOLLOW<<content  << std::endl;
+        send(fd, content.c_str(), content.size(), 0);
     }
-    std::string content = getImage(img, "image/", extension(req->get_path()));
-    std::cout<< BLUE<<"respone : \n"<<YOLLOW<< content << std::endl;
-    send(fd, content.c_str(), content.size(), 0);
+    else
+    {
+        std::string content = getImage(img, "image/", extension(req->get_path()));
+        std::cout<< BLUE<<"respone : \n"<<YOLLOW<< content << std::endl;
+        send(fd, content.c_str(), content.size(), 0);
+    }
 
 }
 

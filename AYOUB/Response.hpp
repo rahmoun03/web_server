@@ -12,6 +12,9 @@ class Response
 		Response(int &fd, Request *req);
 		void	htmlFile(int &fd, Request *req);
 		void	imageFile(int &fd, Request *req);
+		// void	GET();
+		// void	POST();
+		// void	DELETE();
 		std::string extension(const std::string &path);
 		std::string notFound();
 		std::string homepage();

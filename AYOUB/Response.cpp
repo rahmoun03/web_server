@@ -6,7 +6,7 @@
 /*   By: arahmoun <arahmoun@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/26 11:39:33 by arahmoun          #+#    #+#             */
-/*   Updated: 2024/02/26 15:14:11 by arahmoun         ###   ########.fr       */
+/*   Updated: 2024/02/27 10:58:51 by arahmoun         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,10 +15,33 @@
 
 Response::Response(int &fd, Request *req)
 {
-    if(((extension(req->get_path())) == "jpeg") || ((extension(req->get_path())) == "png"))
-        imageFile(fd, req);
+    if (req->get_method() == "GET")
+    {
+        std::cout << RED << "GET METHOD" << DEF << std::endl;
+
+        if(((extension(req->get_path())) == "jpeg") || ((extension(req->get_path())) == "png"))
+            imageFile(fd, req);
+        else if (req->get_path() == SERVER_ROOT)
+            throw "we need path to get it";
+        else
+            htmlFile(fd, req);
+    }
+    else if(req->get_method() == "POST")
+    {
+        std::cout << RED << "POST METHOD" << DEF << std::endl;
+
+    }
+    else if(req->get_method() == "DELETE")
+    {
+        std::cout << RED << "DELETE METHOD" << DEF << std::endl;
+
+    }
     else
-        htmlFile(fd, req);
+    {
+        std::cout << RED << "UNKOWN METHOD" << DEF << std::endl;
+
+    }
+
 }
 
 Response::Response()

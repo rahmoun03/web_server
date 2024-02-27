@@ -6,7 +6,7 @@
 /*   By: arahmoun <arahmoun@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/17 09:53:30 by arahmoun          #+#    #+#             */
-/*   Updated: 2024/02/26 12:17:37 by arahmoun         ###   ########.fr       */
+/*   Updated: 2024/02/27 09:03:20 by arahmoun         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -37,21 +37,21 @@
 
 class Request
 {
-private:
-	std::stringstream ss;
-	std::string method;
-	std::string path;
-	std::string protocol;
-	std::map<std::string, std::string> headers;
+	private:
+		std::stringstream ss;
+		std::string method;
+		std::string path;
+		std::string protocol;
+		std::map<std::string, std::string> headers;
 
-public:
-	Request();
-	Request(int &fd);
-	const std::string get_path() const;
-	const std::string get_method() const;
-	const std::string get_protocol() const;
-	const std::map<std::string, std::string> &get_headers() const;
-	~Request();
+	public:
+		Request();
+		Request(int &fd);
+		const std::string get_path() const;
+		const std::string get_method() const;
+		const std::string get_protocol() const;
+		const std::map<std::string, std::string> &get_headers() const;
+		~Request();
 };
 std::ostream &operator<<(std::ostream &os, const Request &other);
 

@@ -45,6 +45,7 @@ class netPlix : public Conf
             socketadress.sin_addr.s_addr = inet_addr(this->confCherch("host").c_str());
             bind(socket_fd,(struct  sockaddr*)&socketadress,sizeof(socketadress));
             listen(socket_fd,3);
+            std::cout<< BLUE << "the server listening on port : "<< DEF << this->confCherch("port") << std::endl;
             //set fd NON_BLOCKIN WITH FCNTL FUNCTION
             fcntl(socket_fd,F_SETFL,O_NONBLOCK);
             if (socket_fd == -1){
@@ -110,16 +111,20 @@ class netPlix : public Conf
                     }
                     else
                     {
-                        Request *req = new Request(fd);
-                        std::cout << BLUE << "request :\n"
-                          << YOLLOW << *req << DEF << std::endl;
+                        try
+                        {
+                            Request req(fd);
+                            std::cout << BLUE << "request :\n"
+                                        << YOLLOW << req << DEF << std::endl;
 
-                        // Handle request and send response
-                        Response *res = new Response(fd, req);
-
+                            // Handle request and send response
+                            Response res(fd, &req);
+                        }
+                        catch(const char *e)
+                        {
+                            std::cerr << e << '\n';
+                        }
                         // Connection closed or error
-                        delete req;
-                        delete res;
                         std::cout << RED << "Client closed connection" << DEF << std::endl;
                         // close(new_socketfd);
                     }

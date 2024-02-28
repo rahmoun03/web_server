@@ -6,7 +6,7 @@
 /*   By: arahmoun <arahmoun@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/17 09:53:30 by arahmoun          #+#    #+#             */
-/*   Updated: 2024/02/27 09:03:20 by arahmoun         ###   ########.fr       */
+/*   Updated: 2024/02/28 12:21:58 by arahmoun         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -23,6 +23,7 @@
 #include <sys/socket.h>
 #include <unistd.h>
 #include <map>
+#include <vector>
 #include <fstream>
 #include <iterator>
 #include <algorithm>
@@ -43,12 +44,14 @@ class Request
 		std::string path;
 		std::string protocol;
 		std::map<std::string, std::string> headers;
+		std::string body;
 
 	public:
 		Request();
-		Request(int &fd);
+		Request(std::stringstream &buf);
 		const std::string get_path() const;
 		const std::string get_method() const;
+		const std::string get_body() const;
 		const std::string get_protocol() const;
 		const std::map<std::string, std::string> &get_headers() const;
 		~Request();

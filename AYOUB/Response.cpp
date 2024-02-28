@@ -6,7 +6,7 @@
 /*   By: arahmoun <arahmoun@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/26 11:39:33 by arahmoun          #+#    #+#             */
-/*   Updated: 2024/02/27 10:58:51 by arahmoun         ###   ########.fr       */
+/*   Updated: 2024/02/27 13:06:53 by arahmoun         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -110,7 +110,12 @@ std::string Response::getImage(std::ifstream &file, const char *type, std::strin
              << "Content-Length: "<< buffer.size() <<"\r\n"
              << "\r\n"
              << buffer;
-    return response.str();
+    return response.str();		std::stringstream ss;
+		std::string method;
+		std::string path;
+		std::string protocol;
+		std::map<std::string, std::string> headers;
+
 }
 
 void	Response::htmlFile(int &fd, Request *req)
@@ -143,7 +148,7 @@ void	Response::htmlFile(int &fd, Request *req)
 }
 void	Response::imageFile(int &fd, Request *req)
 {
-    std::ifstream img(req->get_path().c_str(), std::ios::binary);
+    std::ifstream img(req->get_path().c_str());
     if(!img.is_open())
     {
         std::cout << " <  ---------- Error --------->\n" << std::endl;

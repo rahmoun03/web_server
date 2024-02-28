@@ -6,7 +6,7 @@
 /*   By: arahmoun <arahmoun@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/17 11:26:36 by arahmoun          #+#    #+#             */
-/*   Updated: 2024/02/26 17:47:53 by arahmoun         ###   ########.fr       */
+/*   Updated: 2024/02/28 12:29:10 by arahmoun         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -16,24 +16,16 @@ Request::Request(/* args */)
 {
 }
 
-Request::Request(int &fd)
+Request::Request(std::stringstream &buf)
 {
-	char buffer[1024]; // data buffer of 1K
-	ssize_t a;
-
-	// TODO read request
-	if ((a = recv(fd, buffer, sizeof(buffer), 0)) < 0)
-	{
-		std::cerr << "failure in read request !" << std::endl;
-	}
-	else
-	{
+		ss << buf.str();
 		std::string key;
+		char buf;
 		std::string value;
-		buffer[a] = '\0';
-		ss << buffer;
-		std::cout << "request : "<<a<<"bytes\n"
-				  << ss.str() << std::endl;
+		std::string body;
+		
+		// std::cout << "request : \n"
+		// 		  << ss.str() << std::endl;
 		ss >> method;
 		ss >> path;
 		ss >> protocol;
@@ -43,9 +35,18 @@ Request::Request(int &fd)
 			ss >> key;
 			std::getline(ss, value);
 			headers[key] = value;
+			if(key == "Content-Length:")
+			{
+				std::cout << "there is a body \n";
+				while (ss)
+				{
+					ss >> buf;
+					body.push_back(buf);
+				}
+				break;
+			}
 		}
 		// std::cout << "\n--------------------------------------------------------\n" <<std::endl;
-	}
 }
 
 std::ostream &operator<<(std::ostream &os, const Request &other)
@@ -56,7 +57,8 @@ std::ostream &operator<<(std::ostream &os, const Request &other)
 	std::map<std::string, std::string>::const_iterator it = other.get_headers().begin();
 	std::map<std::string, std::string>::const_iterator ite = other.get_headers().end();
 	for (; it != ite; ++it)
-		os << it->first << it->second << '\n';
+		os << it->first <<BLUE<< "|" <<YOLLOW << it->second << '\n';
+	os << "\n\nbody :\n" << other.get_body() << '\n';
 	return os;
 }
 
@@ -64,6 +66,12 @@ const std::map<std::string, std::string> &Request::get_headers() const
 {
 	return headers;
 }
+
+const std::string Request::get_body() const
+{
+	return body;
+}
+
 
 const std::string Request::get_path() const
 {

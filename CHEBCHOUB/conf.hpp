@@ -32,10 +32,9 @@ class location
             if (name.find("location") != std::string::npos)
                 {
                     count = 0;
-                    // std::cout << "----" << name << std::endl;
                     name.erase(std::remove_if(name.begin(),name.end(),isspace),name.end());
-                    // loc1[""] = "";
                     loc[name.substr(name.find("=") + 1)] = loc1;
+                    // loc.erase(name.rfind("["));
                     if (name.find("[") == std::string::npos)
                     {
                         if (getline(fg,name) && name.find("[") == std::string::npos)
@@ -44,24 +43,34 @@ class location
                             exit(0);
                         }
                     }
-                    while (getline(fg,name) && name.find("]") == std::string::npos )
+                    while (getline(fg,name) && name.find("]") == std::string::npos &&  name.find("location") == std::string::npos)
                     {
+                        // std::cout << name << std::endl;
                         loc1[name.substr(0,name.find("="))] = name.substr(name.find("=") + 1);
                         loc[""] = loc1;
+
                     }
+                    if (name.find("]") == std::string::npos)
+                    {
+                        perror("error []");
+                        exit(0);
+                    }
+                    std::map<std::string, std::map<std::string,std::string> >::iterator it = loc.begin();
+                    while (it != loc.end())
+                    {
+                        std::map<std::string,std::string>::iterator vr = it->second.begin();
+                        std::cout << "location : " << it->first<< std::endl;
+                        while (vr != it->second.end())
+                        {
+                            std::cout << vr->first << " = " << vr->second << std::endl;
+                            vr++;
+                        }
+                        it++;
+                    }
+                    return ;
                 }
-                // std::map<std::string, std::map<std::string,std::string> >::iterator it = loc.begin();
-                // while (it != loc.end())
-                // {
-                //     std::cout << "location : " << it->first<< std::endl;
-                //     std::map<std::string,std::string>::iterator vr = it->second.begin();
-                //     while (vr != it->second.end())
-                //     {
-                //         std::cout << vr->first << " = " << vr->second << std::endl;
-                //         vr++;
-                //     }
-                //     it++;
-                // }
+                // return ;
+            // std::cout << "-----------\n";
         }
 };
 class Conf
@@ -92,20 +101,23 @@ class Conf
                             perror("{");
                             exit(0);
                         }
+                        flag++;
                     }
                 while (getline(fg,name))
                 {
                     location loca(fg,name);
                     name.erase(std::remove_if(name.begin(),name.end(),isspace),name.end());
                     map[name.substr(0,name.find("="))] = name.substr(name.find("=") + 1);
+                    // if (name.find("}") != std::string::npos)
+                    //     flag++;
                 }
-                // setMap(map);    
-
+                // if (flag != 2){
+                //     perror("syntax error");
+                //     exit(0);
+                // }
             }
             else
                 std::cout << "file not found\n";
-            
-            // close(fg); 
         }
         std::string confCherch(std::string name)
         {

@@ -34,6 +34,7 @@ class location
                     count = 0;
                     name.erase(std::remove_if(name.begin(),name.end(),isspace),name.end());
                     loc[name.substr(name.find("=") + 1)] = loc1;
+                    // loc.erase(name.rfind("["));
                     if (name.find("[") == std::string::npos)
                     {
                         if (getline(fg,name) && name.find("[") == std::string::npos)

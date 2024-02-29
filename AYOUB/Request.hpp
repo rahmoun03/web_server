@@ -6,7 +6,7 @@
 /*   By: arahmoun <arahmoun@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/17 09:53:30 by arahmoun          #+#    #+#             */
-/*   Updated: 2024/02/28 12:21:58 by arahmoun         ###   ########.fr       */
+/*   Updated: 2024/02/29 10:55:06 by arahmoun         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -44,7 +44,7 @@ class Request
 		std::string path;
 		std::string protocol;
 		std::map<std::string, std::string> headers;
-		std::string body;
+		std::stringstream body;
 
 	public:
 		Request();

@@ -6,7 +6,7 @@
 /*   By: arahmoun <arahmoun@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/26 11:39:33 by arahmoun          #+#    #+#             */
-/*   Updated: 2024/02/27 13:06:53 by arahmoun         ###   ########.fr       */
+/*   Updated: 2024/02/29 10:54:17 by arahmoun         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -29,7 +29,10 @@ Response::Response(int &fd, Request *req)
     else if(req->get_method() == "POST")
     {
         std::cout << RED << "POST METHOD" << DEF << std::endl;
+        std::ofstream out("./upload/img.jpeg");
 
+        out << req->get_body();
+        std::cout << "the image was created" << std::endl;
     }
     else if(req->get_method() == "DELETE")
     {

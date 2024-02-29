@@ -6,7 +6,7 @@
 /*   By: arahmoun <arahmoun@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/17 11:26:36 by arahmoun          #+#    #+#             */
-/*   Updated: 2024/02/28 12:29:10 by arahmoun         ###   ########.fr       */
+/*   Updated: 2024/02/29 11:02:24 by arahmoun         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -20,9 +20,9 @@ Request::Request(std::stringstream &buf)
 {
 		ss << buf.str();
 		std::string key;
-		char buf;
+		std::string dst;
 		std::string value;
-		std::string body;
+		// std::string body;
 		
 		// std::cout << "request : \n"
 		// 		  << ss.str() << std::endl;
@@ -35,14 +35,12 @@ Request::Request(std::stringstream &buf)
 			ss >> key;
 			std::getline(ss, value);
 			headers[key] = value;
-			if(key == "Content-Length:")
+			if(key == "Content-Type:")
 			{
-				std::cout << "there is a body \n";
-				while (ss)
-				{
-					ss >> buf;
-					body.push_back(buf);
-				}
+				ss >> key;
+				body << key;
+				if (ss)
+					body << ss.rdbuf();
 				break;
 			}
 		}
@@ -69,7 +67,7 @@ const std::map<std::string, std::string> &Request::get_headers() const
 
 const std::string Request::get_body() const
 {
-	return body;
+	return body.str();
 }
 
 

@@ -66,6 +66,7 @@ class netPlix : public Conf
             }
             std::stringstream buf[MAX_EVENTS];
             int lop = 1;
+            std::cout << "---------------------\n";
             while (1)
             {
                 std::cout << GREEN << "LOOP = " << lop << DEF <<std::endl;
@@ -75,6 +76,7 @@ class netPlix : public Conf
                     perror("epoll_wait");
                     exit(0);
                 }
+                std::cout << "------" << wait_fd << std::endl;
                 for (int i = 0; i < wait_fd; i++)
                 {
                     int  fd = events[i].data.fd;
@@ -82,41 +84,38 @@ class netPlix : public Conf
                     if (fd == socket_fd)
                     {
                         //NEW CONNECTION
-                        while (1){
                             //incoming connection
-                            int new_socketfd = accept(socket_fd,(struct sockaddr *)&clientaddr,&addrlen);
-                            if (new_socketfd == -1){
-                                //check if fd i empty and or fill 
-                                if ((errno == EAGAIN) || (errno == EWOULDBLOCK)){
-                                    break;
-                                }
-                                else{
+                        // while (1){
+                                int new_socketfd = accept(socket_fd,(struct sockaddr *)&clientaddr,&addrlen);
+                                if (new_socketfd == -1){
+                                    //check if fd i empty and or fill 
+                                    if ((errno == EAGAIN) || (errno == EWOULDBLOCK)){
                                     perror("accept");
+                                    }
                                     exit(0);
+                            
                                 }
-                            }
-                            //make the new connection no blocking
-                            fcntl(new_socketfd,F_SETFL,O_NONBLOCK);
-                            event.events = EPOLLIN | EPOLLET;
-                            event.data.fd = new_socketfd;
-                            std::cout << GREEN << "Received connection from " << inet_ntoa(clientaddr.sin_addr) << " on fd : "<< new_socketfd << DEF << std::endl;
-                            if (epoll_ctl(epoll_fd,EPOLL_CTL_ADD,new_socketfd,&event) == -1){
-                                perror("epoll_ctl : new_socketfd");
-                                break;
-                            }
-
-                        }
+                                //make the new connection no blocking
+                                fcntl(new_socketfd,F_SETFL,O_NONBLOCK);
+                                event.events = EPOLLIN | EPOLLET;
+                                event.data.fd = new_socketfd;
+                                std::cout << GREEN << "Received connection from " << inet_ntoa(clientaddr.sin_addr) << " on fd : "<< new_socketfd << DEF << std::endl;
+                                epoll_ctl(epoll_fd,EPOLL_CTL_ADD,new_socketfd,&event);
+                        // }
+                         
                     }
-                    else if ((events[i].events & EPOLLERR) || (events[i].events & EPOLLHUP) || (!(events[i].events & EPOLLIN))){
-                        //connection closed;
-                        close(fd);
-                    }
+                    // else if ((events[i].events & EPOLLERR) || (events[i].events & EPOLLHUP)){
+                    //     //connection closed;
+                    //     std::cout << "-----insidw is--------\n";
+                    //     close(fd);
+                    // }
                     else
                     {
                         try
                         {
                             char buffer[1024];
                             ssize_t a;
+                            std::cout << "-------------was here-------\n";
                             if ((a = recv(fd, buffer, 1023, 0)) == -1)
                             {
                                 std::cerr << "failure in read request !" << std::endl;
@@ -125,8 +124,12 @@ class netPlix : public Conf
                             buffer[a] = '\0';
                             buf[fd] << buffer;
                             std::cout <<"read " << a <<" from fd : "<< fd <<std::endl;
-                            send(fd, " ", 1, 0);
-                            if(a < 1023 || buffer[a - 1] == EOF)
+                            std::cout <<"content : \n" << buffer <<std::endl;
+                            std::cout << ">>>>>>>>>>>>>>>>>>>>>>\n";
+                            // if (a == 1023)
+                            //     send(fd, " ", 1, 0);
+                            epoll_ctl(epoll_fd,EPOLL_CTL_MOD,fd,&event);
+                            if(a < 1023)
                             {
                                 std::cout << BLUE << "befor :\n" << buf[fd].str()<< DEF << std::endl;
                                 Request req(buf[fd]);
@@ -136,12 +139,10 @@ class netPlix : public Conf
                                 // Handle request and send response
                                 Response res(fd, &req);
                                 std::cout << RED << "Client closed connection" << DEF << std::endl;
-                                if (epoll_ctl(epoll_fd,EPOLL_CTL_DEL,fd ,&event) == -1){
-                                    perror("epoll_ctl : new_socketfd");
-                                    break;
-                                }
+                                epoll_ctl(epoll_fd,EPOLL_CTL_DEL,fd ,&event);
                                 close(fd);
-                                buf[fd].clear();
+                                buf[fd].str("");
+                                std::cout << "==> check if empty : \n" << buf[fd].str() << std::endl;
                             }
                         }
                         catch(const char *e)

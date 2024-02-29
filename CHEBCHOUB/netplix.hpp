@@ -124,7 +124,7 @@ class netPlix : public Conf
                                 exit(1);
                             }
                             buffer[a] = '\0';
-                            buf[fd] << buffer;
+                            buf[fd].write(buffer, a);
                             std::cout <<"read " << a <<" from fd : "<< fd <<std::endl;
                             std::cout <<"content : \n" << buffer <<std::endl;
                             std::cout << ">>>>>>>>>>>>>>>>>>>>>>\n";
@@ -139,7 +139,15 @@ class netPlix : public Conf
                                             << YOLLOW << req << DEF << std::endl;
 
                                 // Handle request and send response
-                                Response res(fd, &req);
+                                try
+                                {
+                                    Response res(fd, &req);
+                                }
+                                catch(std::string &content)
+                                {
+                                    std::cout<< BLUE<<"respone : \n"<<YOLLOW<<content  << std::endl;
+                                    send(fd, content.c_str(), content.size(), 0);
+                                }
                                 std::cout << RED << "Client closed connection" << DEF << std::endl;
                                 epoll_ctl(epoll_fd,EPOLL_CTL_DEL,fd ,&event);
                                 close(fd);

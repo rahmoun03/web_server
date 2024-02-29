@@ -12,10 +12,12 @@ FLAGS = -Wall -Wextra -Werror -std=c++98
 
 $(NAME) : $(SRC)
 	c++ $(FLAGS) $(SRC) -o $@
+	./${NAME} config_file.conf
 
 all : $(NAME)
 
 clean :
+	clear
 	rm -rf $(NAME)
 	rm -rf upload/*
 

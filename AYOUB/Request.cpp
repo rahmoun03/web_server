@@ -6,7 +6,7 @@
 /*   By: arahmoun <arahmoun@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/17 11:26:36 by arahmoun          #+#    #+#             */
-/*   Updated: 2024/02/28 16:11:19 by arahmoun         ###   ########.fr       */
+/*   Updated: 2024/02/29 11:02:24 by arahmoun         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -35,15 +35,16 @@ Request::Request(std::stringstream &buf)
 			ss >> key;
 			std::getline(ss, value);
 			headers[key] = value;
-			if(key == "Content-Length:")
+			if(key == "Content-Type:")
 			{
-				std::cout << "there is a body \n";
+				ss >> key;
+				body << key;
 				if (ss)
 					body << ss.rdbuf();
 				break;
 			}
 		}
-		std::cout << "\n--------------------------------------------------------\n" <<std::endl;
+		// std::cout << "\n--------------------------------------------------------\n" <<std::endl;
 }
 
 std::ostream &operator<<(std::ostream &os, const Request &other)

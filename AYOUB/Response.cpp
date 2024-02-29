@@ -6,7 +6,7 @@
 /*   By: arahmoun <arahmoun@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/26 11:39:33 by arahmoun          #+#    #+#             */
-/*   Updated: 2024/02/29 10:54:17 by arahmoun         ###   ########.fr       */
+/*   Updated: 2024/02/29 16:09:34 by arahmoun         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -22,7 +22,7 @@ Response::Response(int &fd, Request *req)
         if(((extension(req->get_path())) == "jpeg") || ((extension(req->get_path())) == "png"))
             imageFile(fd, req);
         else if (req->get_path() == SERVER_ROOT)
-            throw "we need path to get it";
+            throw "bad request 400";
         else
             htmlFile(fd, req);
     }
@@ -113,12 +113,7 @@ std::string Response::getImage(std::ifstream &file, const char *type, std::strin
              << "Content-Length: "<< buffer.size() <<"\r\n"
              << "\r\n"
              << buffer;
-    return response.str();		std::stringstream ss;
-		std::string method;
-		std::string path;
-		std::string protocol;
-		std::map<std::string, std::string> headers;
-
+    return response.str();
 }
 
 void	Response::htmlFile(int &fd, Request *req)
@@ -135,10 +130,11 @@ void	Response::htmlFile(int &fd, Request *req)
         std::ifstream file(req->get_path().c_str());
         if(!file.is_open())
         {
-            std::cout << " <  ---------- Error --------->\n" << std::endl;
-            std::string content = notFound();
-            std::cout<< BLUE<<"respone : \n"<<YOLLOW<<content  << std::endl;
-            send(fd, content.c_str(), content.size(), 0);
+            std::cout << " <  ---------- Error file --------->\n" << std::endl;
+            throw (notFound());
+            // std::string content = ;
+            // std::cout<< BLUE<<"respone : \n"<<YOLLOW<<content  << std::endl;
+            // send(fd, content.c_str(), content.size(), 0);
         }
         else
         {
@@ -154,10 +150,10 @@ void	Response::imageFile(int &fd, Request *req)
     std::ifstream img(req->get_path().c_str());
     if(!img.is_open())
     {
-        std::cout << " <  ---------- Error --------->\n" << std::endl;
-        std::string content = notFound();
-        std::cout<< BLUE<<"respone : \n"<<YOLLOW<<content  << std::endl;
-        send(fd, content.c_str(), content.size(), 0);
+        std::cout << " <  ---------- Error image --------->\n" << std::endl;
+        throw( notFound());
+        // std::cout<< BLUE<<"respone : \n"<<YOLLOW<<content  << std::endl;
+        // send(fd, content.c_str(), content.size(), 0);
     }
     else
     {

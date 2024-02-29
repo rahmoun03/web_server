@@ -55,18 +55,18 @@ class location
                         perror("error []");
                         exit(0);
                     }
-                    std::map<std::string, std::map<std::string,std::string> >::iterator it = loc.begin();
-                    while (it != loc.end())
-                    {
-                        std::map<std::string,std::string>::iterator vr = it->second.begin();
-                        std::cout << "location : " << it->first<< std::endl;
-                        while (vr != it->second.end())
-                        {
-                            std::cout << vr->first << " = " << vr->second << std::endl;
-                            vr++;
-                        }
-                        it++;
-                    }
+                    // std::map<std::string, std::map<std::string,std::string> >::iterator it = loc.begin();
+                    // while (it != loc.end())
+                    // {
+                    //     std::map<std::string,std::string>::iterator vr = it->second.begin();
+                    //     std::cout << "location : " << it->first<< std::endl;
+                    //     while (vr != it->second.end())
+                    //     {
+                    //         std::cout << vr->first << " = " << vr->second << std::endl;
+                    //         vr++;
+                    //     }
+                    //     it++;
+                    // }
                     return ;
                 }
                 // return ;

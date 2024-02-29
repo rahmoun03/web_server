@@ -143,7 +143,8 @@ class netPlix : public Conf
                                 std::cout << RED << "Client closed connection" << DEF << std::endl;
                                 epoll_ctl(epoll_fd,EPOLL_CTL_DEL,fd ,&event);
                                 close(fd);
-                                buf[fd].clear();
+                                buf[fd].str("");
+                                std::cout << "==> check if empty : \n" << buf[fd].str() << std::endl;
                             }
                         }
                         catch(const char *e)

@@ -6,7 +6,7 @@
 /*   By: arahmoun <arahmoun@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/17 11:26:36 by arahmoun          #+#    #+#             */
-/*   Updated: 2024/02/29 11:02:24 by arahmoun         ###   ########.fr       */
+/*   Updated: 2024/02/29 12:10:40 by arahmoun         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -56,7 +56,7 @@ std::ostream &operator<<(std::ostream &os, const Request &other)
 	std::map<std::string, std::string>::const_iterator ite = other.get_headers().end();
 	for (; it != ite; ++it)
 		os << it->first <<BLUE<< "|" <<YOLLOW << it->second << '\n';
-	os << "\n\nbody :\n" << other.get_body() << '\n';
+	os << "body :\n" << other.get_body() << '\n';
 	return os;
 }
 

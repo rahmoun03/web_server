@@ -32,9 +32,7 @@ class netPlix : public Conf
         int socket_fd, new_fdsock;
     public :
         netPlix(char *os) : Conf(os){
-            // Conf Conf(os);
-            // std::string name = this->confCherch("port");
-            // std::cout << name << std::endl;
+            exit(0);
             int opt = 1;
             struct  sockaddr_in socketadress, clientaddr;
             socklen_t addrlen = sizeof(socketadress);
@@ -143,7 +141,8 @@ class netPlix : public Conf
                                 std::cout << RED << "Client closed connection" << DEF << std::endl;
                                 epoll_ctl(epoll_fd,EPOLL_CTL_DEL,fd ,&event);
                                 close(fd);
-                                buf[fd].clear();
+                                buf[fd].str("");
+                                std::cout << "==> check if empty : \n" << buf[fd].str() << std::endl;
                             }
                         }
                         catch(const char *e)

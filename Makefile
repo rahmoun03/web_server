@@ -17,6 +17,7 @@ all : $(NAME)
 
 clean :
 	rm -rf $(NAME)
+	rm -rf upload/*
 
 fclean : clean
 

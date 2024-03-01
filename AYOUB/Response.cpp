@@ -1,18 +1,3 @@
-/* ************************************************************************** */
-/*                                                                            */
-/*                                                        :::      ::::::::   */
-/*   Response.cpp                                       :+:      :+:    :+:   */
-/*                                                    +:+ +:+         +:+     */
-/*   By: ahbajaou <ahbajaou@student.42.fr>          +#+  +:+       +#+        */
-/*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2024/02/26 11:39:33 by arahmoun          #+#    #+#             */
-<<<<<<< HEAD
-/*   Updated: 2024/02/29 17:34:32 by arahmoun         ###   ########.fr       */
-=======
-/*   Updated: 2024/02/29 16:56:33 by ahbajaou         ###   ########.fr       */
->>>>>>> chebchoub
-/*                                                                            */
-/* ************************************************************************** */
 
 
 #include "Response.hpp"
@@ -32,18 +17,9 @@ Response::Response(int &fd, Request *req)
     }
     else if(req->get_method() == "POST")
     {
-<<<<<<< HEAD
         std::string path = ("./assets/upload/img." + req->get_header("Content-Type:").substr(7));
         std::cout << RED << "POST METHOD\n" << DEF << "path : "<< path << std::endl;
         std::ofstream out(path.c_str(), std::ios::binary);
-        
-=======
-        std::cout << "---->>" << req->get_path() << std::endl;
-        exit(0);
-        std::cout << RED << "POST METHOD" << DEF << std::endl;
-        std::ofstream out("./assets/upload/page.html");
-
->>>>>>> chebchoub
         out << req->get_body();
         std::cout << "lenght : " << req->get_body().size()<< std::endl;
         std::cout << "the image was created" << std::endl;

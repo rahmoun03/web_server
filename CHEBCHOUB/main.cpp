@@ -17,7 +17,6 @@ int main(int ac,char *av[]) {
             std::cout << "argument less\n";
             exit(0);
         }
-    // Conf co(av[1]);
     netPlix netPlix(av[1]);
     return 0;
 }

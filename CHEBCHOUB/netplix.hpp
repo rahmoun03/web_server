@@ -32,9 +32,7 @@ class netPlix : public Conf
         int socket_fd, new_fdsock;
     public :
         netPlix(char *os) : Conf(os){
-            // Conf Conf(os);
-            // std::string name = this->confCherch("port");
-            // std::cout << name << std::endl;
+            // exit(0);
             int opt = 1;
             struct  sockaddr_in socketadress, clientaddr;
             socklen_t addrlen = sizeof(socketadress);

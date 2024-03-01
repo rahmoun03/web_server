@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Response.cpp                                       :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: arahmoun <arahmoun@student.42.fr>          +#+  +:+       +#+        */
+/*   By: ahbajaou <ahbajaou@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/26 11:39:33 by arahmoun          #+#    #+#             */
-/*   Updated: 2024/02/29 16:09:34 by arahmoun         ###   ########.fr       */
+/*   Updated: 2024/02/29 16:56:33 by ahbajaou         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -28,8 +28,10 @@ Response::Response(int &fd, Request *req)
     }
     else if(req->get_method() == "POST")
     {
+        std::cout << "---->>" << req->get_path() << std::endl;
+        exit(0);
         std::cout << RED << "POST METHOD" << DEF << std::endl;
-        std::ofstream out("./upload/img.jpeg");
+        std::ofstream out("./assets/upload/page.html");
 
         out << req->get_body();
         std::cout << "the image was created" << std::endl;

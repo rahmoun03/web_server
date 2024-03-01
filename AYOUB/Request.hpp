@@ -6,7 +6,7 @@
 /*   By: arahmoun <arahmoun@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/17 09:53:30 by arahmoun          #+#    #+#             */
-/*   Updated: 2024/02/29 17:10:25 by arahmoun         ###   ########.fr       */
+/*   Updated: 2024/03/01 22:01:26 by arahmoun         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -43,20 +43,25 @@ class Request
 		std::string method;
 		std::string path;
 		std::string protocol;
+		bool firstTime;
 		std::map<std::string, std::string> headers;
 		std::stringstream body;
 
 	public:
 		Request();
-		Request(std::stringstream &buf);
+		Request(const Request &other);
+		Request &operator=(const Request &other);
+		~Request();
+
+		Request(std::stringstream &buf, size_t &endOf);
 		const std::string get_path() const;
 		const std::string get_method() const;
 		const std::string get_body() const;
 		const std::string get_protocol() const;
-		const std::string get_header(const char *key) ;
+		const std::string get_header(const char *key);
 		const std::map<std::string, std::string> &get_headers() const;
-		~Request();
 };
 std::ostream &operator<<(std::ostream &os, const Request &other);
+size_t findEndOfHeaders(char* buffer, ssize_t bufferSize);
 
 #endif

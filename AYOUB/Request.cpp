@@ -6,7 +6,7 @@
 /*   By: arahmoun <arahmoun@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/17 11:26:36 by arahmoun          #+#    #+#             */
-/*   Updated: 2024/02/29 17:10:04 by arahmoun         ###   ########.fr       */
+/*   Updated: 2024/03/01 21:07:50 by arahmoun         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -16,36 +16,51 @@ Request::Request(/* args */)
 {
 }
 
-Request::Request(std::stringstream &buf)
+Request::Request(std::stringstream &buf, size_t &endOf)
 {
-		ss << buf.str();
+		// buf << buf.str();
 		std::string key;
 		std::string dst;
+		std::stringstream startline;
 		std::string value;
 		// std::string body;
 		
 		// std::cout << "request : \n"
-		// 		  << ss.str() << std::endl;
-		ss >> method;
-		ss >> path;
-		ss >> protocol;
+		// 		  << buf.str() << std::endl;
+		std::getline(buf, dst);
+		size_t i = dst.size() + 1;
+		startline << dst.c_str();
+		startline >> method;
+		startline >> path;
+		startline >> protocol;
 		path = SERVER_ROOT + path;
-		while (ss)
+		while(i < endOf)
 		{
-			ss >> key;
-			std::getline(ss, value);
+			buf >> key;
+			std::getline(buf, value);
 			headers[key] = value;
-			if(key == "Content-Type:")
-			{
-				ss >> key;
-				body << key;
-				if (ss)
-					body << ss.rdbuf();
-				break;
-			}
+			i += key.length() + value.length() + 1;
 		}
+		body << buf.rdbuf();
+		firstTime = true;
+		buf.str("");
 		// std::cout << "\n--------------------------------------------------------\n" <<std::endl;
 }
+
+size_t findEndOfHeaders(char* buffer, ssize_t bufferSize)
+{
+	const char *end = "\r\n\r\n";
+	size_t size = strlen(end);
+	for (ssize_t i = 0; i < bufferSize; i++)
+	{
+		if (strncmp(buffer + i, end, size) == 0)
+		{
+			return i;
+		}
+	}
+	return -1;
+}
+
 
 std::ostream &operator<<(std::ostream &os, const Request &other)
 {

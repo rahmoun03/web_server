@@ -64,19 +64,20 @@ class netPlix : public Conf
                 perror("epoll_ctl");
                 exit(0);
             }
+            size_t endOf[MAX_EVENTS];
+            std::fill(endOf, endOf + MAX_EVENTS, (size_t)-1);
             std::stringstream buf[MAX_EVENTS];
             int lop = 1;
             std::cout << "---------------------\n";
             while (1)
             {
                 std::cout << GREEN << "LOOP = " << lop << DEF <<std::endl;
-                //return only socket for wich there are events
+                //return only sock<<<<<<< HEADet for wich there are events
                 int wait_fd = epoll_wait(epoll_fd, events, MAX_EVENTS, -1);
                 if (wait_fd == -1){
                     perror("epoll_wait");
                     exit(0);
                 }
-                std::cout << "------" << wait_fd << std::endl;
                 for (int i = 0; i < wait_fd; i++)
                 {
                     int  fd = events[i].data.fd;
@@ -113,29 +114,33 @@ class netPlix : public Conf
                     {
                         try
                         {
-                            char buffer[1024];
-                            ssize_t a;
-                            std::cout << "-------------was here-------\n";
-                            if ((a = recv(fd, buffer, 1023, 0)) == -1)
+                            
+                            std::cout << "endOf = " << endOf[fd]<< " ,for fd : "<<fd << std::endl;
+                            ssize_t a = -1;
+                            if (endOf[fd] == (size_t)-1)
                             {
-                                std::cerr << "failure in read request !" << std::endl;
-                                exit(1);
+                                char buffer[1024];
+                                if ((a = read(fd, buffer, 1023)) == -1)
+                                {
+                                    std::cerr << "failure in read request !" << std::endl;
+                                    exit(1);
+                                }
+                                buffer[a] = '\0';
+                                buf[fd].write(buffer, a);
+                                std::cout <<"read " << a <<" from fd : "<< fd <<std::endl;
+                                epoll_ctl(epoll_fd,EPOLL_CTL_MOD,fd,&event);
+                                endOf[fd] = findEndOfHeaders(buffer, a);
+                                std::cout << "endOf now = " << endOf[fd] << " ,for fd : "<<fd<< std::endl;
+                                
                             }
-                            buffer[a] = '\0';
-                            buf[fd].write(buffer, a);
-                            std::cout <<"read " << a <<" from fd : "<< fd <<std::endl;
-                            // std::cout <<"content : \n" << buffer <<std::endl;
-                            std::cout << ">>>>>>>>>>>>>>>>>>>>>>\n";
-                            // if (a == 1023)
-                            //     send(fd, " ", 1, 0);
-                            epoll_ctl(epoll_fd,EPOLL_CTL_MOD,fd,&event);
-                            if(a < 1023)
+                            if((a > -1 && a < 1023) || (endOf[fd] != (size_t)-1))
                             {
                                 std::cout << BLUE << "befor :\n" << buf[fd].str()<< DEF << std::endl;
-                                Request req(buf[fd]);
+                                Request req(buf[fd], endOf[fd]);
                                 std::cout << RED << "request :\n"
                                             << YOLLOW << req << DEF << std::endl;
-
+                                std::cout << "loop : " << lop << std::endl;
+                                exit(0);
                                 // Handle request and send response
                                 try
                                 {

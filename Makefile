@@ -1,6 +1,6 @@
 NAME = Web_server
 
-CHAB_SRC = CHEBCHOUB/main2.cpp
+CHAB_SRC = CHEBCHOUB/main.cpp
 
 AYOUB_SRC = AYOUB/Request.cpp AYOUB/Response.cpp
 

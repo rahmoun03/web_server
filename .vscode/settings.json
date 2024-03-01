@@ -117,7 +117,25 @@
     "unordered_map": "cpp",
     "utility": "cpp",
     "vector": "cpp",
+<<<<<<< HEAD
     "*.tcc": "cpp"
   },
   "C_Cpp.errorSquiggles": "disabled"
+=======
+    "__tree": "cpp",
+    "deque": "cpp",
+    "fstream": "cpp",
+    "iomanip": "cpp",
+    "map": "cpp",
+    "stack": "cpp",
+    "*.tcc": "cpp",
+    "clocale": "cpp",
+    "compare": "cpp",
+    "concepts": "cpp",
+    "memory_resource": "cpp",
+    "numeric": "cpp",
+    "random": "cpp",
+    "numbers": "cpp"
+  }
+>>>>>>> origin/chebchoub
 }

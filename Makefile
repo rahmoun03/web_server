@@ -1,6 +1,6 @@
 NAME = Web_server
 
-CHAB_SRC = CHEBCHOUB/main.cpp
+CHAB_SRC = CHEBCHOUB/main2.cpp
 
 AYOUB_SRC = AYOUB/Request.cpp AYOUB/Response.cpp
 
@@ -8,7 +8,7 @@ SWIRI_SRC =
  
 SRC = $(CHAB_SRC) $(AYOUB_SRC) $(SWIRI_SRC)
 
-FLAGS = -Wall -Wextra -Werror -std=c++98
+FLAGS = -Wall -Wextra -Werror -std=c++98 -fsanitize=address -g3
 
 $(NAME) : $(SRC)
 	c++ $(FLAGS) $(SRC) -o $@

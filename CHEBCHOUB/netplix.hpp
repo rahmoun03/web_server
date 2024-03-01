@@ -124,7 +124,7 @@ class netPlix : public Conf
                             buffer[a] = '\0';
                             buf[fd].write(buffer, a);
                             std::cout <<"read " << a <<" from fd : "<< fd <<std::endl;
-                            std::cout <<"content : \n" << buffer <<std::endl;
+                            // std::cout <<"content : \n" << buffer <<std::endl;
                             std::cout << ">>>>>>>>>>>>>>>>>>>>>>\n";
                             // if (a == 1023)
                             //     send(fd, " ", 1, 0);

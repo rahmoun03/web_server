@@ -19,7 +19,7 @@ all : $(NAME)
 clean :
 	clear
 	rm -rf $(NAME)
-	rm -rf upload/*
+	rm -rf assets/upload/*
 
 fclean : clean
 

@@ -6,7 +6,7 @@
 /*   By: arahmoun <arahmoun@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/26 11:39:33 by arahmoun          #+#    #+#             */
-/*   Updated: 2024/02/29 16:09:34 by arahmoun         ###   ########.fr       */
+/*   Updated: 2024/02/29 17:34:32 by arahmoun         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -28,10 +28,12 @@ Response::Response(int &fd, Request *req)
     }
     else if(req->get_method() == "POST")
     {
-        std::cout << RED << "POST METHOD" << DEF << std::endl;
-        std::ofstream out("./upload/img.jpeg");
-
+        std::string path = ("./assets/upload/img." + req->get_header("Content-Type:").substr(7));
+        std::cout << RED << "POST METHOD\n" << DEF << "path : "<< path << std::endl;
+        std::ofstream out(path.c_str(), std::ios::binary);
+        
         out << req->get_body();
+        std::cout << "lenght : " << req->get_body().size()<< std::endl;
         std::cout << "the image was created" << std::endl;
     }
     else if(req->get_method() == "DELETE")
@@ -163,6 +165,7 @@ void	Response::imageFile(int &fd, Request *req)
     }
 
 }
+
 
 std::string Response::extension(const std::string &path)
 {

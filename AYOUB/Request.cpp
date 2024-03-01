@@ -6,7 +6,7 @@
 /*   By: arahmoun <arahmoun@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/17 11:26:36 by arahmoun          #+#    #+#             */
-/*   Updated: 2024/02/29 12:10:40 by arahmoun         ###   ########.fr       */
+/*   Updated: 2024/02/29 17:10:04 by arahmoun         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -64,6 +64,13 @@ const std::map<std::string, std::string> &Request::get_headers() const
 {
 	return headers;
 }
+
+const std::string Request::get_header(const char *key)
+{
+    return (headers[key]);
+}
+
+
 
 const std::string Request::get_body() const
 {

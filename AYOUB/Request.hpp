@@ -6,7 +6,7 @@
 /*   By: arahmoun <arahmoun@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/17 09:53:30 by arahmoun          #+#    #+#             */
-/*   Updated: 2024/02/29 10:55:06 by arahmoun         ###   ########.fr       */
+/*   Updated: 2024/02/29 17:10:25 by arahmoun         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -53,6 +53,7 @@ class Request
 		const std::string get_method() const;
 		const std::string get_body() const;
 		const std::string get_protocol() const;
+		const std::string get_header(const char *key) ;
 		const std::map<std::string, std::string> &get_headers() const;
 		~Request();
 };

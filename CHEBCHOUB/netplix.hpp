@@ -64,9 +64,11 @@ class netPlix : public Conf
                 perror("epoll_ctl");
                 exit(0);
             }
-            size_t endOf[MAX_EVENTS];
-            std::fill(endOf, endOf + MAX_EVENTS, (size_t)-1);
             std::stringstream buf[MAX_EVENTS];
+            bool toRespons[MAX_EVENTS];
+            size_t endOf[MAX_EVENTS];
+            Request req;
+            std::fill(endOf, endOf + MAX_EVENTS, (size_t)-1);
             int lop = 1;
             std::cout << "---------------------\n";
             while (1)
@@ -135,26 +137,33 @@ class netPlix : public Conf
                             }
                             if((a > -1 && a < 1023) || (endOf[fd] != (size_t)-1))
                             {
-                                std::cout << BLUE << "befor :\n" << buf[fd].str()<< DEF << std::endl;
-                                Request req(buf[fd], endOf[fd]);
-                                std::cout << RED << "request :\n"
-                                            << YOLLOW << req << DEF << std::endl;
-                                std::cout << "loop : " << lop << std::endl;
-                                exit(0);
+                                if(!toRespons[fd])
+                                {
+                                    toRespons[fd] = true;
+                                    std::cout << BLUE << "befor :\n" << buf[fd].str()<< DEF << std::endl;
+                                    req = Request(buf[fd], endOf[fd]);
+                                    std::cout << RED << "request :\n"
+                                                << YOLLOW << req << DEF << std::endl;
+                                    std::cout << "loop : " << lop << std::endl;
+                                    // exit(0);
+                                }
                                 // Handle request and send response
-                                try
+                                if(toRespons[fd])
                                 {
-                                    Response res(fd, &req);
+                                    try
+                                    {
+                                        Response res(fd, &req);
+                                    }
+                                    catch(std::string &content)
+                                    {
+                                        std::cout<< BLUE<<"respone : \n"<<YOLLOW<<content  << std::endl;
+                                        send(fd, content.c_str(), content.size(), 0);
+                                    }
+                                    std::cout << RED << "Client closed connection" << DEF << std::endl;
+                                    epoll_ctl(epoll_fd,EPOLL_CTL_DEL,fd ,&event);
+                                    close(fd);
                                 }
-                                catch(std::string &content)
-                                {
-                                    std::cout<< BLUE<<"respone : \n"<<YOLLOW<<content  << std::endl;
-                                    send(fd, content.c_str(), content.size(), 0);
-                                }
-                                std::cout << RED << "Client closed connection" << DEF << std::endl;
-                                epoll_ctl(epoll_fd,EPOLL_CTL_DEL,fd ,&event);
-                                close(fd);
-                                buf[fd].str("");
+                                // buf[fd].str("");
                             }
                         }
                         catch(const char *e)

@@ -6,7 +6,7 @@
 /*   By: arahmoun <arahmoun@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/17 09:53:30 by arahmoun          #+#    #+#             */
-/*   Updated: 2024/03/01 20:38:24 by arahmoun         ###   ########.fr       */
+/*   Updated: 2024/03/01 22:01:26 by arahmoun         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -49,6 +49,10 @@ class Request
 
 	public:
 		Request();
+		Request(const Request &other);
+		Request &operator=(const Request &other);
+		~Request();
+
 		Request(std::stringstream &buf, size_t &endOf);
 		const std::string get_path() const;
 		const std::string get_method() const;
@@ -56,7 +60,6 @@ class Request
 		const std::string get_protocol() const;
 		const std::string get_header(const char *key);
 		const std::map<std::string, std::string> &get_headers() const;
-		~Request();
 };
 std::ostream &operator<<(std::ostream &os, const Request &other);
 size_t findEndOfHeaders(char* buffer, ssize_t bufferSize);

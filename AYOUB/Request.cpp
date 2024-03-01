@@ -6,7 +6,7 @@
 /*   By: arahmoun <arahmoun@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/17 11:26:36 by arahmoun          #+#    #+#             */
-/*   Updated: 2024/03/01 21:07:50 by arahmoun         ###   ########.fr       */
+/*   Updated: 2024/03/01 22:06:27 by arahmoun         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -41,7 +41,11 @@ Request::Request(std::stringstream &buf, size_t &endOf)
 			headers[key] = value;
 			i += key.length() + value.length() + 1;
 		}
-		body << buf.rdbuf();
+		if(buf)
+		{
+			buf >> key;
+			body << key << buf.rdbuf();
+		}
 		firstTime = true;
 		buf.str("");
 		// std::cout << "\n--------------------------------------------------------\n" <<std::endl;
@@ -61,6 +65,26 @@ size_t findEndOfHeaders(char* buffer, ssize_t bufferSize)
 	return -1;
 }
 
+Request::Request(const Request &other)
+{
+	*this = other;
+}
+
+
+Request &Request::operator=(const Request &other)
+{
+	if(this != &other)
+	{
+		ss << other.ss.str();
+		method = other.method;
+		path = other.path;
+		protocol = other.protocol;
+		firstTime = other.firstTime;
+		headers = other.headers;
+		body << other.body.str();
+	}
+	return *this;
+}
 
 std::ostream &operator<<(std::ostream &os, const Request &other)
 {
@@ -71,7 +95,7 @@ std::ostream &operator<<(std::ostream &os, const Request &other)
 	std::map<std::string, std::string>::const_iterator ite = other.get_headers().end();
 	for (; it != ite; ++it)
 		os << it->first <<BLUE<< "|" <<YOLLOW << it->second << '\n';
-	os << "body :\n" << other.get_body() << '\n';
+	os << "body :\n" << other.get_body() << RED <<"." << '\n';
 	return os;
 }
 

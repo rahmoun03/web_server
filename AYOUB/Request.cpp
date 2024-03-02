@@ -6,7 +6,7 @@
 /*   By: arahmoun <arahmoun@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/17 11:26:36 by arahmoun          #+#    #+#             */
-/*   Updated: 2024/03/01 22:06:27 by arahmoun         ###   ########.fr       */
+/*   Updated: 2024/03/02 12:30:06 by arahmoun         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -18,36 +18,31 @@ Request::Request(/* args */)
 
 Request::Request(std::stringstream &buf, size_t &endOf)
 {
-		// buf << buf.str();
 		std::string key;
 		std::string dst;
-		std::stringstream startline;
 		std::string value;
-		// std::string body;
-		
-		// std::cout << "request : \n"
-		// 		  << buf.str() << std::endl;
+
 		std::getline(buf, dst);
 		size_t i = dst.size() + 1;
-		startline << dst.c_str();
+		
+		startline << dst;
 		startline >> method;
 		startline >> path;
 		startline >> protocol;
 		path = SERVER_ROOT + path;
-		while(i < endOf)
+		
+		while(i < endOf && buf >> key && std::getline(buf, value))
 		{
-			buf >> key;
-			std::getline(buf, value);
 			headers[key] = value;
 			i += key.length() + value.length() + 1;
 		}
-		if(buf)
+		if(buf && (endOf + 4) > buf.str().size())
 		{
 			buf >> key;
 			body << key << buf.rdbuf();
 		}
 		firstTime = true;
-		buf.str("");
+		// buf.str("");
 		// std::cout << "\n--------------------------------------------------------\n" <<std::endl;
 }
 
@@ -75,7 +70,7 @@ Request &Request::operator=(const Request &other)
 {
 	if(this != &other)
 	{
-		ss << other.ss.str();
+		startline << other.startline.str();
 		method = other.method;
 		path = other.path;
 		protocol = other.protocol;
@@ -97,6 +92,16 @@ std::ostream &operator<<(std::ostream &os, const Request &other)
 		os << it->first <<BLUE<< "|" <<YOLLOW << it->second << '\n';
 	os << "body :\n" << other.get_body() << RED <<"." << '\n';
 	return os;
+}
+
+void Request::clear()
+{
+    startline.str("");
+	method.clear();
+	path.clear();
+	protocol.clear();
+	headers.clear();
+	body.str("");
 }
 
 const std::map<std::string, std::string> &Request::get_headers() const

@@ -2,7 +2,7 @@
 
 #include "Response.hpp"
 
-Response::Response(int &fd, Request *req)
+void    Response::generateResponse(int &fd, Request *req)
 {
     if (req->get_method() == "GET")
     {
@@ -24,6 +24,7 @@ Response::Response(int &fd, Request *req)
         std::cout << "lenght : " << req->get_body().size()<< std::endl;
         std::cout << "the image was created" << std::endl;
     }
+
     else if(req->get_method() == "DELETE")
     {
         std::cout << RED << "DELETE METHOD" << DEF << std::endl;

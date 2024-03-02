@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Request.cpp                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: arahmoun <arahmoun@student.42.fr>          +#+  +:+       +#+        */
+/*   By: ahbajaou <ahbajaou@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/17 11:26:36 by arahmoun          #+#    #+#             */
-/*   Updated: 2024/03/02 12:30:06 by arahmoun         ###   ########.fr       */
+/*   Updated: 2024/03/02 16:00:55 by ahbajaou         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -36,7 +36,7 @@ Request::Request(std::stringstream &buf, size_t &endOf)
 			headers[key] = value;
 			i += key.length() + value.length() + 1;
 		}
-		if(buf && (endOf + 4) > buf.str().size())
+		if(buf && (endOf + 4) < buf.str().size())
 		{
 			buf >> key;
 			body << key << buf.rdbuf();
@@ -102,6 +102,7 @@ void Request::clear()
 	protocol.clear();
 	headers.clear();
 	body.str("");
+	connexion = false;
 }
 
 const std::map<std::string, std::string> &Request::get_headers() const

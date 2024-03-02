@@ -2,30 +2,63 @@
 
 #include "Response.hpp"
 
-void    Response::generateResponse(int &fd, Request *req)
+void    Response::generateResponse(int &fd, Request &req)
 {
-    if (req->get_method() == "GET")
+    if (req.get_method() == "GET")
     {
         std::cout << RED << "GET METHOD" << DEF << std::endl;
 
-        if(((extension(req->get_path())) == "jpeg") || ((extension(req->get_path())) == "png"))
+        if(((extension(req.get_path())) == "jpeg") || ((extension(req.get_path())) == "png"))
             imageFile(fd, req);
-        else if (req->get_path() == SERVER_ROOT)
+        else if (req.get_path() == SERVER_ROOT)
             throw "bad request 400";
         else
             htmlFile(fd, req);
     }
-    else if(req->get_method() == "POST")
+    else if(req.get_method() == "POST")
     {
-        std::string path = ("./assets/upload/img." + req->get_header("Content-Type:").substr(7));
-        std::cout << RED << "POST METHOD\n" << DEF << "path : "<< path << std::endl;
-        std::ofstream out(path.c_str(), std::ios::binary);
-        out << req->get_body();
-        std::cout << "lenght : " << req->get_body().size()<< std::endl;
+        if (req.firstTime)
+        {
+            std::cout << "-----POST START HERE && CREATE FILE AND NAME-----\n";
+            std::string type = static_cast<std::string>(req.get_header("Content-Type:"));
+            type.erase(std::remove_if(type.begin(),type.end(),isspace),type.end());
+            type.erase(type.find("/"));
+            type.push_back('.');
+            std::string path = ("./assets/upload/"+ type + req.get_header("Content-Type:").substr(req.get_header("Content-Type:").find("/") + 1));
+            std::cout << RED << path << DEF << std::endl;
+            std::cout << "-----HERE-----\n";
+            out.open(path.c_str(), std::ios::binary);
+            if (!req.get_body().empty())
+            {
+                out << req.get_body();
+                // epoll_ctl(epoll_fd, EPOLL_CTL_MOD, fd, &event);
+            }
+            std::cout << GREEN << "----." << req.get_body() << DEF <<std::endl;
+            req.firstTime = false;
+        }
+        std::cout << "----------- FILL CONTENT ---------\n";
+        if (!req.get_header("Content-Length:").empty()){
+            ssize_t a = -1;
+            char buffer[1024];
+            if ((a = recv(fd, buffer, 1023, 0)) == -1)
+            {
+                std::cerr << "failure in read request !" << std::endl;
+                exit(1);
+            }
+            buffer[a] = '\0';
+            out.write(buffer, a);
+            if (a < 1023)
+                req.connexion = true;
+            // epoll_ctl(epoll_fd, EPOLL_CTL_MOD, fd, &event);
+            std::cout << "-- THERE A CONTENT LEGHT --\n";
+            
+        }
+        // exit(0);
+        std::cout << "lenght : " << req.get_body().size()<< std::endl;
         std::cout << "the image was created" << std::endl;
     }
 
-    else if(req->get_method() == "DELETE")
+    else if(req.get_method() == "DELETE")
     {
         std::cout << RED << "DELETE METHOD" << DEF << std::endl;
 
@@ -107,21 +140,21 @@ std::string Response::getImage(std::ifstream &file, const char *type, std::strin
     return response.str();
 }
 
-void	Response::htmlFile(int &fd, Request *req)
+void	Response::htmlFile(int &fd, Request &req)
 {
-    if (req->get_path() == ("./assets/"))
+    if (req.get_path() == ("./assets/"))
     {
-        std::cout << " <  ---------- home --------->\n" << std::endl;
+        std::cout << " <  ---------- home --------.\n" << std::endl;
         std::string content = homepage();
         std::cout<< BLUE<<"respone : \n"<<YOLLOW<<content  << std::endl;
         send(fd, content.c_str(), content.size(), 0);
     }
     else
     {
-        std::ifstream file(req->get_path().c_str());
+        std::ifstream file(req.get_path().c_str());
         if(!file.is_open())
         {
-            std::cout << " <  ---------- Error file --------->\n" << std::endl;
+            std::cout << " <  ---------- Error file --------.\n" << std::endl;
             throw (notFound());
             // std::string content = ;
             // std::cout<< BLUE<<"respone : \n"<<YOLLOW<<content  << std::endl;
@@ -129,26 +162,26 @@ void	Response::htmlFile(int &fd, Request *req)
         }
         else
         {
-            std::cout << " <  ---------- YES --------->\n" << std::endl;
-            std::string content = getResource(file, "text/", extension(req->get_path()));
+            std::cout << " <  ---------- YES --------.\n" << std::endl;
+            std::string content = getResource(file, "text/", extension(req.get_path()));
             std::cout<< BLUE<<"respone : \n"<<YOLLOW<< content  << std::endl;
             send(fd, content.c_str(), content.size(), 0);
         }
     }
 }
-void	Response::imageFile(int &fd, Request *req)
+void	Response::imageFile(int &fd, Request &req)
 {
-    std::ifstream img(req->get_path().c_str());
+    std::ifstream img(req.get_path().c_str());
     if(!img.is_open())
     {
-        std::cout << " <  ---------- Error image --------->\n" << std::endl;
+        std::cout << " <  ---------- Error image --------.\n" << std::endl;
         throw( notFound());
         // std::cout<< BLUE<<"respone : \n"<<YOLLOW<<content  << std::endl;
         // send(fd, content.c_str(), content.size(), 0);
     }
     else
     {
-        std::string content = getImage(img, "image/", extension(req->get_path()));
+        std::string content = getImage(img, "image/", extension(req.get_path()));
         std::cout<< BLUE<<"respone : \n"<<YOLLOW<< content << std::endl;
         send(fd, content.c_str(), content.size(), 0);
     }

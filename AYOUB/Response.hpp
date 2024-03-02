@@ -6,7 +6,7 @@
 class Response
 {
 	private:
-
+		std::ofstream out;
 	public:
 		Response();
 		~Response();
@@ -17,9 +17,9 @@ class Response
 		// void	DELETE();
 
 		// void clear();
-		void	htmlFile(int &fd, Request *req);
-		void	imageFile(int &fd, Request *req);
-		void	generateResponse(int &fd, Request *req);
+		void	htmlFile(int &fd, Request &req);
+		void	imageFile(int &fd, Request &req);
+		void	generateResponse(int &fd, Request &req);
 		std::string extension(const std::string &path);
 		std::string notFound();
 		std::string homepage();

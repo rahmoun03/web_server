@@ -159,7 +159,8 @@ class netPlix : public Conf
                                     
                                     try
                                     {
-                                        client[fd].res.generateResponse(fd, &client[fd].req);
+                                        client[fd].res.generateResponse(fd, client[fd].req);
+                                        epoll_ctl(epoll_fd, EPOLL_CTL_MOD, fd, &event);
                                     }
                                     catch(std::string &content)
                                     {
@@ -170,9 +171,11 @@ class netPlix : public Conf
 
 
                                     std::cout << RED << "Client closed connection" << DEF << std::endl;
-                                    close(fd);
-                                    client[fd].clear();
-                                    epoll_ctl(epoll_fd, EPOLL_CTL_DEL, fd, &event);
+                                    if (client[fd].req.connexion == true){
+                                        close(fd);
+                                        client[fd].clear();
+                                        epoll_ctl(epoll_fd, EPOLL_CTL_DEL, fd, &event);
+                                    }
                                     std:: cout << " <<<<<<<<<<<<<<   End of Response     >>>>>>>>>>>>>>> " << std::endl;
                                 }
                             }

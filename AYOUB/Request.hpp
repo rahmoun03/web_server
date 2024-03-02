@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Request.hpp                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: arahmoun <arahmoun@student.42.fr>          +#+  +:+       +#+        */
+/*   By: ahbajaou <ahbajaou@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/17 09:53:30 by arahmoun          #+#    #+#             */
-/*   Updated: 2024/03/02 12:01:09 by arahmoun         ###   ########.fr       */
+/*   Updated: 2024/03/02 15:59:28 by ahbajaou         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -51,6 +51,7 @@ class Request
 		Request(const Request &other);
 		Request &operator=(const Request &other);
 		~Request();
+		bool connexion;
 		bool firstTime;
 
 		void clear();

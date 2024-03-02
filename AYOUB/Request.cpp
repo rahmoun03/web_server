@@ -6,7 +6,7 @@
 /*   By: arahmoun <arahmoun@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/17 11:26:36 by arahmoun          #+#    #+#             */
-/*   Updated: 2024/03/02 12:30:06 by arahmoun         ###   ########.fr       */
+/*   Updated: 2024/03/02 14:44:21 by arahmoun         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -36,7 +36,8 @@ Request::Request(std::stringstream &buf, size_t &endOf)
 			headers[key] = value;
 			i += key.length() + value.length() + 1;
 		}
-		if(buf && (endOf + 4) > buf.str().size())
+		std:: cout << (endOf + 4) << " > " << buf.str().size() << std::endl;
+		if(buf && (endOf + 4) < buf.str().size())
 		{
 			buf >> key;
 			body << key << buf.rdbuf();

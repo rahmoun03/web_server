@@ -6,21 +6,35 @@
 class Response
 {
 	private:
-		/* data */
+
 	public:
 		Response();
-		Response(int &fd, Request *req);
-		void	htmlFile(int &fd, Request *req);
-		void	imageFile(int &fd, Request *req);
+		~Response();
+		
+		
 		// void	GET();
 		// void	POST();
 		// void	DELETE();
+
+		// void clear();
+		void	htmlFile(int &fd, Request *req);
+		void	imageFile(int &fd, Request *req);
+		void	generateResponse(int &fd, Request *req);
 		std::string extension(const std::string &path);
 		std::string notFound();
 		std::string homepage();
 		std::string getResource(std::ifstream &file, const char *type, std::string ext);
 		std::string getImage(std::ifstream &file, const char *type, std::string ext);
-		~Response();
 };
+
+// void Response::clear()
+// {
+//     // startline.str("");
+// 	// method.clear();
+// 	// path.clear();
+// 	// protocol.clear();
+// 	// headers.clear();
+// 	// body.str("");
+// }
 
 #endif

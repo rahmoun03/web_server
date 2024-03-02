@@ -21,6 +21,7 @@
 #include "conf.hpp"
 #include <arpa/inet.h>
 #include "../AYOUB/Request.hpp"
+#include "../AYOUB/Client.hpp"
 #include "../AYOUB/Response.hpp"
 #define MAX_EVENTS 1024
 // typedef struct  sockaddr_in socketadress;
@@ -29,12 +30,13 @@
 class netPlix : public Conf
 {
     private :
-        int socket_fd, new_fdsock;
+        Client client[MAX_EVENTS];
+        int socket_fd, new_fdsock; // done
     public :
         netPlix(char *os) : Conf(os){
             // exit(0);
             int opt = 1;
-            struct  sockaddr_in socketadress, clientaddr;
+            struct  sockaddr_in socketadress, clientaddr;// done
             socklen_t addrlen = sizeof(socketadress);
             socket_fd = socket(AF_INET,SOCK_STREAM,0);
             setsockopt(socket_fd,SOL_SOCKET,SO_REUSEADDR,&opt,sizeof(opt));
@@ -64,11 +66,9 @@ class netPlix : public Conf
                 perror("epoll_ctl");
                 exit(0);
             }
-            std::stringstream buf[MAX_EVENTS];
-            bool toRespons[MAX_EVENTS];
-            size_t endOf[MAX_EVENTS];
-            Request req;
-            std::fill(endOf, endOf + MAX_EVENTS, (size_t)-1);
+            for (size_t i = 0; i < MAX_EVENTS; i++)
+                client[i].endOf = -1;
+            
             int lop = 1;
             std::cout << "---------------------\n";
             while (1)
@@ -89,7 +89,7 @@ class netPlix : public Conf
                         //NEW CONNECTION
                             //incoming connection
                         // while (1){
-                                int new_socketfd = accept(socket_fd,(struct sockaddr *)&clientaddr,&addrlen);
+                                int new_socketfd = accept(socket_fd, (struct sockaddr *)&clientaddr, &addrlen);
                                 if (new_socketfd == -1){
                                     //check if fd i empty and or fill 
                                     if ((errno == EAGAIN) || (errno == EWOULDBLOCK)){
@@ -103,7 +103,7 @@ class netPlix : public Conf
                                 event.events = EPOLLIN | EPOLLET;
                                 event.data.fd = new_socketfd;
                                 std::cout << GREEN << "Received connection from " << inet_ntoa(clientaddr.sin_addr) << " on fd : "<< new_socketfd << DEF << std::endl;
-                                epoll_ctl(epoll_fd,EPOLL_CTL_ADD,new_socketfd,&event);
+                                epoll_ctl(epoll_fd, EPOLL_CTL_ADD, new_socketfd, &event);
                         // }
                          
                     }
@@ -117,53 +117,64 @@ class netPlix : public Conf
                         try
                         {
                             
-                            std::cout << "endOf = " << endOf[fd]<< " ,for fd : "<<fd << std::endl;
+                            std::cout << "endOf = " << client[fd].endOf << " ,for fd : "<< fd << std::endl;
                             ssize_t a = -1;
-                            if (endOf[fd] == (size_t)-1)
+                            if (client[fd].endOf == (size_t)-1)
                             {
                                 char buffer[1024];
-                                if ((a = read(fd, buffer, 1023)) == -1)
+                                if ((a = recv(fd, buffer, 1023, 0)) == -1)
                                 {
                                     std::cerr << "failure in read request !" << std::endl;
                                     exit(1);
                                 }
                                 buffer[a] = '\0';
-                                buf[fd].write(buffer, a);
+                                client[fd].buf.write(buffer, a);
                                 std::cout <<"read " << a <<" from fd : "<< fd <<std::endl;
-                                epoll_ctl(epoll_fd,EPOLL_CTL_MOD,fd,&event);
-                                endOf[fd] = findEndOfHeaders(buffer, a);
-                                std::cout << "endOf now = " << endOf[fd] << " ,for fd : "<<fd<< std::endl;
+                                epoll_ctl(epoll_fd, EPOLL_CTL_MOD, fd, &event);
+                                client[fd].endOf = findEndOfHeaders(buffer, a);
+                                std::cout << "client[fd].endOf now = " << client[fd].endOf << " ,for fd : "<<fd<< std::endl;
                                 
                             }
-                            if((a > -1 && a < 1023) || (endOf[fd] != (size_t)-1))
+                            if((a > -1 && a < 1023) || (client[fd].endOf != (size_t)-1))
                             {
-                                if(!toRespons[fd])
+                                if(!client[fd].toRespons)
                                 {
-                                    toRespons[fd] = true;
-                                    std::cout << BLUE << "befor :\n" << buf[fd].str()<< DEF << std::endl;
-                                    req = Request(buf[fd], endOf[fd]);
+                                    std:: cout << " <<<<<<<<<<<<<<   Start of Request     >>>>>>>>>>>>>>> " << std::endl;
+                                    client[fd].toRespons = true;
+                                    std::cout << BLUE << "befor :\n" << client[fd].buf.str()<< DEF << std::endl;
+                                    client[fd].req = Request(client[fd].buf, client[fd].endOf);
                                     std::cout << RED << "request :\n"
-                                                << YOLLOW << req << DEF << std::endl;
+                                                << YOLLOW << client[fd].req << DEF << std::endl;
                                     std::cout << "loop : " << lop << std::endl;
                                     // exit(0);
+                                    std:: cout << " <<<<<<<<<<<<<<   End of Request     >>>>>>>>>>>>>>> " << std::endl;
                                 }
                                 // Handle request and send response
-                                if(toRespons[fd])
+                                if(client[fd].toRespons)
                                 {
+                                    std:: cout << " <<<<<<<<<<<<<<   Start of Response     >>>>>>>>>>>>>>> " << std::endl;
+                                    
+                                    
+                                    
+                                    
                                     try
                                     {
-                                        Response res(fd, &req);
+                                        client[fd].res.generateResponse(fd, &client[fd].req);
                                     }
                                     catch(std::string &content)
                                     {
-                                        std::cout<< BLUE<<"respone : \n"<<YOLLOW<<content  << std::endl;
+                                        std::cout<< BLUE<<"respone : \n"<<YOLLOW<< content  << std::endl;
                                         send(fd, content.c_str(), content.size(), 0);
                                     }
+
+
+
                                     std::cout << RED << "Client closed connection" << DEF << std::endl;
-                                    epoll_ctl(epoll_fd,EPOLL_CTL_DEL,fd ,&event);
                                     close(fd);
+                                    client[fd].clear();
+                                    epoll_ctl(epoll_fd, EPOLL_CTL_DEL, fd, &event);
+                                    std:: cout << " <<<<<<<<<<<<<<   End of Response     >>>>>>>>>>>>>>> " << std::endl;
                                 }
-                                // buf[fd].str("");
                             }
                         }
                         catch(const char *e)

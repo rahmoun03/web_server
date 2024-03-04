@@ -132,6 +132,8 @@ class netPlix : public Conf
                                 std::cout <<"read " << a <<" from fd : "<< fd <<std::endl;
                                 epoll_ctl(epoll_fd, EPOLL_CTL_MOD, fd, &event);
                                 client[fd].endOf = findEndOfHeaders(buffer, a);
+                                if(client[fd].endOf != (size_t)-1)
+                                    client[fd].endOf = client[fd].buf.str().size() -  (a - client[fd].endOf);
                                 std::cout << "client[fd].endOf now = " << client[fd].endOf << " ,for fd : "<<fd<< std::endl;
                                 
                             }

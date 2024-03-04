@@ -20,8 +20,10 @@ class Response
 		void	htmlFile(int &fd, Request *req);
 		void	imageFile(int &fd, Request *req);
 		void	generateResponse(int &fd, Request *req);
+		void	checkHeaders(Request *req);
 		std::string extension(const std::string &path);
 		std::string notFound();
+		std::string notImplement();
 		std::string badRequest();
 		std::string longRequest();
 		std::string homepage();

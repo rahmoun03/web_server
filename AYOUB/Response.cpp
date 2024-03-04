@@ -4,10 +4,10 @@
 
 void    Response::generateResponse(int &fd, Request *req)
 {
+    checkHeaders(req);
     if (req->get_method() == "GET")
     {
         std::cout << RED << "GET METHOD" << DEF << std::endl;
-
         if(((extension(req->get_path())) == "jpeg") || ((extension(req->get_path())) == "svg") || ((extension(req->get_path())) == "png"))
             imageFile(fd, req);
         else
@@ -29,15 +29,23 @@ void    Response::generateResponse(int &fd, Request *req)
     else if(req->get_method() == "DELETE")
     {
         std::cout << RED << "DELETE METHOD" << DEF << std::endl;
-
     }
     else
     {
         std::cout << RED << "UNKOWN METHOD" << DEF << std::endl;
-
     }
 
 }
+
+void	Response::checkHeaders(Request *req)
+{
+    std::map<std::string, std::string> head;
+
+    head = req->get_headers();
+    if(head.count("Transfer-Encoding:") && req->get_header("Transfer-Encoding:") != "chunked")
+        throw(notImplement());
+}
+
 
 Response::Response()
 {
@@ -87,6 +95,24 @@ std::string Response::notFound()
     return response.str();
 }
 
+std::string Response::notImplement()
+{
+    std::ifstream file("assets/501.html");
+    if(!file.is_open())
+    {
+        std::cerr << RED <<"failure in home page" << std::endl;
+        exit(1);
+    }
+    std::string buffer((std::istreambuf_iterator<char>(file)), std::istreambuf_iterator<char>());
+    std::stringstream response;
+    response << "HTTP/1.1 501 Bad Request\r\n"
+             << "Content-Type: text/html\r\n"
+             << "Content-Length: "<< buffer.size() <<"\r\n"
+             << "\r\n"
+             << buffer.c_str();
+    return response.str();
+}
+
 std::string Response::badRequest()
 {
     std::ifstream file("assets/400.html");
@@ -115,7 +141,7 @@ std::string Response::longRequest()
     }
     std::string buffer((std::istreambuf_iterator<char>(file)), std::istreambuf_iterator<char>());
     std::stringstream response;
-    response << "HTTP/1.1 400 Bad Request\r\n"
+    response << "HTTP/1.1 414 Bad Request\r\n"
              << "Content-Type: text/html\r\n"
              << "Content-Length: "<< buffer.size() <<"\r\n"
              << "\r\n"

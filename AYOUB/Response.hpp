@@ -22,6 +22,8 @@ class Response
 		void	generateResponse(int &fd, Request *req);
 		std::string extension(const std::string &path);
 		std::string notFound();
+		std::string badRequest();
+		std::string longRequest();
 		std::string homepage();
 		std::string getResource(std::ifstream &file, const char *type, std::string ext);
 		std::string getImage(std::ifstream &file, const char *type, std::string ext);

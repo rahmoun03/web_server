@@ -2,7 +2,6 @@
 #define RESPONSE_HPP
 
 #include "Request.hpp"
-
 class Response
 {
 	private:
@@ -25,6 +24,7 @@ class Response
 		std::string notFound();
 		std::string notImplement();
 		std::string badRequest();
+		std::string EntityTooLarge();
 		std::string longRequest();
 		std::string homepage();
 		std::string getResource(std::ifstream &file, const char *type, std::string ext);

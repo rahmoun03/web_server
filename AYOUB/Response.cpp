@@ -44,6 +44,10 @@ void	Response::checkHeaders(Request *req)
     head = req->get_headers();
     if(head.count("Transfer-Encoding:") && req->get_header("Transfer-Encoding:") != "chunked")
         throw(notImplement());
+    if(req->get_method() == "POST" && !head.count("Transfer-Encoding:") && !head.count("Content-Length:"))
+        throw(badRequest());
+    if( req->body_limit < atoi(req->get_header("Content-Length:").c_str()))
+        throw(EntityTooLarge());
 }
 
 
@@ -106,6 +110,24 @@ std::string Response::notImplement()
     std::string buffer((std::istreambuf_iterator<char>(file)), std::istreambuf_iterator<char>());
     std::stringstream response;
     response << "HTTP/1.1 501 Bad Request\r\n"
+             << "Content-Type: text/html\r\n"
+             << "Content-Length: "<< buffer.size() <<"\r\n"
+             << "\r\n"
+             << buffer.c_str();
+    return response.str();
+}
+
+std::string Response::EntityTooLarge()
+{
+    std::ifstream file("assets/413.html");
+    if(!file.is_open())
+    {
+        std::cerr << RED <<"failure in home page" << std::endl;
+        exit(1);
+    }
+    std::string buffer((std::istreambuf_iterator<char>(file)), std::istreambuf_iterator<char>());
+    std::stringstream response;
+    response << "HTTP/1.1 413 Entity too large\r\n"
              << "Content-Type: text/html\r\n"
              << "Content-Length: "<< buffer.size() <<"\r\n"
              << "\r\n"

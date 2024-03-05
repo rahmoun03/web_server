@@ -174,7 +174,7 @@ class netPlix : public Conf
                                     if (client[fd].req.connexion == true){
                                         close(fd);
                                         client[fd].clear();
-                                        epoll_ctl(epoll_fd, EPOLL_CTL_DEL, fd, &event);
+                                        // epoll_ctl(epoll_fd, EPOLL_CTL_DEL, fd, &event);
                                     }
                                     std:: cout << " <<<<<<<<<<<<<<   End of Response     >>>>>>>>>>>>>>> " << std::endl;
                                 }

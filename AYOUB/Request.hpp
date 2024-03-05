@@ -6,7 +6,7 @@
 /*   By: ahbajaou <ahbajaou@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/17 09:53:30 by arahmoun          #+#    #+#             */
-/*   Updated: 2024/03/02 15:59:28 by ahbajaou         ###   ########.fr       */
+/*   Updated: 2024/03/04 17:25:22 by ahbajaou         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -47,6 +47,7 @@ class Request
 		std::stringstream body;
 
 	public:
+		// std::ofstream out;
 		Request();
 		Request(const Request &other);
 		Request &operator=(const Request &other);

@@ -167,7 +167,7 @@ class netPlix : public Conf
                                     catch(std::string &content)
                                     {
                                         std::cout<< BLUE<<"respone : \n"<<YOLLOW<< content  << std::endl;
-                                        send(fd, content.c_str(), content.size(), 0);
+                                        send(fd, content.c_str(), content.size(), MSG_DONTWAIT);
                                     }
 
 
@@ -187,6 +187,11 @@ class netPlix : public Conf
                         catch(std::exception &e)
                         {
                             std::cerr << "Error :" << e.what() << '\n';
+                            std::cout << RED << "Client closed connection" << DEF << std::endl;
+                            close(fd);
+                            client[fd].clear();
+                            epoll_ctl(epoll_fd, EPOLL_CTL_DEL, fd, &event);
+                            std:: cout << " <<<<<<<<<<<<<<   End of Response     >>>>>>>>>>>>>>> " << std::endl;
                         }
                         // Connection closed or error
 

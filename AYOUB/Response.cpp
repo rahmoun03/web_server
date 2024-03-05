@@ -202,7 +202,7 @@ void	Response::htmlFile(int &fd, Request *req)
         std::cout << " <  ---------- home --------->\n" << std::endl;
         std::string content = homepage();
         std::cout<< BLUE<<"respone : \n"<<YOLLOW<<content  << std::endl;
-        send(fd, content.c_str(), content.size(), 0);
+        send(fd, content.c_str(), content.size(), MSG_DONTWAIT);
     }
     else if (req->get_path() == SERVER_ROOT)
     {
@@ -226,7 +226,7 @@ void	Response::htmlFile(int &fd, Request *req)
             std::cout << " <  ---------- YES --------->\n" << std::endl;
             std::string content = getResource(file, "text/", extension(req->get_path()));
             std::cout<< BLUE<<"respone : \n"<<YOLLOW<< content  << std::endl;
-            send(fd, content.c_str(), content.size(), 0);
+            send(fd, content.c_str(), content.size(), MSG_DONTWAIT);
         }
     }
 }
@@ -244,7 +244,7 @@ void	Response::imageFile(int &fd, Request *req)
     {
         std::string content = getImage(img, "image/", extension(req->get_path()));
         std::cout<< BLUE<<"respone : \n"<<YOLLOW<< content << std::endl;
-        send(fd, content.c_str(), content.size(), 0);
+        send(fd, content.c_str(), content.size(), MSG_DONTWAIT);
     }
 
 }

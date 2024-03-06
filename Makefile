@@ -1,8 +1,8 @@
-NAME = Server
+NAME = Web_server
 
-CHAB_SRC = CHEBCHOUB/main2.cpp
+CHAB_SRC = CHEBCHOUB/main.cpp
 
-AYOUB_SRC = AYOUB/Request.cpp 
+AYOUB_SRC = AYOUB/Request.cpp AYOUB/Response.cpp
 
 SWIRI_SRC = 
  
@@ -12,11 +12,14 @@ FLAGS = -Wall -Wextra -Werror -std=c++98 -fsanitize=address -g3
 
 $(NAME) : $(SRC)
 	c++ $(FLAGS) $(SRC) -o $@
+	./${NAME} config_file.conf
 
 all : $(NAME)
 
 clean :
+	clear
 	rm -rf $(NAME)
+	rm -rf assets/upload/*
 
 fclean : clean
 

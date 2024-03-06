@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Request.cpp                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: arahmoun <arahmoun@student.42.fr>          +#+  +:+       +#+        */
+/*   By: ahbajaou <ahbajaou@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/17 11:26:36 by arahmoun          #+#    #+#             */
-/*   Updated: 2024/02/18 16:36:36 by arahmoun         ###   ########.fr       */
+/*   Updated: 2024/03/02 16:00:55 by ahbajaou         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -16,80 +16,128 @@ Request::Request(/* args */)
 {
 }
 
-Request::Request(char *str)
+Request::Request(std::stringstream &buf, size_t &endOf)
 {
-	std::cout << str << std::endl;
-	ss << str;
-	ss >> method;
-	ss >> path;
-	ss >> protocol;
-	path.insert(path.begin(), '.');
+		std::string key;
+		std::string dst;
+		std::string value;
+
+		std::getline(buf, dst);
+		size_t i = dst.size() + 1;
+		
+		startline << dst;
+		startline >> method;
+		startline >> path;
+		startline >> protocol;
+		path = SERVER_ROOT + path;
+		
+		while(i < endOf && buf >> key && std::getline(buf, value))
+		{
+			headers[key] = value;
+			i += key.length() + value.length() + 1;
+		}
+		if(buf && (endOf + 4) < buf.str().size())
+		{
+			buf >> key;
+			body << key << buf.rdbuf();
+		}
+		firstTime = true;
+		// buf.str("");
+		// std::cout << "\n--------------------------------------------------------\n" <<std::endl;
 }
 
-std::string Request::get_path() const
+size_t findEndOfHeaders(char* buffer, ssize_t bufferSize)
+{
+	const char *end = "\r\n\r\n";
+	size_t size = strlen(end);
+	for (ssize_t i = 0; i < bufferSize; i++)
+	{
+		if (strncmp(buffer + i, end, size) == 0)
+		{
+			return i;
+		}
+	}
+	return -1;
+}
+
+Request::Request(const Request &other)
+{
+	*this = other;
+}
+
+
+Request &Request::operator=(const Request &other)
+{
+	if(this != &other)
+	{
+		startline << other.startline.str();
+		method = other.method;
+		path = other.path;
+		protocol = other.protocol;
+		firstTime = other.firstTime;
+		headers = other.headers;
+		body << other.body.str();
+	}
+	return *this;
+}
+
+std::ostream &operator<<(std::ostream &os, const Request &other)
+{
+	os << other.get_method() << " ";
+	os << other.get_path() << " ";
+	os << other.get_protocol() << "\n";
+	std::map<std::string, std::string>::const_iterator it = other.get_headers().begin();
+	std::map<std::string, std::string>::const_iterator ite = other.get_headers().end();
+	for (; it != ite; ++it)
+		os << it->first <<BLUE<< "|" <<YOLLOW << it->second << '\n';
+	os << "body :\n" << other.get_body() << RED <<"." << '\n';
+	return os;
+}
+
+void Request::clear()
+{
+    startline.str("");
+	method.clear();
+	path.clear();
+	protocol.clear();
+	headers.clear();
+	body.str("");
+	connexion = false;
+}
+
+const std::map<std::string, std::string> &Request::get_headers() const
+{
+	return headers;
+}
+
+const std::string Request::get_header(const char *key)
+{
+    return (headers[key]);
+}
+
+
+
+const std::string Request::get_body() const
+{
+	return body.str();
+}
+
+
+const std::string Request::get_path() const
 {
 	return path;
 }
 
-std::string Request::get_method() const
+const std::string Request::get_method() const
 {
 	return method;
 }
 
-std::string Request::get_protocol() const
+const std::string Request::get_protocol() const
 {
 	return protocol;
 }
 
-
-char *Request::req_headers(int fd)
-{
-	char *request = strdup("");
-	char *dst = (char *)malloc(1023 + 1);
-	ssize_t valread = 1;
-	while (valread > 0)
-	{
-		valread = read(fd, dst, 1023);
-		printf("size = %zu\n", valread);
-		dst[valread] = '\0';
-		request = ft_strjoin(request, dst);
-	}
-	printf("finish  ...\n");
-	if (valread < 0) {
-		perror("request read error ");
-		exit(EXIT_FAILURE);
-	}
-	free(dst);
-	printf("Requist :\n%s\n", request);
-	return request;
-}
-
 Request::~Request()
 {
-}
-
-char	*ft_strjoin(char *s1, char *s2)
-{
-	size_t	i[3];
-	char	*re;
-
-	if (!s1 && !s2)
-		return (NULL);
-	i[1] = 0;
-	i[0] = strlen(s1) + strlen(s2);
-	re = (char *)malloc(i[0] + 1);
-	if (!re)
-		return (NULL);
-	while (i[1] <= i[0] && s1[i[1]])
-	{
-		re[i[1]] = s1[i[1]];
-		i[1]++;
-	}
-	i[2] = 0;
-	while (s2[i[2]])
-		re[i[1]++] = s2[i[2]++];
-	re[i[1]] = '\0';
-	free(s1);
-		printf("strjoin\n");
-	return (re);
 }

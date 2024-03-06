@@ -6,7 +6,7 @@
 /*   By: arahmoun <arahmoun@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/17 11:26:36 by arahmoun          #+#    #+#             */
-/*   Updated: 2024/03/04 21:35:00 by arahmoun         ###   ########.fr       */
+/*   Updated: 2024/03/06 12:22:18 by arahmoun         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -29,7 +29,12 @@ Request::Request(std::stringstream &buf, size_t &endOf)
 		startline >> method;
 		startline >> path;
 		startline >> protocol;
-		path = SERVER_ROOT + path;
+		if(startline.cur)
+		{
+			std::cout << "nice start line request : " << startline.cur << std::endl;
+			startLineForma = true;
+		}
+		// path = SERVER_ROOT + path;
 		
 		while(i < endOf && buf >> key && std::getline(buf, value))
 		{

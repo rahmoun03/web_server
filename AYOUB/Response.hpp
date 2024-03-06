@@ -1,6 +1,7 @@
 #ifndef RESPONSE_HPP
 #define RESPONSE_HPP
 
+#define IMG_ASSET "./assets"
 #include "Request.hpp"
 class Response
 {
@@ -30,7 +31,7 @@ class Response
 		std::string getResource(std::ifstream &file, const char *type, std::string ext);
 		std::string getImage(std::ifstream &file, const char *type, std::string ext);
 };
-
+bool directoryExists(const char* path);
 // void Response::clear()
 // {
 //     // startline.str("");

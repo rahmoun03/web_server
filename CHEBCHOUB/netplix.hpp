@@ -171,8 +171,7 @@ class netPlix : public Conf
                                     }
 
 
-
-                                    std::cout << RED << "Client closed connection" << DEF << std::endl;
+                                    std::cout << RED << "Client closed connection => " << DEF <<fd << std::endl;
                                     close(fd);
                                     client[fd].clear();
                                     epoll_ctl(epoll_fd, EPOLL_CTL_DEL, fd, &event);
@@ -187,7 +186,7 @@ class netPlix : public Conf
                         catch(std::exception &e)
                         {
                             std::cerr << "Error :" << e.what() << '\n';
-                            std::cout << RED << "Client closed connection" << DEF << std::endl;
+                            std::cout << RED << "Client closed connection => " << DEF << fd << std::endl;
                             close(fd);
                             client[fd].clear();
                             epoll_ctl(epoll_fd, EPOLL_CTL_DEL, fd, &event);

@@ -1,21 +1,6 @@
 
 #pragma once
 
-// #include <iostream>
-// #include <string>
-// #include <fstream>
-// #include <algorithm>
-// #include <iostream>
-// #include <string>
-// #include <fstream>
-// #include <algorithm>
-// #include <map>
-// #include <stdio.h>
-// #include <sys/socket.h>
-// #include <string.h>   //strlen
-// #include <stdlib.h>
-// #include <unistd.h>   //close
-// #include <netinet/in.h>
 #include <fcntl.h>
 #include <sys/epoll.h>
 #include "conf.hpp"

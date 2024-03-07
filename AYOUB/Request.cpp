@@ -6,7 +6,7 @@
 /*   By: arahmoun <arahmoun@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/17 11:26:36 by arahmoun          #+#    #+#             */
-/*   Updated: 2024/03/06 12:22:18 by arahmoun         ###   ########.fr       */
+/*   Updated: 2024/03/07 15:52:23 by arahmoun         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -87,7 +87,7 @@ Request &Request::operator=(const Request &other)
 	return *this;
 }
 
-std::ostream &operator<<(std::ostream &os, const Request &other)
+std::ostream &operator<<(std::ostream &os, Request &other)
 {
 	os << other.get_method() << " ";
 	os << other.get_path() << " ";
@@ -131,7 +131,7 @@ const std::string Request::get_body() const
 }
 
 
-const std::string Request::get_path() const
+std::string &Request::get_path()
 {
 	return path;
 }

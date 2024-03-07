@@ -1,8 +1,8 @@
 #ifndef RESPONSE_HPP
 #define RESPONSE_HPP
 
-#define IMG_ASSET "./assets"
 #include "Request.hpp"
+typedef std::map<std::string , std::string>::iterator map_iterator;
 class Response
 {
 	private:
@@ -17,7 +17,8 @@ class Response
 		// void	DELETE();
 
 		// void clear();
-		void	htmlFile(int &fd, Request *req);
+		void 	serv_file(map_iterator &type, int &fd, Request *req);
+		void 	serv_dir(int &fd, Request *req);
 		void	imageFile(int &fd, Request *req);
 		void	generateResponse(int &fd, Request *req);
 		void	checkHeaders(Request *req);
@@ -28,10 +29,15 @@ class Response
 		std::string EntityTooLarge();
 		std::string longRequest();
 		std::string homepage();
-		std::string getResource(std::ifstream &file, const char *type, std::string ext);
+		std::string getResource(std::ifstream &file, std::string &type);
 		std::string getImage(std::ifstream &file, const char *type, std::string ext);
 };
-bool directoryExists(const char* path);
+bool directoryExists(std::string path);
+bool fileExists(std::string path);
+
+std::map<std::string, std::string> mimeTypes();
+std::map<std::string, std::string> ErrorAssets();
+
 // void Response::clear()
 // {
 //     // startline.str("");

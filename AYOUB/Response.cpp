@@ -8,11 +8,41 @@ void    Response::generateResponse(int &fd, Request *req)
     if (req->get_method() == "GET")
     {
         std::cout << RED << "GET METHOD" << DEF << std::endl;
-        if(((extension(req->get_path())) == "jpeg") || ((extension(req->get_path())) == "svg") || ((extension(req->get_path())) == "png"))
-            imageFile(fd, req);
+        std::map<std::string, std::string> map = ErrorAssets();
+        map_iterator it = map.find(req->get_path());
+
+        if(it != map.end())
+            req->get_path() = it->second;
         else
-            htmlFile(fd, req);
+            req->get_path() = (SERVER_ROOT + req->get_path());
+
+        if(directoryExists(req->get_path()))
+        {
+            std::cout << "the URL is a directory \n";
+            serv_dir(fd, req);
+        }
+        else if (fileExists(req->get_path()))
+        {
+            std::map<std::string , std::string> mime_map = mimeTypes();
+            map_iterator it = mime_map.find(extension(req->get_path()));
+            if(it != mime_map.end())
+            {
+                std::cout << "the URL is a file : " << it->second << std::endl;
+                serv_file(it, fd, req);
+            }
+            else
+            {
+                std::cout << "NOT FOUND 404"<< std::endl;
+                throw(notFound());
+            }
+        }
+        else
+        {
+            std::cout << "NOT FOUND 404"<< std::endl;
+            throw(notFound());
+        }
     }
+
 
     else if(req->get_method() == "POST")
     {
@@ -31,6 +61,38 @@ void    Response::generateResponse(int &fd, Request *req)
 
 }
 
+void Response::serv_file(map_iterator &type, int &fd, Request *req)
+{
+
+    std::cout << req->get_path() << std::endl;
+    std::ifstream file(req->get_path().c_str());
+    if(!file.is_open())
+    {
+        std::cout << " <  ---------- Error file --------->\n" << std::endl;
+        throw (notFound());
+    }
+    else
+    {
+        std::cout << " <  ---------- YES --------->\n" << std::endl;
+        std::string content = getResource(file, type->second);
+        std::cout<< BLUE<<"respone : \n"<<YOLLOW<< content  << std::endl;
+        send(fd, content.c_str(), content.size(), MSG_DONTWAIT);
+    }
+}
+
+void	Response::serv_dir(int &fd, Request *req)
+{
+    if ((req->get_path()) == "./www/server1")
+        throw (badRequest());
+    if ((req->get_path()) == "./www/server1/")
+    {
+        std::cout << " <  ---------- home --------->\n" << std::endl;
+        std::string content = homepage();
+        std::cout<< BLUE<<"respone : \n"<<YOLLOW<<content  << std::endl;
+        send(fd, content.c_str(), content.size(), MSG_DONTWAIT);
+    }
+}
+
 void	Response::checkHeaders(Request *req)
 {
     std::map<std::string, std::string> head;
@@ -42,6 +104,8 @@ void	Response::checkHeaders(Request *req)
         throw(badRequest());
     if( req->body_limit < atoi(req->get_header("Content-Length:").c_str()))
         throw(EntityTooLarge());
+    if(req->get_path().size() > 2048)
+        throw (longRequest());
 }
 
 
@@ -54,15 +118,15 @@ Response::~Response()
 }
 
 
-std::string Response::getResource(std::ifstream &file, const char *type, std::string ext)
+std::string Response::getResource(std::ifstream &file, std::string &type)
 {
     std::string buffer((std::istreambuf_iterator<char>(file)), std::istreambuf_iterator<char>());
     std::stringstream response;
     response << "HTTP/1.1 200 OK\r\n"
-             << "Content-Type: "<< type << ext << "\r\n"
+             << "Content-Type: "<< type << "\r\n"
              << "Content-Length: "<< buffer.size() <<"\r\n"
              << "\r\n"
-             << buffer.c_str();
+             << buffer;
     return response.str();
 }
 
@@ -78,61 +142,6 @@ std::string Response::getImage(std::ifstream &file, const char *type, std::strin
     return response.str();
 }
 
-void	Response::htmlFile(int &fd, Request *req)
-{
-    if ((req->get_path()) == "/")
-    {
-        std::cout << " <  ---------- home --------->\n" << std::endl;
-        std::string content = homepage();
-        std::cout<< BLUE<<"respone : \n"<<YOLLOW<<content  << std::endl;
-        send(fd, content.c_str(), content.size(), MSG_DONTWAIT);
-    }
-    else if (req->get_path().empty())
-    {
-        throw (badRequest());
-    }
-    else if(req->get_path().size() > 2048)
-        throw (longRequest());
-    else
-    {
-        std::string path = (SERVER_ROOT + req->get_path());
-        std::cout << path << std::endl;
-        std::ifstream file(path.c_str());
-        if(!file.is_open())
-        {
-            std::cout << " <  ---------- Error file --------->\n" << std::endl;
-            throw (notFound());
-        }
-        else
-        {
-            std::cout << " <  ---------- YES --------->\n" << std::endl;
-            std::string content = getResource(file, "text/", extension(req->get_path()));
-            std::cout<< BLUE<<"respone : \n"<<YOLLOW<< content  << std::endl;
-            send(fd, content.c_str(), content.size(), MSG_DONTWAIT);
-        }
-    }
-}
-void	Response::imageFile(int &fd, Request *req)
-{
-    std::string path = (IMG_ASSET + req->get_path());
-        std::cout << path << std::endl;
-    
-    std::ifstream img(path.c_str());
-    if(!img.is_open())
-    {
-        std::cout << " <  ---------- Error image --------->\n" << std::endl;
-        throw(notFound());
-
-    }
-    else
-    {
-        std::string content = getImage(img, "image/", extension(req->get_path()));
-        std::cout<< BLUE<<"respone : \n"<<YOLLOW<< content << std::endl;
-        send(fd, content.c_str(), content.size(), MSG_DONTWAIT);
-    }
-
-}
-
 
 std::string Response::extension(const std::string &path)
 {
@@ -144,10 +153,6 @@ std::string Response::extension(const std::string &path)
     }
     return path.substr(dot + 1);
 }
-
-
-
-
 
 
 
@@ -286,17 +291,31 @@ std::string Response::longRequest()
 //              << buffer.c_str();
 //     return response.str();
 // }
-// #include <sys/stat.h>
-// bool directoryExists(const char* path) {
-//     struct stat info;
+#include <sys/stat.h>
+bool directoryExists(std::string path) {
+    struct stat info;
 
-//     // Use stat to check if the directory exists
-//     if (stat(path, &info) != 0) {
-//         // If stat returns non-zero, the directory doesn't exist
-//         return false;
-//     }
+    // Use stat to check if the directory exists
+    if (stat(path.c_str(), &info) != 0) {
+        // If stat returns non-zero, the directory doesn't exist
+        return false;
+    }
 
-//     // Check if it is a directory
-//     return (info.st_mode & S_IFDIR) != 0;
+    // Check if it is a directory
+    return (info.st_mode & S_IFDIR) != 0;
     // S_IFREG
-// }
+}
+
+bool fileExists(std::string path) {
+    struct stat info;
+
+    // Use stat to check if the directory exists
+    if (stat(path.c_str(), &info) != 0) {
+        // If stat returns non-zero, the directory doesn't exist
+        return false;
+    }
+
+    // Check if it is a directory
+    return (info.st_mode & S_IFREG) != 0;
+    // S_IFREG
+}

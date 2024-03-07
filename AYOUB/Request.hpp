@@ -6,7 +6,7 @@
 /*   By: arahmoun <arahmoun@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/17 09:53:30 by arahmoun          #+#    #+#             */
-/*   Updated: 2024/03/06 12:58:01 by arahmoun         ###   ########.fr       */
+/*   Updated: 2024/03/07 15:52:38 by arahmoun         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -29,7 +29,7 @@
 #include <algorithm>
 #include <arpa/inet.h>
 
-#define SERVER_ROOT "./root/server1"
+#define SERVER_ROOT "./www/server1"
 #define GREEN "\033[0;32m"
 #define RED "\033[0;31m"
 #define YOLLOW "\033[0;33m"
@@ -57,7 +57,7 @@ class Request
 
 		void clear();
 		Request(std::stringstream &buf, size_t &endOf);
-		const std::string get_path() const;
+		std::string &get_path();
 		const std::string get_method() const;
 		const std::string get_body() const;
 		const std::string get_protocol() const;
@@ -66,7 +66,7 @@ class Request
 };
 
 
-std::ostream &operator<<(std::ostream &os, const Request &other);
+std::ostream &operator<<(std::ostream &os, Request &other);
 size_t findEndOfHeaders(char* buffer, ssize_t bufferSize);
 
 #endif

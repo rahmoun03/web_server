@@ -2,6 +2,16 @@
 
 #include "Response.hpp"
 
+
+size_t  hexadecimal(const std::string& chunkHeader) {
+    std::istringstream iss(chunkHeader);
+    size_t chunkSize;
+    iss >> std::hex >> chunkSize;
+    return chunkSize;
+}
+
+
+
 void    Response::generateResponse(int &fd, Request &req)
 {
     if (req.get_method() == "GET")
@@ -17,6 +27,11 @@ void    Response::generateResponse(int &fd, Request &req)
     }
     else if(req.get_method() == "POST")
     {
+        // size_t chunked_size;
+        // size_t chunked_count;
+        //   std::string chunked;
+        int flag = 0;
+		        // static std::string chunked;
         if (req.firstTime)
         {
             std::cout << "-----POST START HERE && CREATE FILE AND NAME-----\n";
@@ -26,84 +41,99 @@ void    Response::generateResponse(int &fd, Request &req)
             type.push_back('.');
             std::string path = ("./assets/upload/"+ type + req.get_header("Content-Type:").substr(req.get_header("Content-Type:").find("/") + 1));
             std::cout << RED << path << DEF << std::endl;
-            std::cout << "-----HERE-----\n";
-            out.open(path.c_str(), std::ios::binary | std::ios::app);
+            // std::cout << "-----HERE-----\n";
+            out.open(path.c_str());
+                std::cout << "----------------is fill---------------------\n";
             if (!req.get_body().empty())
             {
-                std::cout << "----------------is fill---------------------\n";
                 if (!req.get_header("Transfer-Encoding:").empty()){
-                    std::string tmp = req.get_body();
-                    // tmp.erase(tmp.begin());
-                    std::string chunked = tmp.substr(0,tmp.find("\n"));
-                    // chunked.insert(0,tmp.begin(),tmp.find("<!DOCTYPE html>"));
-                    // tmp.erase(tmp.find("\n"));
-                    // std::cout << "size of shunk-->" << chunked << std::endl;
-                    // std::cout << (int)req.get_body().size() << std::endl;
-                    // std::cout << "shenked---> \n "<< tmp << std::endl;
-                    out.write(tmp.c_str(),tmp.size());
+                    std::cout << "------------INSIDE GETBODY-------------\n";
+                    chunked = req.get_body();
+                    flag = 1;
                 }
                 else{
-                //     // std::cout << "---> leghnt body is \n" << req.get_body() << std::endl;
                     out.write(req.get_body().c_str(),req.get_body().size());
                 }
-                // out << req.get_body().c_str();
-                // std::cout << "---error was here---\n";
                 out.flush();
-                // out.close();
-                // epoll_ctl(epoll_fd, EPOLL_CTL_MOD, fd, &event);
             }
-            std::cout << GREEN << "----." << req.get_body() << DEF <<std::endl;
             req.firstTime = false;
         }
-        // std::cout << req.get_header("Transfer-Encoding:") << std::endl;
-        if (!req.get_header("Transfer-Encoding:").empty()){
-            ssize_t a = -1;
-            char buffer[1024];
-    //         std::cout << "fd ==> " << fd << std::endl;
-            std::string endofchunked;
-            if ((a = recv(fd, buffer, 1023, 0)) == -1)
-            {
-                // std::cout  << "-----HERE----\n";
-                std::cerr << "failure in read request !" << std::endl;
-                exit(1);
-            }
-            buffer[a] = '\0';
-            endofchunked = buffer;
-            std::cout << "----> endofchunked is ======" << endofchunked.substr(endofchunked.find("0")) << std::endl;
-            if (endofchunked.find("0") != std::string::npos){
-                    req.connexion = true;
-            }
-            // endofchunked.erase(endofchunked.find("0"));
-            std::cout << "chunked  body if \n"<< endofchunked << std::endl;
-            out.write(endofchunked.c_str(), a);
-            out.flush();
-            std::cout << "---------has a chenked-------\n";
-        }
-        // exit(0);
-        // std::cout << "----------- FILL CONTENT ---------\n";
-        std::cout << "content leght is == " << atoi(req.get_header("Content-Length:").c_str()) << std::endl;
-        std::cout << "size leght is == " << (int)req.get_body().size() << std::endl;
-        // exit(0);
+        // if (!req.get_header("Transfer-Encoding:").empty()){
+        //         // std::string Data;
+        //         // std::string tmp;
+        //         std::string chunkHeader;
+		//         // static std::string chunked;
+        //         // std::stringstream 
+        //         std::vector<std::string> data;
+        //         static size_t chunkSize;
+        //         // std::string chunked;
+        //         size_t pos;
+        //         // size_t ins;
+        //         if (flag){
+        //             std::cout << "------FRIST TIME HERE ---------\n";
+        //                 //  Data = chunked;
+        //                 if ((pos = chunked.find("\r\n")) != std::string::npos){
+        //                     chunkHeader = chunked.substr(0, pos);
+        //                     chunkSize = hexadecimal(chunkHeader);
+        //                     chunked.erase(0, pos + 2);
+        //                     std::cout << "size of data  ---- \n" << chunked.size() << ": <> : "<< chunkSize << std::endl;
+        //                 }
+        //                 // std::cout << "size of chunked befor \n ====> : " << chunkSize << std::endl;
+        //                 size_t os;
+        //                 if ((os = chunked.find("\r\n")) != std::string::npos){
+        //                     std::cout << chunked.substr(os,os + 2) << std::endl;
+        //                     std::cout << "0-------------0\n";
+        //                 }
+
+        //                 tmp.append(chunked,chunked.size());
+        //                 // out.write(Data.c_str(),Data.size());
+        //                 // out.flush();
+
+        //         }
+        //         exit(0);
+        //         // ssize_t a = -1;
+        //         // char buffer[1024];
+        //         // if ((a = recv(fd, buffer, 1023, 0)) == -1)
+        //         // {
+        //         //     std::cerr << "failure in read request !" << std::endl;
+        //         //     exit(1);
+        //         // }
+        //         // buffer[a] = '\0';
+        //         // tmp.append(buffer,a);
+        //         // if (tmp.size() > chunkSize){
+        //         //     std::cout << "size of tmp && chunked size is \n --- :> " << tmp.size() << "-|-" << chunkSize << std::endl;
+        //         //     // pos = tmp.find("\r\n");
+        //         //     if ((pos = tmp.find("\r\n")) != std::string::npos){
+        //         //         std::string ss = tmp.substr(pos - 2, pos);
+        //         //         // size_t s = ss.find("\r\n");
+        //         //         std::cout << "----------TMP BODY IS ----------\n :> " << ss << std::endl;
+        //         //     //     // if (s != std::string::npos){
+        //         //     //     // }
+        //         //     }
+        //         //     exit(0);
+        //         // }
+        //         // out.write(tmp.c_str(),tmp.size());
+        //         // out.flush();
+
+        // }
         if (!req.get_header("Content-Length:").empty() && !(atoi(req.get_header("Content-Length:").c_str()) == (int)req.get_body().size())){
+                // std::cout << "-----------HERE-----------\n";
                 ssize_t a = -1;
                 char buffer[1024];
-        //         std::cout << "fd ==> " << fd << std::endl;
                 if ((a = recv(fd, buffer, 1023, 0)) == -1)
                 {
-                    // std::cout  << "-----HERE----\n";
                     std::cerr << "failure in read request !" << std::endl;
                     exit(1);
                 }
                 buffer[a] = '\0';
                 out.write(buffer, a);
                 out.flush();
-                if (static_cast<int>(out.tellp()) < (int)req.get_body().size())
+                if (static_cast<int>(out.tellp()) < (int)req.get_body().size()){
+                    out.close();
                     req.connexion = true;
+                }
                 
             }
-        //     // exit(0);
-        //     std::cout << "lenght : " <<req.get_body().size() << std::endl;
-        //     std::cout << "-----------the content was posted---------------" << std::endl;
     }
     else if(req.get_method() == "DELETE")
     {

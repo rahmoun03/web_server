@@ -1,12 +1,15 @@
 #ifndef RESPONSE_HPP
 #define RESPONSE_HPP
-
+#include <bits/stdc++.h>  
 #include "Request.hpp"
 
 class Response
 {
 	private:
 		std::ofstream out;
+		// std::string chunked;
+		std::string chunked;
+        std::string tmp;
 	public:
 		Response();
 		~Response();

@@ -129,12 +129,14 @@ class netPlix : public Conf
                                 }
                                 buffer[a] = '\0';
                                 client[fd].buf.write(buffer, a);
+                                // std::cout << "befor------ \n" << buffer << std::endl;
                                 std::cout <<"read " << a <<" from fd : "<< fd <<std::endl;
                                 epoll_ctl(epoll_fd, EPOLL_CTL_MOD, fd, &event);
                                 client[fd].endOf = findEndOfHeaders(buffer, a);
                                 std::cout << "client[fd].endOf now = " << client[fd].endOf << " ,for fd : "<<fd<< std::endl;
                                 
                             }
+                                // exit(0);
                             if((a > -1 && a < 1023) || (client[fd].endOf != (size_t)-1))
                             {
                                 if(!client[fd].toRespons)
@@ -153,10 +155,7 @@ class netPlix : public Conf
                                 if(client[fd].toRespons)
                                 {
                                     std:: cout << " <<<<<<<<<<<<<<   Start of Response     >>>>>>>>>>>>>>> " << std::endl;
-                                    
-                                    
-                                    
-                                    
+                                                                        
                                     try
                                     {
                                         client[fd].res.generateResponse(fd, client[fd].req);
@@ -172,9 +171,10 @@ class netPlix : public Conf
 
                                     std::cout << RED << "Client closed connection" << DEF << std::endl;
                                     if (client[fd].req.connexion == true){
+                                        // std::cout << "-------HERE------\n";
                                         close(fd);
                                         client[fd].clear();
-                                        // epoll_ctl(epoll_fd, EPOLL_CTL_DEL, fd, &event);
+                                        epoll_ctl(epoll_fd, EPOLL_CTL_DEL, fd, &event);
                                     }
                                     std:: cout << " <<<<<<<<<<<<<<   End of Response     >>>>>>>>>>>>>>> " << std::endl;
                                 }

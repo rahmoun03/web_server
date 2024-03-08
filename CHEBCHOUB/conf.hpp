@@ -1,6 +1,7 @@
 
-// #pragma once
 
+#ifndef CONF_HPP
+#define CONF_HPP
 
 #include <iostream>
 #include <string>
@@ -11,73 +12,30 @@
 #include <fstream>
 #include <algorithm>
 #include <map>
+#include <vector>
 #include <stdio.h>
 #include <sys/socket.h>
 #include <string.h>   //strlen
 #include <stdlib.h>
 #include <unistd.h>   //close
 #include <netinet/in.h>
+#include "location.hpp"
 
-
-
-class location
-{
-    private :
-        std::map<std::string, std::map<std::string,std::string> > loc;
-        std::map<std::string,std::string> loc1;
-        int count;
-        //check map for locaton , don't forget
-    public :
-        location( std::ifstream &fg,std::string name)
-        {
-            (void)fg;
-            if (name.find("location") != std::string::npos)
-                {
-                    count = 0;
-                    // std::cout << "----" << name << std::endl;
-                    name.erase(std::remove_if(name.begin(),name.end(),isspace),name.end());
-                    // loc1[""] = "";
-                    loc[name.substr(name.find("=") + 1)] = loc1;
-                    if (name.find("[") == std::string::npos)
-                    {
-                        if (getline(fg,name) && name.find("[") == std::string::npos)
-                        {
-                            perror("[");
-                            exit(0);
-                        }
-                    }
-                    while (getline(fg,name) && name.find("]") == std::string::npos )
-                    {
-                        loc1[name.substr(0,name.find("="))] = name.substr(name.find("=") + 1);
-                        loc[""] = loc1;
-                    }
-                }
-                // std::map<std::string, std::map<std::string,std::string> >::iterator it = loc.begin();
-                // while (it != loc.end())
-                // {
-                //     std::cout << "location : " << it->first<< std::endl;
-                //     std::map<std::string,std::string>::iterator vr = it->second.begin();
-                //     while (vr != it->second.end())
-                //     {
-                //         std::cout << vr->first << " = " << vr->second << std::endl;
-                //         vr++;
-                //     }
-                //     it++;
-                // }
-        }
-};
-class Conf
-{
+class Conf {
     private :
         std::map<std::string, std::string> map;
         std::string name;
+        std::vector<location> locat;
         int flag;
     public :
+        Conf(){
+
+        }
         Conf(char * os)
         {
-            (void)os;
              std::ifstream fg(os);
              flag  = 0;
+             int i = 0;
             if (fg.is_open())
             {
 
@@ -97,7 +55,15 @@ class Conf
                     }
                 while (getline(fg,name))
                 {
-                    location loca(fg,name);
+                    // exit(0);
+                    if (name.find("location") != std::string::npos){
+                        std::cout << "position is --> " << name << std::endl;
+                        location loca(fg,name);
+                        locat.push_back(loca);
+                        locat[i].parsLocation();
+                        locat[i].displayLocation();
+                        i++;
+                    }
                     name.erase(std::remove_if(name.begin(),name.end(),isspace),name.end());
                     map[name.substr(0,name.find("="))] = name.substr(name.find("=") + 1);
                 }
@@ -122,3 +88,4 @@ class Conf
 
 };
 
+#endif

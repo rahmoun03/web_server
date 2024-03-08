@@ -1,21 +1,7 @@
 
-#pragma once
+#ifndef NET_HPP
+#define NET_HPP
 
-// #include <iostream>
-// #include <string>
-// #include <fstream>
-// #include <algorithm>
-// #include <iostream>
-// #include <string>
-// #include <fstream>
-// #include <algorithm>
-// #include <map>
-// #include <stdio.h>
-// #include <sys/socket.h>
-// #include <string.h>   //strlen
-// #include <stdlib.h>
-// #include <unistd.h>   //close
-// #include <netinet/in.h>
 #include <fcntl.h>
 #include <sys/epoll.h>
 #include "conf.hpp"
@@ -27,14 +13,14 @@
 // typedef struct  sockaddr_in socketadress;
     // struct sockaddr_in address;
 
-class netPlix : public Conf
-{
+class netPlix : public Conf{
     private :
         Client client[MAX_EVENTS];
         int socket_fd, new_fdsock; // done
     public :
-        netPlix(char *os) : Conf(os){
-            // exit(0);
+        netPlix(char *os) : Conf(os)
+        {
+            exit(0);
             int opt = 1;
             struct  sockaddr_in socketadress, clientaddr;// done
             socklen_t addrlen = sizeof(socketadress);
@@ -200,3 +186,6 @@ class netPlix : public Conf
             // while (1) 
         }
 };
+
+
+#endif

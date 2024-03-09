@@ -63,9 +63,6 @@ class location {
                 }
                 else
                 {
-
-                    std::cout << "          " << it->first << "=" << it->second << std::endl;
-
                     if (it->first.find("method") != std::string::npos){
                             loc.get = false;
                             loc.post = false;
@@ -95,18 +92,10 @@ class location {
                 }
                 l[loc.location] = loc;
             }
-                setLocation(l);
         }
-        void setLocation(std::map<std::string,loca>  & tmp){
-            l = tmp;
+        std::map<std::string,loca> getLocation(){
+            return l;
         }
-        // std::map<std::string,t_loca * > getLocation(){
-            
-        //     return l;
-        // }
-        // ~location(){
-        //     // free(t_loca);
-        // }
 };
 
 

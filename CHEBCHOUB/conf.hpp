@@ -62,10 +62,11 @@ class Conf {
                     location loca(fg,name);
                     loca.parsLocation();
                     loca.displayLocation();
-                    // std::cout << "-------HERE--------\n";
                     name.erase(std::remove_if(name.begin(),name.end(),isspace),name.end());
                     map[name.substr(0,name.find("="))] = name.substr(name.find("=") + 1);
-                    // locat = loca.getLocation();
+                    locat = loca.getLocation();
+                    // std::cout << "-------------------------------------------\n";
+                    // std::cout << locat.begin()->first << " = " << locat.begin()->second.location << std::endl;
                     // i++;
                 }
                 // setLocal(locat);

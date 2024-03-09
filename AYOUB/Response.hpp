@@ -6,7 +6,10 @@ typedef std::map<std::string , std::string>::iterator map_iterator;
 class Response
 {
 	private:
-
+		std::ofstream out;
+		// std::string chunked;
+		std::string chunked;
+        std::string tmp;
 	public:
 		Response();
 		~Response();
@@ -18,7 +21,7 @@ class Response
 		/**************************************/
 
 
-		// void clear();
+		void	clear();
 		void 	serv_file(map_iterator &type, int &fd, Request *req);
 		void 	serv_dir(int &fd, Request *req);
 		void	imageFile(int &fd, Request *req);
@@ -51,14 +54,5 @@ std::string getCurrentDateTime();
 std::map<std::string, std::string> mimeTypes();
 std::map<std::string, std::string> ErrorAssets();
 
-// void Response::clear()
-// {
-//     // startline.str("");
-// 	// method.clear();
-// 	// path.clear();
-// 	// protocol.clear();
-// 	// headers.clear();
-// 	// body.str("");
-// }
 
 #endif

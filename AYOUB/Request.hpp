@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Request.hpp                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: arahmoun <arahmoun@student.42.fr>          +#+  +:+       +#+        */
+/*   By: himejjad <himejjad@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/17 09:53:30 by arahmoun          #+#    #+#             */
-/*   Updated: 2024/03/09 11:07:49 by arahmoun         ###   ########.fr       */
+/*   Updated: 2024/03/09 14:54:03 by himejjad         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -30,6 +30,7 @@
 #include <arpa/inet.h>
 #include <sys/stat.h>
 #include <ctime>
+#include <bits/stdc++.h> 
 
 
 
@@ -58,6 +59,7 @@ class Request
 		bool startLineForma;
 		int body_limit;
 		bool firstTime;
+		bool connexion;
 
 		void clear();
 		Request(std::stringstream &buf, size_t &endOf);

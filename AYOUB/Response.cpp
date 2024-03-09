@@ -322,6 +322,13 @@ std::string Response::longRequest()
 
 
 
+void Response::clear()
+{
+	out.close();
+	tmp = "";
+	chunked = "";
+}
+
 
 // std::string Response::Redirect()
 // {
@@ -377,4 +384,11 @@ bool fileExists(std::string path) {
     // Check if it is a directory
     return (info.st_mode & S_IFREG) != 0;
     // S_IFREG
+}
+
+size_t  hexadecimal(const std::string& chunkHeader) {
+    std::istringstream iss(chunkHeader);
+    size_t chunkSize;
+    iss >> std::hex >> chunkSize;
+    return chunkSize;
 }

@@ -20,14 +20,18 @@
 #include <unistd.h>   //close
 #include <netinet/in.h>
 #include "location.hpp"
+#include <functional>
+
 
 class Conf {
     private :
         std::map<std::string, std::string> map;
         std::string name;
-        std::vector<location> locat;
+        // std::vector<location> locat;
         int flag;
     public :
+        std::map<std::string, loca> locat;
+        std::map<std::string, loca>::iterator it;
         Conf(){
 
         }
@@ -35,7 +39,7 @@ class Conf {
         {
              std::ifstream fg(os);
              flag  = 0;
-             int i = 0;
+            //  int i = 0;
             if (fg.is_open())
             {
 
@@ -55,24 +59,19 @@ class Conf {
                     }
                 while (getline(fg,name))
                 {
-                    // exit(0);
-                    if (name.find("location") != std::string::npos){
-                        std::cout << "position is --> " << name << std::endl;
-                        location loca(fg,name);
-                        locat.push_back(loca);
-                        locat[i].parsLocation();
-                        locat[i].displayLocation();
-                        i++;
-                    }
+                    location loca(fg,name);
+                    loca.parsLocation();
+                    loca.displayLocation();
+                    // std::cout << "-------HERE--------\n";
                     name.erase(std::remove_if(name.begin(),name.end(),isspace),name.end());
                     map[name.substr(0,name.find("="))] = name.substr(name.find("=") + 1);
+                    // locat = loca.getLocation();
+                    // i++;
                 }
-                // setMap(map);    
+                // setLocal(locat);
             }
             else
                 std::cout << "file not found\n";
-            
-            // close(fg); 
         }
         std::string confCherch(std::string name)
         {
@@ -85,6 +84,12 @@ class Conf {
             }
             return "not found";
         }
+        // void setLocal(std::vector<location> pop){
+        //     locat = pop;
+        // }
+        // std::vector<location> getLocal(){
+        //     return locat;
+        // }
 
 };
 

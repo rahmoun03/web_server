@@ -6,7 +6,7 @@
 /*   By: arahmoun <arahmoun@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/17 11:26:36 by arahmoun          #+#    #+#             */
-/*   Updated: 2024/03/07 15:52:23 by arahmoun         ###   ########.fr       */
+/*   Updated: 2024/03/09 10:09:24 by arahmoun         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -108,6 +108,10 @@ void Request::clear()
 	protocol.clear();
 	headers.clear();
 	body.str("");
+
+	startLineForma = false;
+	body_limit = 0;
+	firstTime = false;
 }
 
 const std::map<std::string, std::string> &Request::get_headers() const

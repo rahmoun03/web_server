@@ -5,53 +5,23 @@
 void    Response::generateResponse(int &fd, Request *req)
 {
     checkHeaders(req);
+    // std::string
     if (req->get_method() == "GET")
     {
         std::cout << RED << "GET METHOD" << DEF << std::endl;
-        std::map<std::string, std::string> map = ErrorAssets();
-        map_iterator it = map.find(req->get_path());
-
-        if(it != map.end())
-            req->get_path() = it->second;
-        else
-            req->get_path() = (SERVER_ROOT + req->get_path());
-
-        if(directoryExists(req->get_path()))
-        {
-            std::cout << "the URL is a directory \n";
-            serv_dir(fd, req);
-        }
-        else if (fileExists(req->get_path()))
-        {
-            std::map<std::string , std::string> mime_map = mimeTypes();
-            map_iterator it = mime_map.find(extension(req->get_path()));
-            if(it != mime_map.end())
-            {
-                std::cout << "the URL is a file : " << it->second << std::endl;
-                serv_file(it, fd, req);
-            }
-            else
-            {
-                std::cout << "NOT FOUND 404"<< std::endl;
-                throw(notFound());
-            }
-        }
-        else
-        {
-            std::cout << "NOT FOUND 404"<< std::endl;
-            throw(notFound());
-        }
+        GET(fd, req);
     }
-
 
     else if(req->get_method() == "POST")
     {
         std::cout << RED << "POST METHOD" << std::endl;
+        POST(fd, req);
     }
 
     else if(req->get_method() == "DELETE")
     {
         std::cout << RED << "DELETE METHOD" << DEF << std::endl;
+        DELETE(fd, req);
     }
 
     else
@@ -82,9 +52,10 @@ void Response::serv_file(map_iterator &type, int &fd, Request *req)
 
 void	Response::serv_dir(int &fd, Request *req)
 {
-    if ((req->get_path()) == "./www/server1")
+    std::string path = (req->get_path());
+    if ( path == "./www/server1")
         throw (badRequest());
-    if ((req->get_path()) == "./www/server1/")
+    if ( path == "./www/server1/")
     {
         std::cout << " <  ---------- home --------->\n" << std::endl;
         std::string content = homepage();
@@ -102,6 +73,12 @@ void	Response::checkHeaders(Request *req)
         throw(notImplement());
     if(req->get_method() == "POST" && !head.count("Transfer-Encoding:") && !head.count("Content-Length:"))
         throw(badRequest());
+    if((req->get_method() == "GET") && ( !req->get_body().empty() || head.count("Content-Length:")))
+        throw(badRequest());
+    if(head.count("Transfer-Encoding:") && head.count("Content-Length:"))
+        throw(badRequest());
+    if(req->get_protocol().empty() || req->get_protocol() != "HTTP/1.1")
+        throw(httpVersion());
     if( req->body_limit < atoi(req->get_header("Content-Length:").c_str()))
         throw(EntityTooLarge());
     if(req->get_path().size() > 2048)
@@ -123,10 +100,13 @@ std::string Response::getResource(std::ifstream &file, std::string &type)
     std::string buffer((std::istreambuf_iterator<char>(file)), std::istreambuf_iterator<char>());
     std::stringstream response;
     response << "HTTP/1.1 200 OK\r\n"
-             << "Content-Type: "<< type << "\r\n"
-             << "Content-Length: "<< buffer.size() <<"\r\n"
-             << "\r\n"
-             << buffer;
+            << "Content-Type: "<< type << "\r\n"
+            << "Connection: close\r\n"
+            << "Server: " << "chabchoub" << "\r\n"
+            << "Date: " << getCurrentDateTime() << "\r\n"
+            << "Content-Length: "<< buffer.size() <<"\r\n"
+            << "\r\n"
+            << buffer;
     return response.str();
 }
 
@@ -135,10 +115,13 @@ std::string Response::getImage(std::ifstream &file, const char *type, std::strin
     std::string buffer((std::istreambuf_iterator<char>(file)), std::istreambuf_iterator<char>());
     std::stringstream response;
     response << "HTTP/1.1 200 OK\r\n"
-             << "Content-Type: "<< type << (ext == "svg" ? "svg+xml" : ext) << "\r\n"
-             << "Content-Length: "<< buffer.size() <<"\r\n"
-             << "\r\n"
-             << buffer;
+            << "Content-Type: "<< type << (ext == "svg" ? "svg+xml" : ext) << "\r\n"
+            << "Connection: close\r\n"
+            << "Server: " << "chabchoub" << "\r\n"
+            << "Date: " << getCurrentDateTime() << "\r\n"
+            << "Content-Length: "<< buffer.size() <<"\r\n"
+            << "\r\n"
+            << buffer;
     return response.str();
 }
 
@@ -156,7 +139,7 @@ std::string Response::extension(const std::string &path)
 
 
 
-/*                        Error pages                             */
+// TODO <=====================              Error pages                 ================================>
 
 
 std::string Response::homepage()
@@ -172,6 +155,9 @@ std::string Response::homepage()
     std::stringstream response;
     response << "HTTP/1.1 200 OK\r\n"
              << "Content-Type: text/html\r\n"
+             << "Connection: close\r\n"
+             << "Server: " << "chabchoub" << "\r\n"
+             << "Date: " << getCurrentDateTime() << "\r\n"
              << "Content-Length: "<< buffer.size() <<"\r\n"
              << "\r\n"
              << buffer.c_str();
@@ -182,17 +168,20 @@ std::string Response::notFound()
 {
     srand(time(NULL));
     int f = rand() % 2;
-    const char *path[] = {"Errors/404.html", "Errors/404-2.html"} ;
+    const char *path[] = {"www/Errors/404.html", "www/Errors/404-2.html"} ;
     std::ifstream file(path[f]);
     if(!file.is_open())
     {
-        std::cerr << RED <<"failure in home page" << std::endl;
+        std::cerr << RED <<"failure in 404 page" << std::endl;
         exit(1);
     }
     std::string buffer((std::istreambuf_iterator<char>(file)), std::istreambuf_iterator<char>());
     std::stringstream response;
     response << "HTTP/1.1 404 Not Found\r\n"
              << "Content-Type: text/html\r\n"
+             << "Connection: close\r\n"
+             << "Server: " << "chabchoub" << "\r\n"
+             << "Date: " << getCurrentDateTime() << "\r\n"
              << "Content-Length: "<< buffer.size() <<"\r\n"
              << "\r\n"
              << buffer.c_str();
@@ -201,16 +190,41 @@ std::string Response::notFound()
 
 std::string Response::notImplement()
 {
-    std::ifstream file("Errors/501.html");
+    std::ifstream file("www/Errors/501.html");
     if(!file.is_open())
     {
-        std::cerr << RED <<"failure in home page" << std::endl;
+        std::cerr << RED <<"failure in 501 page" << std::endl;
         exit(1);
     }
     std::string buffer((std::istreambuf_iterator<char>(file)), std::istreambuf_iterator<char>());
     std::stringstream response;
     response << "HTTP/1.1 501 Bad Request\r\n"
              << "Content-Type: text/html\r\n"
+             << "Connection: close\r\n"
+             << "Server: " << "chabchoub" << "\r\n"
+             << "Date: " << getCurrentDateTime() << "\r\n"
+             << "Content-Length: "<< buffer.size() <<"\r\n"
+             << "\r\n"
+             << buffer.c_str();
+    return response.str();
+}
+
+
+std::string Response::httpVersion()
+{
+    std::ifstream file("www/Errors/505.html");
+    if(!file.is_open())
+    {
+        std::cerr << RED <<"failure in 505 page" << std::endl;
+        exit(1);
+    }
+    std::string buffer((std::istreambuf_iterator<char>(file)), std::istreambuf_iterator<char>());
+    std::stringstream response;
+    response << "HTTP/1.1 501 Bad Request\r\n"
+             << "Content-Type: text/html\r\n"
+             << "Connection: close\r\n"
+             << "Server: " << "chabchoub" << "\r\n"
+             << "Date: " << getCurrentDateTime() << "\r\n"
              << "Content-Length: "<< buffer.size() <<"\r\n"
              << "\r\n"
              << buffer.c_str();
@@ -219,7 +233,7 @@ std::string Response::notImplement()
 
 std::string Response::EntityTooLarge()
 {
-    std::ifstream file("Errors/413.html");
+    std::ifstream file("www/Errors/413.html");
     if(!file.is_open())
     {
         std::cerr << RED <<"failure in home page" << std::endl;
@@ -229,6 +243,30 @@ std::string Response::EntityTooLarge()
     std::stringstream response;
     response << "HTTP/1.1 413 Entity too large\r\n"
              << "Content-Type: text/html\r\n"
+             << "Connection: close\r\n"
+             << "Server: " << "chabchoub" << "\r\n"
+             << "Date: " << getCurrentDateTime() << "\r\n"
+             << "Content-Length: "<< buffer.size() <<"\r\n"
+             << "\r\n"
+             << buffer.c_str();
+    return response.str();
+}
+
+std::string Response::forbidden()
+{
+    std::ifstream file("www/Errors/403.html");
+    if(!file.is_open())
+    {
+        std::cerr << RED <<"failure in 403 page" << std::endl;
+        exit(1);
+    }
+    std::string buffer((std::istreambuf_iterator<char>(file)), std::istreambuf_iterator<char>());
+    std::stringstream response;
+    response << "HTTP/1.1 403 forbidden\r\n"
+             << "Content-Type: text/html\r\n"
+             << "Connection: close\r\n"
+             << "Server: " << "chabchoub" << "\r\n"
+             << "Date: " << getCurrentDateTime() << "\r\n"
              << "Content-Length: "<< buffer.size() <<"\r\n"
              << "\r\n"
              << buffer.c_str();
@@ -237,7 +275,7 @@ std::string Response::EntityTooLarge()
 
 std::string Response::badRequest()
 {
-    std::ifstream file("Errors/400.html");
+    std::ifstream file("www/Errors/400.html");
     if(!file.is_open())
     {
         std::cerr << RED <<"failure in home page" << std::endl;
@@ -247,6 +285,9 @@ std::string Response::badRequest()
     std::stringstream response;
     response << "HTTP/1.1 400 Bad Request\r\n"
              << "Content-Type: text/html\r\n"
+             << "Connection: close\r\n"
+             << "Server: " << "chabchoub" << "\r\n"
+             << "Date: " << getCurrentDateTime() << "\r\n"
              << "Content-Length: "<< buffer.size() <<"\r\n"
              << "\r\n"
              << buffer.c_str();
@@ -255,7 +296,7 @@ std::string Response::badRequest()
 
 std::string Response::longRequest()
 {
-    std::ifstream file("Errors/414.html");
+    std::ifstream file("www/Errors/414.html");
     if(!file.is_open())
     {
         std::cerr << RED <<"failure in home page" << std::endl;
@@ -265,6 +306,9 @@ std::string Response::longRequest()
     std::stringstream response;
     response << "HTTP/1.1 414 Bad Request\r\n"
              << "Content-Type: text/html\r\n"
+             << "Connection: close\r\n"
+             << "Server: " << "chabchoub" << "\r\n"
+             << "Date: " << getCurrentDateTime() << "\r\n"
              << "Content-Length: "<< buffer.size() <<"\r\n"
              << "\r\n"
              << buffer.c_str();
@@ -273,7 +317,7 @@ std::string Response::longRequest()
 
 
 
-/*******************************************************************************************/
+//TODO /===================================================================================================/
 
 
 
@@ -291,7 +335,22 @@ std::string Response::longRequest()
 //              << buffer.c_str();
 //     return response.str();
 // }
-#include <sys/stat.h>
+
+
+std::string getCurrentDateTime() {
+    char buffer[80];
+    std::time_t rawtime;
+    std::tm* timeinfo;
+
+    std::time(&rawtime);
+    timeinfo = std::gmtime(&rawtime);
+
+    // Format the date and time
+    std::strftime(buffer, 80, "%a, %d %b %Y %H:%M:%S GMT", timeinfo);
+    return std::string(buffer);
+}
+
+
 bool directoryExists(std::string path) {
     struct stat info;
 

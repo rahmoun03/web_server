@@ -11,10 +11,12 @@ class Response
 		Response();
 		~Response();
 		
-		
-		// void	GET();
-		// void	POST();
-		// void	DELETE();
+		/*             METHODs              */
+		void	GET(int &fd, Request *req);
+		void	POST(int &fd, Request *req);
+		void	DELETE(int &fd, Request *req);
+		/**************************************/
+
 
 		// void clear();
 		void 	serv_file(map_iterator &type, int &fd, Request *req);
@@ -23,17 +25,28 @@ class Response
 		void	generateResponse(int &fd, Request *req);
 		void	checkHeaders(Request *req);
 		std::string extension(const std::string &path);
-		std::string notFound();
-		std::string notImplement();
-		std::string badRequest();
-		std::string EntityTooLarge();
-		std::string longRequest();
-		std::string homepage();
+		
+		
+		/*   -       ERRORs        -      */
+		
+			std::string badRequest();//      400
+			std::string forbidden();//       403
+			std::string notFound(); //       404
+			std::string EntityTooLarge(); // 413
+			std::string longRequest();//     414
+			std::string notImplement(); //   501
+			std::string httpVersion();//     505
+		
+			std::string homepage(); // 200 home
+		/***********************/
+		
+		
 		std::string getResource(std::ifstream &file, std::string &type);
 		std::string getImage(std::ifstream &file, const char *type, std::string ext);
 };
 bool directoryExists(std::string path);
 bool fileExists(std::string path);
+std::string getCurrentDateTime();
 
 std::map<std::string, std::string> mimeTypes();
 std::map<std::string, std::string> ErrorAssets();

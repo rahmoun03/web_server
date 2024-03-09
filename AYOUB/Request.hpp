@@ -6,7 +6,7 @@
 /*   By: arahmoun <arahmoun@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/17 09:53:30 by arahmoun          #+#    #+#             */
-/*   Updated: 2024/03/07 15:52:38 by arahmoun         ###   ########.fr       */
+/*   Updated: 2024/03/09 11:07:49 by arahmoun         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -28,6 +28,10 @@
 #include <iterator>
 #include <algorithm>
 #include <arpa/inet.h>
+#include <sys/stat.h>
+#include <ctime>
+
+
 
 #define SERVER_ROOT "./www/server1"
 #define GREEN "\033[0;32m"

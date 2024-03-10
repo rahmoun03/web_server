@@ -80,7 +80,8 @@ void	Response::serv_dir(int &fd, Request *req)
         }
         else
         {
-            std::cout << "NOT FOUND 404 in MimeTypes"<< std::endl;
+            // this is a forbidden folder
+            std::cout << "this if forbidden folder"<< std::endl;
             throw(forbidden());
         }
     }
@@ -152,6 +153,24 @@ std::string Response::getResource(std::ifstream &file, std::string &type)
             << buffer;
     return response.str();
 }
+
+std::string Response::getRedirctionS(std::ifstream &file, std::string &type, std::string &location)
+{
+    std::string buffer((std::istreambuf_iterator<char>(file)), std::istreambuf_iterator<char>());
+    std::stringstream response;
+    response << "HTTP/1.1 301 Moved Permanently\r\n"
+            << "Location: " << location
+            << "Content-Type: "<< type << "\r\n"
+            << "Connection: close\r\n"
+            << "Server: " << "chabchoub" << "\r\n"
+            << "Date: " << getCurrentDateTime() << "\r\n"
+            << "Content-Length: "<< buffer.size() <<"\r\n"
+            << "\r\n"
+            << buffer;
+    return response.str();
+}
+
+
 
 std::string Response::getImage(std::ifstream &file, const char *type, std::string ext)
 {

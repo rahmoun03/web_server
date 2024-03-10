@@ -128,7 +128,7 @@ class netPlix : public Conf
                                 {
                                     std:: cout << " <<<<<<<<<<<<<<   Start of Request     >>>>>>>>>>>>>>> " << std::endl;
                                     client[fd].toRespons = true;
-                                    std::cout << BLUE << "befor :\n" << client[fd].buf.str()<< DEF << std::endl;
+                                    std::cout << BLUE << "befor :\n" << client[fd].buf.str() << DEF << std::endl;
                                     client[fd].req = Request(client[fd].buf, client[fd].endOf);
                                     client[fd].req.body_limit = atoi(this->confCherch("body_size_limit").c_str());
                                     std::cout << RED << "request :\n"

@@ -1,25 +1,24 @@
 #ifndef RESPONSE_HPP
 #define RESPONSE_HPP
 
+// #define 
 #include "Request.hpp"
 typedef std::map<std::string , std::string>::iterator map_iterator;
 class Response
 {
 	private:
 		std::ofstream out;
-		// std::string chunked;
 		std::string chunked;
         std::string tmp;
 	public:
 		Response();
 		~Response();
-		
+
 		/*             METHODs              */
 		void	GET(int &fd, Request *req);
 		void	POST(int &fd, Request *req);
 		void	DELETE(int &fd, Request *req);
 		/**************************************/
-
 
 		void	clear();
 		void 	serv_file(map_iterator &type, int &fd, Request *req);

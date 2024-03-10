@@ -1,12 +1,22 @@
 #include <iostream>
-#include <sstream>
-#include <fstream>
+#include <dirent.h>
 
-int main(int argc, char const *argv[])
-{
-    std::ofstream file("txt.txt");
-    file << "ayoub\rAY\n";
+int main() {
+    DIR *directory;
+    struct dirent *entry;
 
-    // std::cout<< f.str() ;
+    // Open the current directory
+    if ((directory = opendir(".")) != NULL) {
+        // Read directory entries
+        while ((entry = readdir(directory)) != NULL) {
+            std::cout << entry->d_name  << std::endl;
+        }
+        closedir(directory);
+    } else {
+        // Error handling if the directory couldn't be opened
+        std::cerr << "Error opening directory" << std::endl;
+        return 1;
+    }
+
     return 0;
 }

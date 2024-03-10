@@ -46,7 +46,7 @@ class Response
 		
 		
 		std::string getResource(std::ifstream &file, std::string &type);
-		std::string getRedirctionS(std::ifstream &file, std::string &type, std::string &location);
+		std::string getRedirctionS(std::string &type, std::string &location);
 		std::string getImage(std::ifstream &file, const char *type, std::string ext);
 };
 bool directoryExists(std::string path);

@@ -75,8 +75,12 @@ void	Response::serv_dir(int &fd, Request *req)
         map_iterator it = mime_map.find(extension(req->get_path()));
         if(it != mime_map.end() && fileExists(req->get_path()))
         {
+            std::ifstream file(req->get_path().c_str());
             std::cout << "the URL is a file : " << it->second << std::endl;
-            serv_file(it, fd, req);
+            std::cout << " <  ---------- YES --------->\n" << std::endl;
+            std::string content = getRedirctionS(it->second, req->get_path());
+            std::cout<< BLUE<<"respone : \n"<<YOLLOW<< content  << std::endl;
+            send(fd, content.c_str(), content.size(), MSG_DONTWAIT);
         }
         else
         {
@@ -154,19 +158,15 @@ std::string Response::getResource(std::ifstream &file, std::string &type)
     return response.str();
 }
 
-std::string Response::getRedirctionS(std::ifstream &file, std::string &type, std::string &location)
+std::string Response::getRedirctionS(std::string &type, std::string &location)
 {
-    std::string buffer((std::istreambuf_iterator<char>(file)), std::istreambuf_iterator<char>());
     std::stringstream response;
     response << "HTTP/1.1 301 Moved Permanently\r\n"
-            << "Location: " << location
+            << "Location: " << location << "\r\n"
             << "Content-Type: "<< type << "\r\n"
             << "Connection: close\r\n"
             << "Server: " << "chabchoub" << "\r\n"
-            << "Date: " << getCurrentDateTime() << "\r\n"
-            << "Content-Length: "<< buffer.size() <<"\r\n"
-            << "\r\n"
-            << buffer;
+            << "Date: " << getCurrentDateTime() << "\r\n";
     return response.str();
 }
 

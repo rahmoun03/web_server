@@ -5,7 +5,7 @@
 #include <fcntl.h>
 #include <sys/epoll.h>
 #include "conf.hpp"
-#include "location.hpp"
+// #include "location.hpp"
 #include <arpa/inet.h>
 #include "../AYOUB/Request.hpp"
 #include "../AYOUB/Client.hpp"
@@ -17,14 +17,13 @@
 class netPlix : public Conf{
     private :
         Client client[MAX_EVENTS];
-        std::vector<location> loca;
+        // std::vector<location> loca;
         int socket_fd, new_fdsock; // done
     public :
         netPlix(char *os) : Conf(os)
         {
-            // loca = getLocal();
-            // std::cout << loca[1].getLocation() << std::endl;
-            exit(0);
+            // this->getLocal();
+            // exit(0);
             int opt = 1;
             struct  sockaddr_in socketadress, clientaddr;// done
             socklen_t addrlen = sizeof(socketadress);

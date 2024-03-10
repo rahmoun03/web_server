@@ -30,7 +30,9 @@ void    Response::generateResponse(int &fd, Request &req)
         // size_t chunked_size;
         // size_t chunked_count;
         //   std::string chunked;
-        int flag = 0;
+        int flag;
+        (void)flag;
+        flag = 0;
 		        // static std::string chunked;
         if (req.firstTime)
         {
@@ -58,48 +60,49 @@ void    Response::generateResponse(int &fd, Request &req)
             }
             req.firstTime = false;
         }
-        // if (!req.get_header("Transfer-Encoding:").empty()){
-        //         // std::string Data;
-        //         // std::string tmp;
-        //         std::string chunkHeader;
-		//         // static std::string chunked;
-        //         // std::stringstream 
-        //         std::vector<std::string> data;
-        //         static size_t chunkSize;
-        //         // std::string chunked;
-        //         size_t pos;
-        //         // size_t ins;
-        //         if (flag){
-        //             std::cout << "------FRIST TIME HERE ---------\n";
-        //                 //  Data = chunked;
-        //                 if ((pos = chunked.find("\r\n")) != std::string::npos){
-        //                     chunkHeader = chunked.substr(0, pos);
-        //                     chunkSize = hexadecimal(chunkHeader);
-        //                     chunked.erase(0, pos + 2);
-        //                     std::cout << "size of data  ---- \n" << chunked.size() << ": <> : "<< chunkSize << std::endl;
-        //                 }
-        //                 // std::cout << "size of chunked befor \n ====> : " << chunkSize << std::endl;
-        //                 size_t os;
-        //                 if ((os = chunked.find("\r\n")) != std::string::npos){
-        //                     std::cout << chunked.substr(os,os + 2) << std::endl;
-        //                     std::cout << "0-------------0\n";
-        //                 }
+        if (!req.get_header("Transfer-Encoding:").empty()){
+                // std::string Data;
+                // std::string tmp;
+                std::string chunkHeader;
+		        // static std::string chunked;
+                // std::stringstream 
+                std::vector<std::string> data;
+                static size_t chunkSize;
+                // std::string chunked;
+                size_t pos;
+                // size_t ins;
+                if (flag){
+                    std::cout << "------FRIST TIME HERE ---------\n";
+                        //  Data = chunked;
+                        if ((pos = chunked.find("\r\n")) != std::string::npos){
+                            chunkHeader = chunked.substr(0, pos);
+                            chunkSize = hexadecimal(chunkHeader);
+                            chunked.erase(0, pos + 2);
+                            std::cout << "size of data  ---- \n" << chunked.size() << ": <> : "<< chunkSize << std::endl;
+                        }
+                        // std::cout << "size of chunked befor \n ====> : " << chunkSize << std::endl;
+                        size_t os;
+                        if ((os = chunked.find("\r\n")) != std::string::npos){
+                            std::cout << chunked.substr(os,os + 2) << std::endl;
+                            std::cout << "0-------------0\n";
+                        }
 
-        //                 tmp.append(chunked,chunked.size());
-        //                 // out.write(Data.c_str(),Data.size());
-        //                 // out.flush();
+                        tmp.append(chunked,chunked.size());
+                        // out.write(Data.c_str(),Data.size());
+                        // out.flush();
 
-        //         }
+                }
         //         exit(0);
-        //         // ssize_t a = -1;
-        //         // char buffer[1024];
-        //         // if ((a = recv(fd, buffer, 1023, 0)) == -1)
-        //         // {
-        //         //     std::cerr << "failure in read request !" << std::endl;
-        //         //     exit(1);
-        //         // }
-        //         // buffer[a] = '\0';
-        //         // tmp.append(buffer,a);
+                ssize_t a = -1;
+                char buffer[1024];
+                if ((a = recv(fd, buffer, 1023, 0)) == -1)
+                {
+                    std::cerr << "failure in read request !" << std::endl;
+                    exit(1);
+                }
+                buffer[a] = '\0';
+                tmp.append(buffer,a);
+                std::cout << "tmp body is ----> " << tmp << std::endl;
         //         // if (tmp.size() > chunkSize){
         //         //     std::cout << "size of tmp && chunked size is \n --- :> " << tmp.size() << "-|-" << chunkSize << std::endl;
         //         //     // pos = tmp.find("\r\n");
@@ -115,7 +118,7 @@ void    Response::generateResponse(int &fd, Request &req)
         //         // out.write(tmp.c_str(),tmp.size());
         //         // out.flush();
 
-        // }
+        }
         if (!req.get_header("Content-Length:").empty() && !(atoi(req.get_header("Content-Length:").c_str()) == (int)req.get_body().size())){
                 // std::cout << "-----------HERE-----------\n";
                 ssize_t a = -1;

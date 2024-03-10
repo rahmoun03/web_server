@@ -12,13 +12,15 @@ void	Response::GET(int &fd, Request *req)
 
     if(directoryExists(req->get_path()))
     {
+
+        std::cout << "http://{" <<req->get_path() << "} \n";
         std::cout << "the URL is a directory \n";
         serv_dir(fd, req);
     }
     else if (fileExists(req->get_path()))
     {
         std::map<std::string , std::string> mime_map = mimeTypes();
-        map_iterator it = mime_map.find(extension(req->get_path()));
+        it = mime_map.find(extension(req->get_path()));
         if(it != mime_map.end())
         {
             std::cout << "the URL is a file : " << it->second << std::endl;
@@ -42,7 +44,7 @@ void	Response::POST(int &fd, Request *req){
     // size_t chunked_size;
     // size_t chunked_count;
     //   std::string chunked;
-    int flag = 0;
+    // int flag = 0;
             // static std::string chunked;
     if (req->firstTime)
     {
@@ -61,7 +63,7 @@ void	Response::POST(int &fd, Request *req){
             if (!req->get_header("Transfer-Encoding:").empty()){
                 std::cout << "------------INSIDE GETBODY-------------\n";
                 chunked = req->get_body();
-                flag = 1;
+                // flag = 1;
             }
             else{
                 out.write(req->get_body().c_str(),req->get_body().size());

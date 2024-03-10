@@ -68,6 +68,22 @@ void	Response::serv_dir(int &fd, Request *req)
         std::cout<< BLUE<<"respone : \n"<<YOLLOW<<content  << std::endl;
         send(fd, content.c_str(), content.size(), MSG_DONTWAIT);
     }
+    else
+    {
+        req->get_path() +=  "/index.html";
+        std::map<std::string , std::string> mime_map = mimeTypes();
+        map_iterator it = mime_map.find(extension(req->get_path()));
+        if(it != mime_map.end() && fileExists(req->get_path()))
+        {
+            std::cout << "the URL is a file : " << it->second << std::endl;
+            serv_file(it, fd, req);
+        }
+        else
+        {
+            std::cout << "NOT FOUND 404 in MimeTypes"<< std::endl;
+            throw(forbidden());
+        }
+    }
 }
 
 void	Response::checkHeaders(Request *req)

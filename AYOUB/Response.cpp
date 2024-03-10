@@ -14,8 +14,14 @@ void    Response::generateResponse(int &fd, Request *req)
 
     else if(req->get_method() == "POST")
     {
-        std::cout << RED << "POST METHOD" << std::endl;
-        POST(fd, req);
+        std::cout << RED << "POST METHOD" << DEF << std::endl;
+        if(SUPORT_UPLOAD == 1)
+            POST(fd, req);
+        else
+        {
+            std::cout << "dont suport upload" << std::endl;
+            GET(fd, req);
+        }
     }
 
     else if(req->get_method() == "DELETE")
@@ -70,19 +76,40 @@ void	Response::checkHeaders(Request *req)
 
     head = req->get_headers();
     if(head.count("Transfer-Encoding:") && req->get_header("Transfer-Encoding:") != "chunked")
+    {
+        std::cout << "Transfer-Encoding Not chanked" << std::endl;
         throw(notImplement());
+    }
     if(req->get_method() == "POST" && !head.count("Transfer-Encoding:") && !head.count("Content-Length:"))
+    {
+        std::cout << "TE and CL Not exist" << std::endl;
         throw(badRequest());
+    }
     if((req->get_method() == "GET") && ( !req->get_body().empty() || head.count("Content-Length:")))
+    {
+        std::cout << "find Content-Lenght or Body" << std::endl;
         throw(badRequest());
+    }
     if(head.count("Transfer-Encoding:") && head.count("Content-Length:"))
+    {
+        std::cout << "find TE and CL together" << std::endl;
         throw(badRequest());
+    }
     if(req->get_protocol().empty() || req->get_protocol() != "HTTP/1.1")
+    {
+        std::cout << "protocol is : "<< req->get_protocol() << std::endl;
         throw(httpVersion());
+    }
     if( req->body_limit < atoi(req->get_header("Content-Length:").c_str()))
+    {
+        std::cout << "" << std::endl;
         throw(EntityTooLarge());
+    }
     if(req->get_path().size() > 2048)
+    {
+        std::cout << "" << std::endl;
         throw (longRequest());
+    }
 }
 
 
@@ -325,8 +352,8 @@ std::string Response::longRequest()
 void Response::clear()
 {
 	out.close();
-	tmp = "";
-	chunked = "";
+	tmp.clear();
+	chunked.clear();
 }
 
 

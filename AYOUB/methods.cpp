@@ -26,7 +26,7 @@ void	Response::GET(int &fd, Request *req)
         }
         else
         {
-            std::cout << "NOT FOUND 404"<< std::endl;
+            std::cout << "NOT FOUND 404 in MimeTypes"<< std::endl;
             throw(notFound());
         }
     }

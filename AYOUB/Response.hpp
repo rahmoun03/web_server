@@ -1,7 +1,9 @@
 #ifndef RESPONSE_HPP
 #define RESPONSE_HPP
 
-// #define 
+#define SUPORT_UPLOAD 0
+#define UPLOAD_PATH "/nfs/sgoinfre/goinfre/Perso/arahmoun/upload/"
+
 #include "Request.hpp"
 typedef std::map<std::string , std::string>::iterator map_iterator;
 class Response

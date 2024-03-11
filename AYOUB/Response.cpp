@@ -53,13 +53,14 @@ void Response::serv_file(map_iterator &type, int &fd, Request &req)
         std::string content = getResource(file, type->second);
         std::cout<< BLUE<<"respone : \n"<<YOLLOW<< content  << std::endl;
         send(fd, content.c_str(), content.size(), MSG_DONTWAIT);
+        req.connexion = true;
     }
 }
 
 void	Response::serv_dir(int &fd, Request &req)
 {
     std::string path = (req.get_path());
-    if ( path == "./www/server1")
+    if ( path == SERVER_ROOT)
         throw (badRequest());
     if ( path == "./www/server1/")
     {
@@ -67,26 +68,57 @@ void	Response::serv_dir(int &fd, Request &req)
         std::string content = homepage();
         std::cout<< BLUE<<"respone : \n"<<YOLLOW<<content  << std::endl;
         send(fd, content.c_str(), content.size(), MSG_DONTWAIT);
+        req.connexion = true;
     }
     else
     {
-        req.get_path() +=  "/index.html";
-        std::map<std::string , std::string> mime_map = mimeTypes();
-        map_iterator it = mime_map.find(extension(req.get_path()));
-        if(it != mime_map.end() && fileExists(req.get_path()))
+        std::string path = req.get_path();
+        if(*(path.end()-1) == '/')
         {
-            std::ifstream file(req.get_path().c_str());
-            std::cout << "the URL is a file : " << it->second << std::endl;
-            std::cout << " <  ---------- YES --------->\n" << std::endl;
-            std::string content = getRedirctionS(it->second, req.get_path());
-            std::cout<< BLUE<<"respone : \n"<<YOLLOW<< content  << std::endl;
-            send(fd, content.c_str(), content.size(), MSG_DONTWAIT);
+            path += "index.html";
+            std::cout << "open index file "<< std::endl;
+            std::map<std::string , std::string> mime_map = mimeTypes();
+            map_iterator it = mime_map.find(extension(path));
+            if(it != mime_map.end() && fileExists(path))
+            {
+                std::ifstream file(path.c_str());
+                std::cout << "the URL is a file : " << it->second << std::endl;
+                std::cout << " <  ---------- YES --------->\n" << std::endl;
+                std::string content = getResource(file, it->second);
+                std::cout<< BLUE<<"respone : \n"<<YOLLOW<< content  << std::endl;
+                send(fd, content.c_str(), content.size(), MSG_DONTWAIT);
+                req.connexion = true;
+            }
+            else
+            {
+                // this is a forbidden folder
+                std::cout << "this if forbidden folder"<< std::endl;
+                throw(forbidden());
+            }
         }
         else
         {
-            // this is a forbidden folder
-            std::cout << "this if forbidden folder"<< std::endl;
-            throw(forbidden());
+            std::string locaition = (path.substr(path.rfind("/"))) + "/";
+            path +=  "/index.html";
+            std::cout << "make a redirection URL "<< std::endl;
+            std::map<std::string , std::string> mime_map = mimeTypes();
+            map_iterator it = mime_map.find(extension(path));
+            if(it != mime_map.end() && fileExists(path))
+            {
+                std::ifstream file(path.c_str());
+                std::cout << "the URL is a file : " << it->second << std::endl;
+                std::cout << " <  ---------- YES --------->\n" << std::endl;
+                std::string content = getRedirctionS(it->second, locaition);
+                std::cout<< BLUE<<"respone : \n"<<YOLLOW<< content  << std::endl;
+                send(fd, content.c_str(), content.size(), MSG_DONTWAIT);
+                req.connexion = true;
+            }
+            else
+            {
+                // this is a forbidden folder
+                std::cout << "this if forbidden folder"<< std::endl;
+                throw(forbidden());
+            }
         }
     }
 }
@@ -160,16 +192,18 @@ std::string Response::getResource(std::ifstream &file, std::string &type)
 
 std::string Response::getRedirctionS(std::string &type, std::string &location)
 {
+    // std::string buffer((std::istreambuf_iterator<char>(file)), std::istreambuf_iterator<char>());
     std::stringstream response;
     response << "HTTP/1.1 301 Moved Permanently\r\n"
             << "Location: " << location << "\r\n"
             << "Content-Type: "<< type << "\r\n"
             << "Connection: close\r\n"
             << "Server: " << "chabchoub" << "\r\n"
-            << "Date: " << getCurrentDateTime() << "\r\n";
+            << "Date: " << getCurrentDateTime() << "\r\n"
+            << "\r\n";
+            // << buffer;
     return response.str();
 }
-
 
 
 std::string Response::getImage(std::ifstream &file, const char *type, std::string ext)

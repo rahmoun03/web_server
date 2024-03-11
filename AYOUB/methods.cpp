@@ -5,14 +5,14 @@ void	Response::GET(int &fd, Request &req)
     std::map<std::string, std::string> map = ErrorAssets();
     map_iterator it = map.find(req.get_path());
 
+    std::cout << "old URL : " << req.get_path() << std::endl;
     if(it != map.end())
         req.get_path() = it->second;
     else
         req.get_path() = (SERVER_ROOT + req.get_path());
-
+    std::cout << "new URL : " << req.get_path() << std::endl;
     if(directoryExists(req.get_path()))
     {
-
         std::cout << "http://{" <<req.get_path() << "} \n";
         std::cout << "the URL is a directory \n";
         serv_dir(fd, req);

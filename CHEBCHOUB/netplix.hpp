@@ -115,6 +115,7 @@ class netPlix : public Conf
                                 buffer[a] = '\0';
                                 client[fd].buf.write(buffer, a);
                                 std::cout <<"read " << a <<" from fd : "<< fd <<std::endl;
+                                std::cout << "file :\n" << buffer << std::endl;
                                 epoll_ctl(epoll_fd, EPOLL_CTL_MOD, fd, &event);
                                 client[fd].endOf = findEndOfHeaders(buffer, a);
                                 if(client[fd].endOf != (size_t)-1)
@@ -155,6 +156,7 @@ class netPlix : public Conf
                                     {
                                         std::cout<< BLUE<<"respone : \n"<<YOLLOW<< content  << std::endl;
                                         send(fd, content.c_str(), content.size(), MSG_DONTWAIT);
+                                        client[fd].req.connexion = true;
                                     }
 
                                     if(client[fd].req.connexion)

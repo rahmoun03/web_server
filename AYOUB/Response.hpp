@@ -1,7 +1,7 @@
 #ifndef RESPONSE_HPP
 #define RESPONSE_HPP
 
-#define SUPORT_UPLOAD 1
+#define SUPORT_UPLOAD 0
 #define UPLOAD_PATH "/nfs/sgoinfre/goinfre/Perso/arahmoun/upload/"
 
 #include "Request.hpp"

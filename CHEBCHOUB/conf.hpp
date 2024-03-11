@@ -152,7 +152,6 @@ class Conf {
                 tmp[loc.location] = loc;
             }
         }
-        //this for location data 
         std::map<std::string, loca> getLocal(){
             return locat;
         }

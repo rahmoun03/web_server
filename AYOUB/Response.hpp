@@ -1,7 +1,7 @@
 #ifndef RESPONSE_HPP
 #define RESPONSE_HPP
 
-#define SUPORT_UPLOAD 0
+#define SUPORT_UPLOAD 1
 #define UPLOAD_PATH "/nfs/sgoinfre/goinfre/Perso/arahmoun/upload/"
 
 #include "Request.hpp"
@@ -17,17 +17,17 @@ class Response
 		~Response();
 
 		/*             METHODs              */
-		void	GET(int &fd, Request *req);
-		void	POST(int &fd, Request *req);
-		void	DELETE(int &fd, Request *req);
+		void	GET(int &fd, Request &req);
+		void	POST(int &fd, Request &req);
+		void	DELETE(int &fd, Request &req);
 		/**************************************/
 
 		void	clear();
-		void 	serv_file(map_iterator &type, int &fd, Request *req);
-		void 	serv_dir(int &fd, Request *req);
-		void	imageFile(int &fd, Request *req);
-		void	generateResponse(int &fd, Request *req);
-		void	checkHeaders(Request *req);
+		void 	serv_file(map_iterator &type, int &fd, Request &req);
+		void 	serv_dir(int &fd, Request &req);
+		void	imageFile(int &fd, Request &req);
+		void	generateResponse(int &fd, Request &req);
+		void	checkHeaders(Request &req);
 		std::string extension(const std::string &path);
 		
 		

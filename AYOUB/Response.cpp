@@ -2,17 +2,17 @@
 
 #include "Response.hpp"
 
-void    Response::generateResponse(int &fd, Request *req)
+void    Response::generateResponse(int &fd, Request &req)
 {
     checkHeaders(req);
     // std::string
-    if (req->get_method() == "GET")
+    if (req.get_method() == "GET")
     {
         std::cout << RED << "GET METHOD" << DEF << std::endl;
         GET(fd, req);
     }
 
-    else if(req->get_method() == "POST")
+    else if(req.get_method() == "POST")
     {
         std::cout << RED << "POST METHOD" << DEF << std::endl;
         if(SUPORT_UPLOAD == 1)
@@ -24,7 +24,7 @@ void    Response::generateResponse(int &fd, Request *req)
         }
     }
 
-    else if(req->get_method() == "DELETE")
+    else if(req.get_method() == "DELETE")
     {
         std::cout << RED << "DELETE METHOD" << DEF << std::endl;
         DELETE(fd, req);
@@ -37,11 +37,11 @@ void    Response::generateResponse(int &fd, Request *req)
 
 }
 
-void Response::serv_file(map_iterator &type, int &fd, Request *req)
+void Response::serv_file(map_iterator &type, int &fd, Request &req)
 {
 
-    std::cout << req->get_path() << std::endl;
-    std::ifstream file(req->get_path().c_str());
+    std::cout << req.get_path() << std::endl;
+    std::ifstream file(req.get_path().c_str());
     if(!file.is_open())
     {
         std::cout << " <  ---------- Error file --------->\n" << std::endl;
@@ -56,9 +56,9 @@ void Response::serv_file(map_iterator &type, int &fd, Request *req)
     }
 }
 
-void	Response::serv_dir(int &fd, Request *req)
+void	Response::serv_dir(int &fd, Request &req)
 {
-    std::string path = (req->get_path());
+    std::string path = (req.get_path());
     if ( path == "./www/server1")
         throw (badRequest());
     if ( path == "./www/server1/")
@@ -70,15 +70,15 @@ void	Response::serv_dir(int &fd, Request *req)
     }
     else
     {
-        req->get_path() +=  "/index.html";
+        req.get_path() +=  "/index.html";
         std::map<std::string , std::string> mime_map = mimeTypes();
-        map_iterator it = mime_map.find(extension(req->get_path()));
-        if(it != mime_map.end() && fileExists(req->get_path()))
+        map_iterator it = mime_map.find(extension(req.get_path()));
+        if(it != mime_map.end() && fileExists(req.get_path()))
         {
-            std::ifstream file(req->get_path().c_str());
+            std::ifstream file(req.get_path().c_str());
             std::cout << "the URL is a file : " << it->second << std::endl;
             std::cout << " <  ---------- YES --------->\n" << std::endl;
-            std::string content = getRedirctionS(it->second, req->get_path());
+            std::string content = getRedirctionS(it->second, req.get_path());
             std::cout<< BLUE<<"respone : \n"<<YOLLOW<< content  << std::endl;
             send(fd, content.c_str(), content.size(), MSG_DONTWAIT);
         }
@@ -91,22 +91,22 @@ void	Response::serv_dir(int &fd, Request *req)
     }
 }
 
-void	Response::checkHeaders(Request *req)
+void	Response::checkHeaders(Request &req)
 {
     std::map<std::string, std::string> head;
 
-    head = req->get_headers();
-    if(head.count("Transfer-Encoding:") && req->get_header("Transfer-Encoding:") != "chunked")
+    head = req.get_headers();
+    if(head.count("Transfer-Encoding:") && req.get_header("Transfer-Encoding:") != "chunked")
     {
         std::cout << "Transfer-Encoding Not chanked" << std::endl;
         throw(notImplement());
     }
-    if(req->get_method() == "POST" && !head.count("Transfer-Encoding:") && !head.count("Content-Length:"))
+    if(req.get_method() == "POST" && !head.count("Transfer-Encoding:") && !head.count("Content-Length:"))
     {
         std::cout << "TE and CL Not exist" << std::endl;
         throw(badRequest());
     }
-    if((req->get_method() == "GET") && ( !req->get_body().empty() || head.count("Content-Length:")))
+    if((req.get_method() == "GET") && ( !req.get_body().empty() || head.count("Content-Length:")))
     {
         std::cout << "find Content-Lenght or Body" << std::endl;
         throw(badRequest());
@@ -116,17 +116,17 @@ void	Response::checkHeaders(Request *req)
         std::cout << "find TE and CL together" << std::endl;
         throw(badRequest());
     }
-    if(req->get_protocol().empty() || req->get_protocol() != "HTTP/1.1")
+    if(req.get_protocol().empty() || req.get_protocol() != "HTTP/1.1")
     {
-        std::cout << "protocol is : "<< req->get_protocol() << std::endl;
+        std::cout << "protocol is : "<< req.get_protocol() << std::endl;
         throw(httpVersion());
     }
-    if( req->body_limit < atoi(req->get_header("Content-Length:").c_str()))
+    if( req.body_limit < atoi(req.get_header("Content-Length:").c_str()))
     {
         std::cout << "" << std::endl;
         throw(EntityTooLarge());
     }
-    if(req->get_path().size() > 2048)
+    if(req.get_path().size() > 2048)
     {
         std::cout << "" << std::endl;
         throw (longRequest());

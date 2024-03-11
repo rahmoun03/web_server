@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Request.cpp                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: himejjad <himejjad@student.42.fr>          +#+  +:+       +#+        */
+/*   By: arahmoun <arahmoun@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/17 11:26:36 by arahmoun          #+#    #+#             */
-/*   Updated: 2024/03/09 14:58:22 by himejjad         ###   ########.fr       */
+/*   Updated: 2024/03/11 14:43:59 by arahmoun         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -122,10 +122,14 @@ const std::map<std::string, std::string> &Request::get_headers() const
 
 const std::string Request::get_header(const char *key)
 {
-	std::stringstream ss(headers[key]);
-	std::string ret;
-	ss >> ret;
-    return (ret);
+	if(headers.find(key) != headers.end())
+	{
+		std::stringstream ss(headers.find(key)->second);
+		std::string ret;
+		ss >> ret;
+		return ret;
+	}
+    return ("");
 }
 
 

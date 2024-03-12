@@ -11,6 +11,8 @@ class Response
 	private:
 		std::ofstream out;
 		std::string chunked;
+		size_t decimal;
+		std::string str;
         std::string tmp;
 	public:
 		Response();

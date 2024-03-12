@@ -6,7 +6,7 @@
 /*   By: himejjad <himejjad@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/17 09:53:30 by arahmoun          #+#    #+#             */
-/*   Updated: 2024/03/09 14:54:03 by himejjad         ###   ########.fr       */
+/*   Updated: 2024/03/12 03:29:41 by himejjad         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -44,6 +44,7 @@
 class Request
 {
 	private:
+
 		std::stringstream startline;
 		std::string method;
 		std::string path;
@@ -52,6 +53,8 @@ class Request
 		std::stringstream body;
 
 	public:
+		int chun;
+		size_t ra;
 		Request();
 		Request(const Request &other);
 		Request &operator=(const Request &other);

@@ -15,7 +15,7 @@ void    Response::generateResponse(int &fd, Request &req)
     else if(req.get_method() == "POST")
     {
         std::cout << RED << "POST METHOD" << DEF << std::endl;
-        if(SUPORT_UPLOAD == 1)
+        if(SUPORT_UPLOAD)
             POST(fd, req);
         else
         {
@@ -34,7 +34,6 @@ void    Response::generateResponse(int &fd, Request &req)
     {
         std::cout << RED << "UNKOWN METHOD" << DEF << std::endl;
     }
-
 }
 
 void Response::serv_file(map_iterator &type, int &fd, Request &req)
@@ -52,7 +51,7 @@ void Response::serv_file(map_iterator &type, int &fd, Request &req)
         std::cout << " <  ---------- YES --------->\n" << std::endl;
         std::string content = getResource(file, type->second);
         std::cout<< BLUE<<"respone : \n"<<YOLLOW<< content  << std::endl;
-        send(fd, content.c_str(), content.size(), MSG_DONTWAIT);
+        send(fd, content.c_str(), content.size(),0);
         req.connexion = true;
     }
 }
@@ -67,7 +66,7 @@ void	Response::serv_dir(int &fd, Request &req)
         std::cout << " <  ---------- home --------->\n" << std::endl;
         std::string content = homepage();
         std::cout<< BLUE<<"respone : \n"<<YOLLOW<<content  << std::endl;
-        send(fd, content.c_str(), content.size(), MSG_DONTWAIT);
+        send(fd, content.c_str(), content.size(),0);
         req.connexion = true;
     }
     else
@@ -86,7 +85,7 @@ void	Response::serv_dir(int &fd, Request &req)
                 std::cout << " <  ---------- YES --------->\n" << std::endl;
                 std::string content = getResource(file, it->second);
                 std::cout<< BLUE<<"respone : \n"<<YOLLOW<< content  << std::endl;
-                send(fd, content.c_str(), content.size(), MSG_DONTWAIT);
+                send(fd, content.c_str(), content.size(), 0);
                 req.connexion = true;
             }
             else
@@ -110,7 +109,7 @@ void	Response::serv_dir(int &fd, Request &req)
                 std::cout << " <  ---------- YES --------->\n" << std::endl;
                 std::string content = getRedirctionS(it->second, locaition);
                 std::cout<< BLUE<<"respone : \n"<<YOLLOW<< content  << std::endl;
-                send(fd, content.c_str(), content.size(), MSG_DONTWAIT);
+                send(fd, content.c_str(), content.size(), 0);
                 req.connexion = true;
             }
             else
@@ -192,7 +191,6 @@ std::string Response::getResource(std::ifstream &file, std::string &type)
 
 std::string Response::getRedirctionS(std::string &type, std::string &location)
 {
-    // std::string buffer((std::istreambuf_iterator<char>(file)), std::istreambuf_iterator<char>());
     std::stringstream response;
     response << "HTTP/1.1 301 Moved Permanently\r\n"
             << "Location: " << location << "\r\n"
@@ -201,7 +199,6 @@ std::string Response::getRedirctionS(std::string &type, std::string &location)
             << "Server: " << "chabchoub" << "\r\n"
             << "Date: " << getCurrentDateTime() << "\r\n"
             << "\r\n";
-            // << buffer;
     return response.str();
 }
 

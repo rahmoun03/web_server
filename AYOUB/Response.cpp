@@ -251,7 +251,7 @@ std::string Response::homepage()
     std::stringstream response;
     response << "HTTP/1.1 200 OK\r\n"
              << "Content-Type: text/html\r\n"
-             << "Connection: close\r\n"
+             << "Connection: close\rEncoding\n"
              << "Server: " << "chabchoub" << "\r\n"
              << "Date: " << getCurrentDateTime() << "\r\n"
              << "Content-Length: "<< buffer.size() <<"\r\n"

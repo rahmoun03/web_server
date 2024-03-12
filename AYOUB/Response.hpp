@@ -1,7 +1,7 @@
 #ifndef RESPONSE_HPP
 #define RESPONSE_HPP
 
-#define SUPORT_UPLOAD 0
+#define SUPORT_UPLOAD 1
 #define UPLOAD_PATH "/nfs/sgoinfre/goinfre/Perso/arahmoun/upload/"
 
 #include "Request.hpp"
@@ -11,6 +11,8 @@ class Response
 	private:
 		std::ofstream out;
 		std::string chunked;
+		size_t decimal;
+		std::string str;
         std::string tmp;
 	public:
 		Response();

@@ -34,7 +34,6 @@ class loca{
         std::string defau;
         std::string upload;
         std::string redirect;
-        // std::string location;
 };
 class Conf {
     private :
@@ -44,52 +43,55 @@ class Conf {
         std::map<std::string, loca>::iterator it;
         std::map<std::string,std::string> loc1;
         std::map<std::string, loca> locat;
-        int flag;
+        std::map<std::string,std::string>::iterator ito;
     public :
         Conf(){
-
         }
-        Conf(char * os)
+        Conf(std::ifstream & fg)
         {
-             std::ifstream fg(os);
-             flag  = 0;
-            if (fg.is_open())
-            {
-
-                getline(fg,name);
-                if (name.find("server") == std::string::npos)
-                    {
-                        perror("server not found");
-                        exit(0);
+                std::cout << name << std::endl;
+                try{
+                    getline(fg,name);
+                    while (name.empty()){
+                        getline(fg,name);
                     }
-                if (name.find("{") == std::string::npos )
-                    {
-                        if (getline(fg,name) && name.find("{") == std::string::npos)
+                    if (name.find("server") != std::string::npos)
                         {
-                            perror("{");
-                            exit(0);
+                            getline(fg,name);
+                            if (name.find("{") != std::string::npos)
+                                {
+                                    while (getline(fg,name)){
+                                        parsLocation(fg);
+                                        displayLocation(locat,loc);
+                                        name.erase(std::remove_if(name.begin(),name.end(),isspace),name.end());
+                                        map[name.substr(0,name.find("="))] = name.substr(name.find("=") + 1);
+                                        if (name.find("}") != std::string::npos)
+                                        {
+                                            break; 
+                                        }
+                                        if (name.find("server") != std::string::npos && name.size() == 6){
+                                            throw "Ops error config file";
+                                        }
+                                    }
+                                }
+                                else{
+                                    throw "Ops error config file";
+                                }
                         }
-                    }
-                while (getline(fg,name))
-                {
-                    parsLocation(fg);
-                    displayLocation(locat,loc);
-                    name.erase(std::remove_if(name.begin(),name.end(),isspace),name.end());
-                    map[name.substr(0,name.find("="))] = name.substr(name.find("=") + 1);
+                        else{
+                            throw "Ops error config file";;
+                        }
+
                 }
-            }
-            else
-                std::cout << "file not found\n";
+                catch (const char * err){
+                    std::cout << err << std::endl;
+                    exit(0);
+                }
         }
-        //this for config file data
         std::string confCherch(std::string name)
         {
-            std::map<std::string,std::string>::iterator it = map.begin();
-            while (it != map.end())
-            {
-                if (name.compare(it->first) == 0)
-                    return it->second;
-                it++;
+            if ((ito = map.find(name)) != map.end()){
+                return ito->second;
             }
             return "not found";
         }
@@ -125,7 +127,6 @@ class Conf {
                             loc.get = false;
                             loc.post = false;
                             loc.delet = false;
-                            // loca.get = false;
                         if (it->second.find("GET") != std::string::npos)
                                 loc.get = true;
                         if (it->second.find("POST") != std::string::npos)

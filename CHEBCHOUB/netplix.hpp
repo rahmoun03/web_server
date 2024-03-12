@@ -14,27 +14,39 @@
 // typedef struct  sockaddr_in socketadress;
     // struct sockaddr_in address;
 
-class netPlix : public Conf{
+class netPlix{
     private :
+        Conf conf;
         Client client[MAX_EVENTS];
+        std::map<std::string,Conf> server;
         // std::vector<location> loca;
         int socket_fd, new_fdsock; // done
     public :
-        netPlix(char *os) : Conf(os)
+        netPlix(char *os)
         {
-            // this->getLocal();
-            // exit(0);
+            std::ifstream fg(os);
+            if (fg.is_open())
+            {
+                while (!fg.eof()){
+                    Conf conf(fg);
+                    conf.getLocal();
+                    server[conf.confCherch("server_name")] = conf;
+                    std::cout << "---->  : " << conf.confCherch("server_name") << std::endl;
+                }
+                fg.close();
+                    exit(0);
+            }
             int opt = 1;
             struct  sockaddr_in socketadress, clientaddr;// done
             socklen_t addrlen = sizeof(socketadress);
             socket_fd = socket(AF_INET,SOCK_STREAM,0);
             setsockopt(socket_fd,SOL_SOCKET,SO_REUSEADDR,&opt,sizeof(opt));
             socketadress.sin_family = AF_INET;
-            socketadress.sin_port = htons(atoi(this->confCherch("port").c_str()));
-            socketadress.sin_addr.s_addr = inet_addr(this->confCherch("host").c_str());
+            socketadress.sin_port = htons(atoi(server["server1"].confCherch("port").c_str()));
+            socketadress.sin_addr.s_addr = inet_addr(server["server1"].confCherch("host").c_str());
             bind(socket_fd,(struct  sockaddr*)&socketadress,sizeof(socketadress));
             listen(socket_fd,3);
-            std::cout<< BLUE << "the server listening on port : "<< DEF << this->confCherch("port") << std::endl;
+            std::cout<< BLUE << "the server listening on port : "<< DEF << server["server1"].confCherch("port") << std::endl;
             //set fd NON_BLOCKIN WITH FCNTL FUNCTION
             fcntl(socket_fd,F_SETFL,O_NONBLOCK);
             if (socket_fd == -1){

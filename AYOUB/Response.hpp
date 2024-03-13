@@ -10,12 +10,12 @@ class Response
 {
 	private:
 		std::ofstream out;
-		int file;
 		std::string chunked;
 		size_t decimal;
 		std::string str;
         std::string tmp;
 	public:
+		int file;
 		Response();
 		~Response();
 

@@ -51,6 +51,7 @@ class netPlix : public Conf
                 perror("epoll_ctl");
                 exit(0);
             }
+            
             for (size_t i = 0; i < MAX_EVENTS; i++)
                 client[i].endOf = -1;
             
@@ -154,6 +155,10 @@ class netPlix : public Conf
                                             event.events = EPOLLOUT;
 
                                         if(epoll_ctl(epoll_fd, EPOLL_CTL_MOD, fd, &event) == -1)
+                                            std::cout << "epoll mod not work" << std::endl;
+                                        // epoll_ctl(epoll_fd, EPOLL_CTL_ADD, client[fd].res.file, &event);
+                                        
+                                        if(epoll_ctl(epoll_fd, EPOLL_CTL_MOD, client[fd].res.file, &event) == -1)
                                             std::cout << "epoll mod not work" << std::endl;
                                         std::cout << "epoll_ctl : MOD, for fd : " << fd << std::endl;
 

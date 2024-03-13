@@ -48,7 +48,7 @@ class netPlix{
             listen(socket_fd,3);
             std::cout<< BLUE << "the server listening on port : "<< DEF << server["server1"].confCherch("port") << std::endl;
             //set fd NON_BLOCKIN WITH FCNTL FUNCTION
-            fcntl(socket_fd,F_SETFL,O_NONBLOCK);
+            // fcntl(socket_fd,F_SETFL,O_NONBLOCK);
             if (socket_fd == -1){
                 perror("could not create socket");
                 exit(0);
@@ -87,9 +87,6 @@ class netPlix{
                     std::cout << GREEN << "fd = " << fd << DEF << "/"<< wait_fd <<std::endl;
                     if (fd == socket_fd)
                     {
-                        //NEW CONNECTION
-                            //incoming connection
-                        // while (1){
                                 int new_socketfd = accept(socket_fd, (struct sockaddr *)&clientaddr, &addrlen);
                                 if (new_socketfd == -1){
                                     //check if fd i empty and or fill 
@@ -99,20 +96,12 @@ class netPlix{
                                     exit(0);
                             
                                 }
-                                //make the new connection no blocking
-                                fcntl(new_socketfd,F_SETFL,O_NONBLOCK);
+                                // fcntl(new_socketfd,F_SETFL,O_NONBLOCK);
                                 event.events = EPOLLIN | EPOLLET;
                                 event.data.fd = new_socketfd;
                                 std::cout << GREEN << "Received connection from " << inet_ntoa(clientaddr.sin_addr) << " on fd : "<< new_socketfd << DEF << std::endl;
                                 epoll_ctl(epoll_fd, EPOLL_CTL_ADD, new_socketfd, &event);
-                        // }
-                         
                     }
-                    // else if ((events[i].events & EPOLLERR) || (events[i].events & EPOLLHUP)){
-                    //     //connection closed;
-                    //     std::cout << "-----insidw is--------\n";
-                    //     close(fd);
-                    // }
                     else
                     {
                         try

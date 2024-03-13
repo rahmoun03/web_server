@@ -61,6 +61,7 @@ class Conf {
                             if (name.find("{") != std::string::npos)
                                 {
                                     while (getline(fg,name)){
+                                    if (name.find("=") != std::string::npos){
                                         parsLocation(fg);
                                         displayLocation(locat,loc);
                                         name.erase(std::remove_if(name.begin(),name.end(),isspace),name.end());
@@ -72,6 +73,15 @@ class Conf {
                                         if (name.find("server") != std::string::npos && name.size() == 6){
                                             throw "Ops error config file";
                                         }
+                                        }
+                                        else if (name.find("}") != std::string::npos){
+                                            break;
+                                        }
+                                        else{
+                                            if (!name.empty())
+                                                throw "Ops error config file";
+                                        }
+
                                     }
                                 }
                                 else{
@@ -79,7 +89,7 @@ class Conf {
                                 }
                         }
                         else{
-                            throw "Ops error config file";;
+                            throw "Ops error config file";
                         }
 
                 }
@@ -96,22 +106,40 @@ class Conf {
             return "not found";
         }
         void parsLocation(std::ifstream & fg){
+            (void)fg;
             if (name.find("location") != std::string::npos)
                 {
-                    name.erase(std::remove_if(name.begin(),name.end(),isspace),name.end());
-                    loc1[name.substr(0,name.find("="))] = (name.substr(name.find("=") + 1));
-                    if (name.find("[") == std::string::npos)
-                    {
-                        if (getline(fg,name) && name.find("[") == std::string::npos)
-                        {
-                            perror("[");
-                            exit(0);
-                        }
-                    }
-                    while (getline(fg,name) && name.find("]") == std::string::npos )
-                    {
+                    if (name.find("=") != std::string::npos){
+                        name.erase(std::remove_if(name.begin(),name.end(),isspace),name.end());
                         loc1[name.substr(0,name.find("="))] = (name.substr(name.find("=") + 1));
+                        getline(fg,name);
+                        if (name.find("[") != std::string::npos)
+                        {
+                            while (getline(fg,name)){
+                                if (name.find("=") != std::string::npos){
+                                    name.erase(std::remove_if(name.begin(),name.end(),isspace),name.end());
+                                    loc1[name.substr(0,name.find("="))] = (name.substr(name.find("=") + 1));
+                                    if (name.find("]") != std::string::npos){
+                                        break;
+                                    }
+                                    if (name.find("location") != std::string::npos){
+                                            throw "Ops error config file";
+                                    }
+                                }
+                                else if (name.find("]") != std::string::npos){
+                                    break;
+                                }
+                                else{
+                                    throw "Ops error config file";
+                                }
+
+                            }
+                        }
+                        else
+                            throw "Ops error config file";
                     }
+                    else
+                        throw "Ops error config file";
                 }
         }
         void displayLocation(std::map<std::string,loca> & tmp,loca &loc){
@@ -154,6 +182,10 @@ class Conf {
             }
         }
         std::map<std::string, loca> getLocal(){
+        std::map<std::string, loca>::iterator itt = locat.begin();
+        for(;itt != locat.end(); itt++){
+            std::cout << itt->first << " - - " << itt->second.root << std::endl;
+        }
             return locat;
         }
 };

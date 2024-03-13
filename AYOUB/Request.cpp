@@ -6,7 +6,7 @@
 /*   By: arahmoun <arahmoun@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/17 11:26:36 by arahmoun          #+#    #+#             */
-/*   Updated: 2024/03/11 14:43:59 by arahmoun         ###   ########.fr       */
+/*   Updated: 2024/03/12 21:10:52 by arahmoun         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -47,6 +47,8 @@ Request::Request(std::stringstream &buf, size_t &endOf)
 			buf >> key;
 			body << key << buf.rdbuf();
 		}
+		chun = 0;
+		ra = 0;
 		firstTime = true;
 		// buf.str("");
 		// std::cout << "\n--------------------------------------------------------\n" <<std::endl;
@@ -113,6 +115,7 @@ void Request::clear()
 	body_limit = 0;
 	firstTime = false;
 	connexion = false;
+	ra = 0;
 }
 
 const std::map<std::string, std::string> &Request::get_headers() const

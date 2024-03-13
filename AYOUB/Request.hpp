@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Request.hpp                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: himejjad <himejjad@student.42.fr>          +#+  +:+       +#+        */
+/*   By: arahmoun <arahmoun@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/17 09:53:30 by arahmoun          #+#    #+#             */
-/*   Updated: 2024/03/09 14:54:03 by himejjad         ###   ########.fr       */
+/*   Updated: 2024/03/13 03:46:50 by arahmoun         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -39,6 +39,7 @@
 #define RED "\033[0;31m"
 #define YOLLOW "\033[0;33m"
 #define BLUE "\033[0;34m"
+#define RAN "\033[0;37m"
 #define DEF "\033[0m"
 
 class Request
@@ -52,12 +53,14 @@ class Request
 		std::stringstream body;
 
 	public:
+		int chun;
+		size_t ra;
 		Request();
 		Request(const Request &other);
 		Request &operator=(const Request &other);
 		~Request();
 		bool startLineForma;
-		int body_limit;
+		long int body_limit;
 		bool firstTime;
 		bool connexion;
 

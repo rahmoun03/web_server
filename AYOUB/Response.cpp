@@ -38,21 +38,37 @@ void    Response::generateResponse(int &fd, Request &req)
 
 void Response::serv_file(map_iterator &type, int &fd, Request &req)
 {
-
-    std::cout << req.get_path() << std::endl;
-    std::ifstream file(req.get_path().c_str());
-    if(!file.is_open())
+    if(req.firstTime)
     {
-        std::cout << " <  ---------- Error file --------->\n" << std::endl;
-        throw (notFound());
+        file = open(req.get_path().c_str(), O_RDONLY);
+        std::cout << "first time , fd file = "<< file << std::endl;
+        if(file < 0)
+        {
+            std::cout << " <  ---------- Error file --------->\n" << std::endl;
+            throw (notFound());
+        }
+        std::cout << " <  ---------- YES --------->\n" << std::endl;
+        std::stringstream response;
+        response << "HTTP/1.1 200 OK\r\n"
+        << "Content-Type: " << type->second << "\r\n"
+        // << "Content-Length: "<< buffer.size() <<"\r\n"
+        << "Connection: close\r\n"
+        << "Server: " << "chabchoub" << "\r\n"
+        << "Date: " << getCurrentDateTime() << "\r\n"
+        << "\r\n";
+
+
+        std::cout<< BLUE<<"respone : \n"<<YOLLOW<< response.str()  << std::endl;
+        send(fd, response.str().c_str(), response.str().size(),0);
+        req.firstTime = false;
     }
     else
     {
-        std::cout << " <  ---------- YES --------->\n" << std::endl;
-        std::string content = getResource(file, type->second);
-        std::cout<< BLUE<<"respone : \n"<<YOLLOW<< content  << std::endl;
+        std::cout << "second time" << std::endl;
+        std::string content = getResource(file, req);
+        std::cout << RAN << content << DEF << std::endl;
         send(fd, content.c_str(), content.size(),0);
-        req.connexion = true;
+        // req.connexion = true;
     }
 }
 
@@ -61,63 +77,83 @@ void	Response::serv_dir(int &fd, Request &req)
     std::string path = (req.get_path());
     if ( path == SERVER_ROOT)
         throw (badRequest());
-    if ( path == "./www/server1/")
-    {
-        std::cout << " <  ---------- home --------->\n" << std::endl;
-        std::string content = homepage();
-        std::cout<< BLUE<<"respone : \n"<<YOLLOW<<content  << std::endl;
-        send(fd, content.c_str(), content.size(),0);
-        req.connexion = true;
-    }
+    // if ( path == "./www/server1/")
+    // {
+    //     std::cout << " <  ---------- home --------->\n" << std::endl;
+    //     std::string content = homepage();
+    //     std::cout<< BLUE<<"respone : \n"<<YOLLOW<<content  << std::endl;
+    //     send(fd, content.c_str(), content.size(),0);
+    //     req.connexion = true;
+    // }
     else
     {
-        std::string path = req.get_path();
-        if(*(path.end()-1) == '/')
+        if(req.firstTime)
         {
-            path += "index.html";
-            std::cout << "open index file "<< std::endl;
-            std::map<std::string , std::string> mime_map = mimeTypes();
-            map_iterator it = mime_map.find(extension(path));
-            if(it != mime_map.end() && fileExists(path))
+            std::string path = req.get_path();
+            if(*(path.end()-1) == '/')
             {
-                std::ifstream file(path.c_str());
-                std::cout << "the URL is a file : " << it->second << std::endl;
-                std::cout << " <  ---------- YES --------->\n" << std::endl;
-                std::string content = getResource(file, it->second);
-                std::cout<< BLUE<<"respone : \n"<<YOLLOW<< content  << std::endl;
-                send(fd, content.c_str(), content.size(), 0);
-                req.connexion = true;
+                path += "index.html";
+                std::cout << "open index file "<< std::endl;
+                std::map<std::string , std::string> mime_map = mimeTypes();
+                map_iterator it = mime_map.find(extension(path));
+                if(it != mime_map.end() && fileExists(path))
+                {
+                    file = open(path.c_str(), O_RDONLY);
+                    std::cout << "the URL is a file : " << it->second << std::endl;
+                    std::cout << " <  ---------- YES --------->\n" << std::endl;
+                    std::stringstream response;
+                    response << "HTTP/1.1 200 OK\r\n"
+                                << "Content-Type: " << it->second << "\r\n"
+                                // << "Content-Length: "<< buffer.size() <<"\r\n"
+                                << "Connection: close\r\n"
+                                << "Server: " << "chabchoub" << "\r\n"
+                                << "Date: " << getCurrentDateTime() << "\r\n"
+                                << "\r\n";
+
+
+                    std::cout<< BLUE<<"respone : \n"<<YOLLOW<< response.str()  << std::endl;
+                    send(fd, response.str().c_str(), response.str().size(),0);
+                    req.firstTime = false;
+
+                }
+                else
+                {
+                    // this is a forbidden folder
+                    std::cout << "this if forbidden folder"<< std::endl;
+                    throw(forbidden());
+                }
             }
             else
             {
-                // this is a forbidden folder
-                std::cout << "this if forbidden folder"<< std::endl;
-                throw(forbidden());
+                std::string locaition = (path.substr(path.rfind("/"))) + "/";
+                path +=  "/index.html";
+                std::cout << "make a redirection URL "<< std::endl;
+                std::map<std::string , std::string> mime_map = mimeTypes();
+                map_iterator it = mime_map.find(extension(path));
+                if(it != mime_map.end() && fileExists(path))
+                {
+                    std::ifstream file(path.c_str());
+                    std::cout << "the URL is a file : " << it->second << std::endl;
+                    std::cout << " <  ---------- YES --------->\n" << std::endl;
+                    std::string content = getRedirctionS(it->second, locaition);
+                    std::cout<< BLUE<<"respone : \n"<<YOLLOW<< content  << std::endl;
+                    send(fd, content.c_str(), content.size(), 0);
+                    req.connexion = true;
+                }
+                else
+                {
+                    // this is a forbidden folder
+                    std::cout << "this if forbidden folder"<< std::endl;
+                    throw(forbidden());
+                }
             }
         }
         else
         {
-            std::string locaition = (path.substr(path.rfind("/"))) + "/";
-            path +=  "/index.html";
-            std::cout << "make a redirection URL "<< std::endl;
-            std::map<std::string , std::string> mime_map = mimeTypes();
-            map_iterator it = mime_map.find(extension(path));
-            if(it != mime_map.end() && fileExists(path))
-            {
-                std::ifstream file(path.c_str());
-                std::cout << "the URL is a file : " << it->second << std::endl;
-                std::cout << " <  ---------- YES --------->\n" << std::endl;
-                std::string content = getRedirctionS(it->second, locaition);
-                std::cout<< BLUE<<"respone : \n"<<YOLLOW<< content  << std::endl;
-                send(fd, content.c_str(), content.size(), 0);
-                req.connexion = true;
-            }
-            else
-            {
-                // this is a forbidden folder
-                std::cout << "this if forbidden folder"<< std::endl;
-                throw(forbidden());
-            }
+            std::string content = getResource(file, req);
+            std::cout<< BLUE<<"respone : \n"<<YOLLOW<< content  << std::endl;
+            send(fd, content.c_str(), content.size(), 0);
+            // req.connexion = true;
         }
     }
 }
@@ -174,19 +210,21 @@ Response::~Response()
 }
 
 
-std::string Response::getResource(std::ifstream &file, std::string &type)
+std::string Response::getResource(int &file, Request &req)
 {
-    std::string buffer((std::istreambuf_iterator<char>(file)), std::istreambuf_iterator<char>());
-    std::stringstream response;
-    response << "HTTP/1.1 200 OK\r\n"
-            << "Content-Type: "<< type << "\r\n"
-            << "Connection: close\r\n"
-            << "Server: " << "chabchoub" << "\r\n"
-            << "Date: " << getCurrentDateTime() << "\r\n"
-            << "Content-Length: "<< buffer.size() <<"\r\n"
-            << "\r\n"
-            << buffer;
-    return response.str();
+    // std::string buffer((std::istreambuf_iterator<char>(file)), std::istreambuf_iterator<char>());
+    std::stringstream content;
+    char buffer[1024];
+    size_t a = read(file, buffer, 1023);
+    if(a < 0)
+    {
+        std::cerr << "l9wada" << std::endl;
+        exit(1);
+    }
+    if(a < 1023)
+        req.connexion = true;
+    content.write(buffer, a);
+    return content.str();
 }
 
 std::string Response::getRedirctionS(std::string &type, std::string &location)
@@ -248,7 +286,7 @@ std::string Response::homepage()
     std::stringstream response;
     response << "HTTP/1.1 200 OK\r\n"
              << "Content-Type: text/html\r\n"
-             << "Connection: close\r\n"
+             << "Connection: close\rEncoding\n"
              << "Server: " << "chabchoub" << "\r\n"
              << "Date: " << getCurrentDateTime() << "\r\n"
              << "Content-Length: "<< buffer.size() <<"\r\n"
@@ -418,8 +456,11 @@ std::string Response::longRequest()
 void Response::clear()
 {
 	out.close();
-	tmp.clear();
+    close(file);
 	chunked.clear();
+    decimal = 0;
+    str.clear();
+	tmp.clear();
 }
 
 

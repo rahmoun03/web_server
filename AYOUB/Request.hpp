@@ -6,7 +6,7 @@
 /*   By: arahmoun <arahmoun@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/17 09:53:30 by arahmoun          #+#    #+#             */
-/*   Updated: 2024/03/13 03:46:50 by arahmoun         ###   ########.fr       */
+/*   Updated: 2024/03/14 02:25:29 by arahmoun         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -55,14 +55,16 @@ class Request
 	public:
 		int chun;
 		size_t ra;
-		Request();
-		Request(const Request &other);
-		Request &operator=(const Request &other);
-		~Request();
 		bool startLineForma;
 		long int body_limit;
 		bool firstTime;
 		bool connexion;
+		
+		
+		Request();
+		Request(const Request &other);
+		Request &operator=(const Request &other);
+		~Request();
 
 		void clear();
 		Request(std::stringstream &buf, size_t &endOf);

@@ -52,7 +52,7 @@ void Response::serv_file(map_iterator &type, int &fd, Request &req)
         response << "HTTP/1.1 200 OK\r\n"
         << "Content-Type: " << type->second << "\r\n"
         // << "Content-Length: "<< buffer.size() <<"\r\n"
-        << "Connection: close\r\n"
+        << "Connection: keep-alive\r\n"
         << "Server: " << "chabchoub" << "\r\n"
         << "Date: " << getCurrentDateTime() << "\r\n"
         << "\r\n";
@@ -461,6 +461,7 @@ void Response::clear()
     decimal = 0;
     str.clear();
 	tmp.clear();
+    file = -1;
 }
 
 

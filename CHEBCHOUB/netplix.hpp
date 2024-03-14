@@ -45,7 +45,7 @@ class netPlix : public Conf
                 exit(0);
             }
             event.data.fd = socket_fd;
-            event.events = EPOLLIN;
+            event.events = EPOLLIN | EPOLLOUT;
             //give fd acce add or del with epoll_ctl function
             if (epoll_ctl(epoll_fd,EPOLL_CTL_ADD,socket_fd,&event) == -1){
                 perror("epoll_ctl");
@@ -79,13 +79,13 @@ class netPlix : public Conf
                                 if (new_socketfd == -1){
                                     //check if fd i empty and or fill 
                                     if ((errno == EAGAIN) || (errno == EWOULDBLOCK)){
-                                    perror("accept");
+                                        perror("accept");
                                     }
                                     exit(0);
                             
                                 }
                                 //make the new connection no blocking
-                                fcntl(new_socketfd,F_SETFL,O_NONBLOCK);
+                                // fcntl(new_socketfd,F_SETFL,O_NONBLOCK);
                                 event.events = EPOLLIN;
                                 event.data.fd = new_socketfd;
                                 std::cout << GREEN << "Received connection from " << inet_ntoa(clientaddr.sin_addr) << " on fd : "<< new_socketfd << DEF << std::endl;
@@ -110,7 +110,8 @@ class netPlix : public Conf
                                 char buffer[1024];
                                 if ((a = recv(fd, buffer, 1023, 0)) == -1)
                                 {
-                                    std::cerr << "failure in read request !" << std::endl;
+                                    perror("read : ");
+                                    std::cerr << "failure in read request for : "<< fd << std::endl;
                                     exit(1);
                                 }
                                 buffer[a] = '\0';
@@ -158,8 +159,8 @@ class netPlix : public Conf
                                             std::cout << "epoll mod not work" << std::endl;
                                         // epoll_ctl(epoll_fd, EPOLL_CTL_ADD, client[fd].res.file, &event);
                                         
-                                        if(epoll_ctl(epoll_fd, EPOLL_CTL_MOD, client[fd].res.file, &event) == -1)
-                                            std::cout << "epoll mod not work" << std::endl;
+                                        // if(epoll_ctl(epoll_fd, EPOLL_CTL_MOD, client[fd].res.file, &event) == -1)
+                                        //     std::cout << "epoll mod not work" << std::endl;
                                         std::cout << "epoll_ctl : MOD, for fd : " << fd << std::endl;
 
                                     }

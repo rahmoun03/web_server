@@ -6,7 +6,7 @@
 /*   By: arahmoun <arahmoun@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/17 11:26:36 by arahmoun          #+#    #+#             */
-/*   Updated: 2024/03/12 21:10:52 by arahmoun         ###   ########.fr       */
+/*   Updated: 2024/03/14 02:25:18 by arahmoun         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -116,6 +116,7 @@ void Request::clear()
 	firstTime = false;
 	connexion = false;
 	ra = 0;
+	chun = 0;
 }
 
 const std::map<std::string, std::string> &Request::get_headers() const

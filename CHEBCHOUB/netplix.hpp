@@ -21,8 +21,11 @@ class netPlix{
         Client client[MAX_EVENTS];
         std::map<int,Conf> server;
         int serverNum;
+        int socket_fd[MAX_EVENTS];
+        std::vector<int> socket_acc; //, new_fdsock; // done
+            struct  sockaddr_in socketadress, clientaddr;
+            socklen_t addrlen;// done
         // std::vector<location> loca;
-        int socket_fd[MAX_EVENTS]; //, new_fdsock; // done
     public :
         netPlix(char *os)
         {
@@ -34,8 +37,7 @@ class netPlix{
                 perror("epoll create");
                 exit(0);
             }
-            struct  sockaddr_in socketadress, clientaddr;// done
-            socklen_t addrlen = sizeof(socketadress);
+            addrlen = sizeof(socketadress);
             std::ifstream fg(os);
             if (fg.is_open())
             {
@@ -56,6 +58,7 @@ class netPlix{
             for(int i = 0; i < serverNum; i++){
                 std::cout << "---INSIDE LOOP CREATE SOCKET---\n";
                 socket_fd[i] = socket(AF_INET,SOCK_STREAM,0);
+                socket_acc.push_back(socket_fd[i]);
                 setsockopt(socket_fd[i],SOL_SOCKET,SO_REUSEADDR,&opt,sizeof(opt));
                 socketadress.sin_family = AF_INET;
                 socketadress.sin_port = htons(atoi(server[i].confCherch("port").c_str()));
@@ -87,6 +90,7 @@ class netPlix{
                 while (1)
                 {
                     std::cout << GREEN << "LOOP = " << lop << DEF <<std::endl;
+                    std::cout << "------WAIT NEW CONNECTION------\n";
                     //return only sock<<<<<<< HEADet for wich there are events
                     int wait_fd = epoll_wait(epoll_fd, events, MAX_EVENTS, -1);
                     if (wait_fd == -1){
@@ -97,20 +101,21 @@ class netPlix{
                     {
                         int  fd = events[i].data.fd;
                         std::cout << GREEN << "fd = " << fd << DEF << "/"<< wait_fd <<std::endl;
-                        if (fd == socket_fd[i])
+                        if (std::find(socket_acc.begin(),socket_acc.end(),fd) != socket_acc.end())
                         {
-                                    new_socketfd = accept(socket_fd[i], (struct sockaddr *)&clientaddr, &addrlen);
+                                std::cout << "-----ACC NEW CONNEXOIN-----\n";
+                                    new_socketfd = accept(fd, (struct sockaddr *)&clientaddr, &addrlen);
                                     if (new_socketfd == -1){
                                         //check if fd i empty and or fill 
                                         if ((errno == EAGAIN) || (errno == EWOULDBLOCK)){
-                                        perror("accept");
+                                                perror("accept");
                                         }
                                         exit(0);
                                 
                                     }
                                     // fcntl(new_socketfd,F_SETFL,O_NONBLOCK);
-                                    event.events = EPOLLIN | EPOLLOUT;
                                     event.data.fd = new_socketfd;
+                                    event.events = EPOLLIN | EPOLLOUT;
                                     std::cout << GREEN << "Received connection from " << inet_ntoa(clientaddr.sin_addr) << " on fd : "<< new_socketfd << DEF << std::endl;
                                     epoll_ctl(epoll_fd, EPOLL_CTL_ADD, new_socketfd, &event);
                         }

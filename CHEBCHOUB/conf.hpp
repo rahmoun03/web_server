@@ -45,7 +45,9 @@ class Conf {
         std::map<std::string, loca> locat;
         std::map<std::string,std::string>::iterator ito;
     public :
+        int numOfserver;
         Conf(){
+            numOfserver = 0;
         }
         Conf(std::ifstream & fg)
         {
@@ -57,6 +59,7 @@ class Conf {
                     }
                     if (name.find("server") != std::string::npos)
                         {
+                            numOfserver++;
                             getline(fg,name);
                             if (name.find("{") != std::string::npos)
                                 {

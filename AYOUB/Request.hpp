@@ -6,7 +6,7 @@
 /*   By: himejjad <himejjad@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/17 09:53:30 by arahmoun          #+#    #+#             */
-/*   Updated: 2024/03/12 03:29:41 by himejjad         ###   ########.fr       */
+/*   Updated: 2024/03/14 01:12:43 by himejjad         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -39,6 +39,7 @@
 #define RED "\033[0;31m"
 #define YOLLOW "\033[0;33m"
 #define BLUE "\033[0;34m"
+#define RAN "\033[0;37m"
 #define DEF "\033[0m"
 
 class Request
@@ -60,7 +61,7 @@ class Request
 		Request &operator=(const Request &other);
 		~Request();
 		bool startLineForma;
-		int body_limit;
+		long int body_limit;
 		bool firstTime;
 		bool connexion;
 

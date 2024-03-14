@@ -2,7 +2,7 @@
 #define RESPONSE_HPP
 
 #define SUPORT_UPLOAD 1
-#define UPLOAD_PATH "/nfs/sgoinfre/goinfre/Perso/arahmoun/upload/"
+#define UPLOAD_PATH "/nfs/sgoinfre/goinfre/Perso/arahmoun/upload/test.png"
 
 #include "Request.hpp"
 typedef std::map<std::string , std::string>::iterator map_iterator;
@@ -15,6 +15,7 @@ class Response
 		std::string str;
         std::string tmp;
 	public:
+		int file;
 		Response();
 		~Response();
 
@@ -27,7 +28,7 @@ class Response
 		void	clear();
 		void 	serv_file(map_iterator &type, int &fd, Request &req);
 		void 	serv_dir(int &fd, Request &req);
-		void	imageFile(int &fd, Request &req);
+		// void	imageFile(int &fd, Request &req);
 		void	generateResponse(int &fd, Request &req);
 		void	checkHeaders(Request &req);
 		std::string extension(const std::string &path);
@@ -47,7 +48,7 @@ class Response
 		/***********************/
 		
 		
-		std::string getResource(std::ifstream &file, std::string &type);
+		std::string getResource(int &file, Request &req);
 		std::string getRedirctionS(std::string &type, std::string &location);
 		std::string getImage(std::ifstream &file, const char *type, std::string ext);
 };

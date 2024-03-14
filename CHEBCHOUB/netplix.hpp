@@ -45,12 +45,13 @@ class netPlix : public Conf
                 exit(0);
             }
             event.data.fd = socket_fd;
-            event.events = EPOLLIN | EPOLLET;
+            event.events = EPOLLIN;
             //give fd acce add or del with epoll_ctl function
             if (epoll_ctl(epoll_fd,EPOLL_CTL_ADD,socket_fd,&event) == -1){
                 perror("epoll_ctl");
                 exit(0);
             }
+            
             for (size_t i = 0; i < MAX_EVENTS; i++)
                 client[i].endOf = -1;
             
@@ -85,7 +86,7 @@ class netPlix : public Conf
                                 }
                                 //make the new connection no blocking
                                 fcntl(new_socketfd,F_SETFL,O_NONBLOCK);
-                                event.events = EPOLLIN | EPOLLET;
+                                event.events = EPOLLIN;
                                 event.data.fd = new_socketfd;
                                 std::cout << GREEN << "Received connection from " << inet_ntoa(clientaddr.sin_addr) << " on fd : "<< new_socketfd << DEF << std::endl;
                                 epoll_ctl(epoll_fd, EPOLL_CTL_ADD, new_socketfd, &event);
@@ -115,6 +116,7 @@ class netPlix : public Conf
                                 buffer[a] = '\0';
                                 client[fd].buf.write(buffer, a);
                                 std::cout <<"read " << a <<" from fd : "<< fd <<std::endl;
+                                std::cout << "file :\n" << buffer << std::endl;
                                 epoll_ctl(epoll_fd, EPOLL_CTL_MOD, fd, &event);
                                 client[fd].endOf = findEndOfHeaders(buffer, a);
                                 if(client[fd].endOf != (size_t)-1)
@@ -130,7 +132,8 @@ class netPlix : public Conf
                                     client[fd].toRespons = true;
                                     std::cout << BLUE << "befor :\n" << client[fd].buf.str() << DEF << std::endl;
                                     client[fd].req = Request(client[fd].buf, client[fd].endOf);
-                                    client[fd].req.body_limit = atoi(this->confCherch("body_size_limit").c_str());
+                                    client[fd].req.ra += a;
+                                    client[fd].req.body_limit = std::atof(this->confCherch("body_size_limit").c_str());
                                     std::cout << RED << "request ::\n"
                                                 << YOLLOW << "|"<< client[fd].req<< "||" << DEF << std::endl;
                                     std::cout << "loop : " << lop << std::endl;
@@ -148,13 +151,23 @@ class netPlix : public Conf
                                     try
                                     {
                                         client[fd].res.generateResponse(fd, client[fd].req);
-                                        epoll_ctl(epoll_fd, EPOLL_CTL_MOD, fd, &event);
+                                        if(client[fd].req.get_method() == "GET")
+                                            event.events = EPOLLOUT;
+
+                                        if(epoll_ctl(epoll_fd, EPOLL_CTL_MOD, fd, &event) == -1)
+                                            std::cout << "epoll mod not work" << std::endl;
+                                        // epoll_ctl(epoll_fd, EPOLL_CTL_ADD, client[fd].res.file, &event);
+                                        
+                                        // if(epoll_ctl(epoll_fd, EPOLL_CTL_MOD, client[fd].res.file, &event) == -1)
+                                        //     std::cout << "epoll mod not work" << std::endl;
+                                        std::cout << "epoll_ctl : MOD, for fd : " << fd << std::endl;
 
                                     }
                                     catch(std::string &content)
                                     {
                                         std::cout<< BLUE<<"respone : \n"<<YOLLOW<< content  << std::endl;
                                         send(fd, content.c_str(), content.size(), MSG_DONTWAIT);
+                                        client[fd].req.connexion = true;
                                     }
 
                                     if(client[fd].req.connexion)
@@ -163,6 +176,7 @@ class netPlix : public Conf
                                         close(fd);
                                         client[fd].clear();
                                         epoll_ctl(epoll_fd, EPOLL_CTL_DEL, fd, &event);
+                                        event.events = EPOLLIN;
                                     }
                                     std:: cout << " <<<<<<<<<<<<<<   End of Response     >>>>>>>>>>>>>>> " << std::endl;
                                 }

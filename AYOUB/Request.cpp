@@ -6,7 +6,7 @@
 /*   By: himejjad <himejjad@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/17 11:26:36 by arahmoun          #+#    #+#             */
-/*   Updated: 2024/03/12 03:26:13 by himejjad         ###   ########.fr       */
+/*   Updated: 2024/03/14 01:11:29 by himejjad         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -48,7 +48,7 @@ Request::Request(std::stringstream &buf, size_t &endOf)
 			body << key << buf.rdbuf();
 		}
 		chun = 0;
-		ra = body.str().size();
+		ra = 0;
 		firstTime = true;
 		// buf.str("");
 		// std::cout << "\n--------------------------------------------------------\n" <<std::endl;

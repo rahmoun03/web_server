@@ -103,7 +103,6 @@ class netPlix{
                         std::cout << GREEN << "fd = " << fd << DEF << "/"<< wait_fd <<std::endl;
                         if (std::find(socket_acc.begin(),socket_acc.end(),fd) != socket_acc.end())
                         {
-                                std::cout << "-----ACC NEW CONNEXOIN-----\n";
                                     new_socketfd = accept(fd, (struct sockaddr *)&clientaddr, &addrlen);
                                     if (new_socketfd == -1){
                                         //check if fd i empty and or fill 
@@ -113,14 +112,18 @@ class netPlix{
                                         exit(0);
                                 
                                     }
-                                    // fcntl(new_socketfd,F_SETFL,O_NONBLOCK);
+                                    std::cout << "-----ACC NEW CONNEXOIN-----\n";
                                     event.data.fd = new_socketfd;
-                                    event.events = EPOLLIN | EPOLLOUT;
+                                    event.events = EPOLLIN;
                                     std::cout << GREEN << "Received connection from " << inet_ntoa(clientaddr.sin_addr) << " on fd : "<< new_socketfd << DEF << std::endl;
                                     epoll_ctl(epoll_fd, EPOLL_CTL_ADD, new_socketfd, &event);
                         }
+                        else if ((events[i].events & EPOLLERR) || (events[i].events & EPOLLHUP) || (!(events[i].events & EPOLLIN))) {
+                            close(fd);
+                        }
                         else
                         {
+                            std::cout << "---------HERE INSIDE TRY---------\n";
                             try
                             {
                                 

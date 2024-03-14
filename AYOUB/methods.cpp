@@ -56,11 +56,21 @@ void	Response::POST(int &fd, Request &req)
     (void) req;
     if(req.get_header("Transfer-Encoding:").empty())
     {
+        // std::cout << "=-=-=-=-=-=-=>type: " << path << std::endl;
+        // exit(0);
         if (req.firstTime)
         {
+            std::string type = static_cast<std::string>(req.get_header("Content-Type:"));
+            // std::cout << "=-=-=-=-=-=-=>type: " << type << std::endl;
+            type.erase(std::remove_if(type.begin(),type.end(),isspace),type.end());
+            type.erase(type.find("/"));
+            type.push_back('.');
+            std::string path = ("./www/upload/"+ type + req.get_header("Content-Type:").substr(req.get_header("Content-Type:").find("/") + 1));
             std::string str = req.get_body();
-            out.open("test.mp4", std::ios::binary);
+            std::cout << "=-=-=-=-=-=-=>type:" << path << std::endl;
+            out.open(path.c_str());
             out.write(str.c_str(), str.size());
+            // exit(1);
             out.flush();
             req.firstTime = false;
         }

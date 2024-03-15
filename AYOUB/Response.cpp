@@ -93,14 +93,14 @@ void	Response::serv_dir(int &fd, Request &req)
             if(*(path.end()-1) == '/')
             {
                 path += "index.html";
-                std::cout << "open index file "<< std::endl;
+                // std::cout << "open index file "<< std::endl;
                 std::map<std::string , std::string> mime_map = mimeTypes();
                 map_iterator it = mime_map.find(extension(path));
                 if(it != mime_map.end() && fileExists(path))
                 {
                     file = open(path.c_str(), O_RDONLY);
-                    std::cout << "the URL is a file : " << it->second << std::endl;
-                    std::cout << " <  ---------- YES --------->\n" << std::endl;
+                    // std::cout << "the URL is a file : " << it->second << std::endl;
+                    // std::cout << " <  ---------- YES --------->\n" << std::endl;
                     std::stringstream response;
                     response << "HTTP/1.1 200 OK\r\n"
                                 << "Content-Type: " << it->second << "\r\n"
@@ -111,7 +111,7 @@ void	Response::serv_dir(int &fd, Request &req)
                                 << "\r\n";
 
 
-                    std::cout<< BLUE<<"respone : \n"<<YOLLOW<< response.str()  << std::endl;
+                    // std::cout<< BLUE<<"respone : \n"<<YOLLOW<< response.str()  << std::endl;
                     send(fd, response.str().c_str(), response.str().size(),0);
                     req.firstTime = false;
 
@@ -151,7 +151,7 @@ void	Response::serv_dir(int &fd, Request &req)
         else
         {
             std::string content = getResource(file, req);
-            std::cout<< BLUE<<"respone : \n"<<YOLLOW<< content  << std::endl;
+            // std::cout<< BLUE<<"respone : \n"<<YOLLOW<< content  << std::endl;
             send(fd, content.c_str(), content.size(), 0);
             // req.connexion = true;
         }
@@ -188,9 +188,9 @@ void	Response::checkHeaders(Request &req)
         std::cout << "protocol is : "<< req.get_protocol() << std::endl;
         throw(httpVersion());
     }
-    if( req.body_limit < atoi(req.get_header("Content-Length:").c_str()))
+    if( req.body_limit < std::atol(req.get_header("Content-Length:").c_str()))
     {
-        std::cout << "" << std::endl;
+        std::cout << "Entity too large : "<< req.body_limit << " < " << std::atol(req.get_header("Content-Length:").c_str()) << std::endl;
         throw(EntityTooLarge());
     }
     if(req.get_path().size() > 2048)

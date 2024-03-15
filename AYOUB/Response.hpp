@@ -2,7 +2,9 @@
 #define RESPONSE_HPP
 
 #define SUPORT_UPLOAD 1
-#define UPLOAD_PATH "/nfs/sgoinfre/goinfre/Perso/arahmoun/upload/test.png"
+// #define UPLOAD_PATH "/nfs/sgoinfre/goinfre/Perso/arahmoun/upload/test.png"
+#define UPLOAD_PATH "www/server1/upload/test.mp4"
+
 
 #include "Request.hpp"
 typedef std::map<std::string , std::string>::iterator map_iterator;

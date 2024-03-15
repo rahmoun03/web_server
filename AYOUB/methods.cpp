@@ -77,9 +77,9 @@ void	Response::POST(int &fd, Request &req)
             buffer[a] = '\0';
             out.write(buffer, a);
             out.flush();
-            std::cout << "read size : " <<req.ra << "\n content length : "<< req.get_header("Content-Length:") <<  std::endl;
+            std::cout << "read size : " << req.ra << "\n content length : "<< req.get_header("Content-Length:") <<  std::endl;
         }
-        if(req.ra >= (size_t )atoi(req.get_header("Content-Length:").c_str()))
+        if(req.ra >= (size_t )atof(req.get_header("Content-Length:").c_str()))
             req.connexion = true;
     }
     else if(req.get_header("Transfer-Encoding:") == "chunked")

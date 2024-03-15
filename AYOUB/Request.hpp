@@ -6,7 +6,7 @@
 /*   By: ahbajaou <ahbajaou@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/17 09:53:30 by arahmoun          #+#    #+#             */
-/*   Updated: 2024/03/04 17:25:22 by ahbajaou         ###   ########.fr       */
+/*   Updated: 2024/03/14 22:13:24 by ahbajaou         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -28,12 +28,18 @@
 #include <iterator>
 #include <algorithm>
 #include <arpa/inet.h>
+#include <sys/stat.h>
+#include <ctime>
+#include <bits/stdc++.h> 
 
-#define SERVER_ROOT "./assets"
+
+
+#define SERVER_ROOT "./www/server1"
 #define GREEN "\033[0;32m"
 #define RED "\033[0;31m"
 #define YOLLOW "\033[0;33m"
 #define BLUE "\033[0;34m"
+#define RAN "\033[0;37m"
 #define DEF "\033[0m"
 
 class Request
@@ -47,17 +53,22 @@ class Request
 		std::stringstream body;
 
 	public:
-		// std::ofstream out;
+		int chun;
+		size_t ra;
+		bool startLineForma;
+		long int body_limit;
+		bool firstTime;
+		bool connexion;
+		
+		
 		Request();
 		Request(const Request &other);
 		Request &operator=(const Request &other);
 		~Request();
-		bool connexion;
-		bool firstTime;
 
 		void clear();
 		Request(std::stringstream &buf, size_t &endOf);
-		const std::string get_path() const;
+		std::string &get_path();
 		const std::string get_method() const;
 		const std::string get_body() const;
 		const std::string get_protocol() const;
@@ -66,7 +77,7 @@ class Request
 };
 
 
-std::ostream &operator<<(std::ostream &os, const Request &other);
+std::ostream &operator<<(std::ostream &os, Request &other);
 size_t findEndOfHeaders(char* buffer, ssize_t bufferSize);
 
 #endif

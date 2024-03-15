@@ -101,6 +101,7 @@ class Conf {
                     exit(0);
                 }
         }
+        //this for config file data
         std::string confCherch(std::string name)
         {
             if ((ito = map.find(name)) != map.end()){

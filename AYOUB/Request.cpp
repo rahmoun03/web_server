@@ -6,7 +6,7 @@
 /*   By: ahbajaou <ahbajaou@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/17 11:26:36 by arahmoun          #+#    #+#             */
-/*   Updated: 2024/03/02 16:00:55 by ahbajaou         ###   ########.fr       */
+/*   Updated: 2024/03/14 22:13:15 by ahbajaou         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -29,18 +29,26 @@ Request::Request(std::stringstream &buf, size_t &endOf)
 		startline >> method;
 		startline >> path;
 		startline >> protocol;
-		path = SERVER_ROOT + path;
+		if(startline.cur)
+		{
+			std::cout << "nice start line request : " << startline.cur << std::endl;
+			startLineForma = true;
+		}
+		// path = SERVER_ROOT + path;
 		
 		while(i < endOf && buf >> key && std::getline(buf, value))
 		{
 			headers[key] = value;
 			i += key.length() + value.length() + 1;
 		}
+		std:: cout << (endOf + 4) << " > " << buf.str().size() << std::endl;
 		if(buf && (endOf + 4) < buf.str().size())
 		{
 			buf >> key;
 			body << key << buf.rdbuf();
 		}
+		chun = 0;
+		ra = 0;
 		firstTime = true;
 		// buf.str("");
 		// std::cout << "\n--------------------------------------------------------\n" <<std::endl;
@@ -81,7 +89,7 @@ Request &Request::operator=(const Request &other)
 	return *this;
 }
 
-std::ostream &operator<<(std::ostream &os, const Request &other)
+std::ostream &operator<<(std::ostream &os, Request &other)
 {
 	os << other.get_method() << " ";
 	os << other.get_path() << " ";
@@ -102,7 +110,13 @@ void Request::clear()
 	protocol.clear();
 	headers.clear();
 	body.str("");
+
+	startLineForma = false;
+	body_limit = 0;
+	firstTime = false;
 	connexion = false;
+	ra = 0;
+	chun = 0;
 }
 
 const std::map<std::string, std::string> &Request::get_headers() const
@@ -112,7 +126,14 @@ const std::map<std::string, std::string> &Request::get_headers() const
 
 const std::string Request::get_header(const char *key)
 {
-    return (headers[key]);
+	if(headers.find(key) != headers.end())
+	{
+		std::stringstream ss(headers.find(key)->second);
+		std::string ret;
+		ss >> ret;
+		return ret;
+	}
+    return ("");
 }
 
 
@@ -123,7 +144,7 @@ const std::string Request::get_body() const
 }
 
 
-const std::string Request::get_path() const
+std::string &Request::get_path()
 {
 	return path;
 }

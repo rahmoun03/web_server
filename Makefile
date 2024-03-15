@@ -2,7 +2,8 @@ NAME = Web_server
 
 CHAB_SRC = CHEBCHOUB/main.cpp
 
-AYOUB_SRC = AYOUB/Request.cpp AYOUB/Response.cpp
+AYOUB_SRC = AYOUB/Request.cpp AYOUB/Response.cpp AYOUB/mime_types.cpp AYOUB/Errors_assets.cpp \
+			AYOUB/methods.cpp
 
 SWIRI_SRC = 
  
@@ -12,7 +13,6 @@ FLAGS = -Wall -Wextra -Werror -std=c++98 -fsanitize=address -g3
 
 $(NAME) : $(SRC)
 	c++ $(FLAGS) $(SRC) -o $@
-	./${NAME} config_file.conf
 
 all : $(NAME)
 

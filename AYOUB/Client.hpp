@@ -24,6 +24,7 @@ void Client::clear()
     toRespons = false;
     endOf = -1;
     req.clear();
+    res.clear();
 }
 
 Client::Client(/* args */)

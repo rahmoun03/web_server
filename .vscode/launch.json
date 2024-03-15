@@ -3,11 +3,22 @@
   "configurations": [
     {
       "name": "C/C++ Runner: Debug Session",
-      "type": "lldb",
+      "type": "cppdbg",
       "request": "launch",
       "args": [],
-      "cwd": "/Users/arahmoun/Desktop/web_server/CHEBCHOUB",
-      "program": "/Users/arahmoun/Desktop/web_server/CHEBCHOUB/build/Debug/outDebug"
+      "stopAtEntry": false,
+      "externalConsole": false,
+      "cwd": "/nfs/homes/ahbajaou/Desktop/web_server",
+      "program": "/nfs/homes/ahbajaou/Desktop/web_server/build/Debug/outDebug",
+      "MIMode": "gdb",
+      "miDebuggerPath": "gdb",
+      "setupCommands": [
+        {
+          "description": "Enable pretty-printing for gdb",
+          "text": "-enable-pretty-printing",
+          "ignoreFailures": true
+        }
+      ]
     }
   ]
 }

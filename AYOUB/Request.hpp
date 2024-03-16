@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Request.hpp                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: ahbajaou <ahbajaou@student.42.fr>          +#+  +:+       +#+        */
+/*   By: arahmoun <arahmoun@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/17 09:53:30 by arahmoun          #+#    #+#             */
-/*   Updated: 2024/03/14 22:13:24 by ahbajaou         ###   ########.fr       */
+/*   Updated: 2024/03/16 01:43:54 by arahmoun         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -39,7 +39,7 @@
 #define RED "\033[0;31m"
 #define YOLLOW "\033[0;33m"
 #define BLUE "\033[0;34m"
-#define RAN "\033[0;37m"
+#define RAN "\033[0;38m"
 #define DEF "\033[0m"
 
 class Request

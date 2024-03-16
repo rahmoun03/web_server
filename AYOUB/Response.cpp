@@ -2,10 +2,11 @@
 
 #include "Response.hpp"
 
-void    Response::generateResponse(int &fd, Request &req)
+void    Response::generateResponse(int &fd, Request &req, uint32_t &event)
 {
     checkHeaders(req);
     // std::string
+    (void)event;
     if (req.get_method() == "GET")
     {
         std::cout << RED << "GET METHOD" << DEF << std::endl;

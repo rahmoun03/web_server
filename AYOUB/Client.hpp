@@ -8,6 +8,7 @@ class Client
     public:
         std::stringstream buf;
         bool toRespons;
+        int server_index;
         size_t endOf;
         Request req;
         Response res;
@@ -23,13 +24,15 @@ void Client::clear()
     buf.str("");
     toRespons = false;
     endOf = -1;
+    server_index = 0;
     req.clear();
     res.clear();
     std::cout << RED <<"clear Client object" << DEF<< std::endl;
 }
 
-Client::Client(/* args */)
+Client::Client()
 {
+    server_index = 0;
 }
 
 Client::~Client()

@@ -1,7 +1,9 @@
 #include "Response.hpp"
 
-void	Response::GET(int &fd, Request &req)
+void	Response::GET(int &fd, Request &req, Conf &server)
 {
+    (void) server;
+
     std::map<std::string, std::string> map = ErrorAssets();
     map_iterator it = map.find(req.get_path());
     if(req.firstTime)
@@ -53,11 +55,11 @@ unsigned long convertHexToDec(std::string hex)
     return (decimal);
 }
 
-void	Response::POST(int &fd, Request &req)
+void	Response::POST(int &fd, Request &req, Conf &server)
 {
 
-    (void) fd;
-    (void) req;
+    (void) server;
+
     if(req.get_header("Transfer-Encoding:").empty())
     {
         if (req.firstTime)
@@ -127,8 +129,9 @@ void	Response::POST(int &fd, Request &req)
     }
 }
 
-void	Response::DELETE(int &fd, Request &req){
+void	Response::DELETE(int &fd, Request &req, Conf &server){
     (void) fd;
     (void) req;
+    (void) server;
     return;
 }

@@ -2,33 +2,33 @@
 
 #include "Response.hpp"
 
-void    Response::generateResponse(int &fd, Request &req, uint32_t &event)
+void    Response::generateResponse(int &fd, Request &req, uint32_t &event, Conf &server)
 {
     checkHeaders(req);
     // std::string
     (void)event;
     if (req.get_method() == "GET")
     {
-        std::cout << RED << "GET METHOD" << DEF << std::endl;
-        GET(fd, req);
+        std::cout << RED << "GET METHOD for " << DEF << server.confCherch("server_name") << std::endl;
+        GET(fd, req, server);
+    
     }
-
     else if(req.get_method() == "POST")
     {
         std::cout << RED << "POST METHOD" << DEF << std::endl;
         if(SUPORT_UPLOAD)
-            POST(fd, req);
+            POST(fd, req, server);
         else
         {
             std::cout << "dont suport upload" << std::endl;
-            GET(fd, req);
+            GET(fd, req, server);
         }
     }
 
     else if(req.get_method() == "DELETE")
     {
         std::cout << RED << "DELETE METHOD" << DEF << std::endl;
-        DELETE(fd, req);
+        DELETE(fd, req, server);
     }
 
     else

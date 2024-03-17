@@ -51,8 +51,8 @@ class netPlix{
                     Conf conf(fg);
                     conf.getLocal();
                     server[serverNum] = conf;
-                    std::cout << "---->  : " << server[serverNum].confCherch("server_name") << std::endl;
-                    serverNum++;
+                    // std::cout << "---->  : " << server[serverNum].confCherch("server_name") << std::endl;
+                    serverNum = conf.numOfserver;
                 }
                 fg.close();
             }

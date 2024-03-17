@@ -54,9 +54,11 @@ class Conf {
                 std::cout << name << std::endl;
                 try{
                     getline(fg,name);
-                    while (name.empty()){
-                        getline(fg,name);
-                    }
+                    // while (name.empty()){
+                    //     getline(fg,name);
+                        if (name.empty())
+                            return ;
+                    // }
                     if (name.find("server") != std::string::npos)
                         {
                             numOfserver++;

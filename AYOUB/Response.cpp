@@ -14,7 +14,7 @@ void    Response::generateResponse(int &fd, Request &req)
 
     else if(req.get_method() == "POST")
     {
-        std::cout << RED << "POST METHOD" << DEF << std::endl;
+        // std::cout << RED << "POST METHOD" << DEF << std::endl;
         if(SUPORT_UPLOAD)
             POST(fd, req);
         else

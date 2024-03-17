@@ -2,7 +2,9 @@
 #define RESPONSE_HPP
 
 #define SUPORT_UPLOAD 1
-#define UPLOAD_PATH "/nfs/sgoinfre/goinfre/Perso/arahmoun/upload/test.png"
+// #define UPLOAD_PATH "/nfs/sgoinfre/goinfre/Perso/himejjad/upload/"
+#define UPLOAD_PATH "www/server1/upload/"
+
 
 #include "Request.hpp"
 typedef std::map<std::string , std::string>::iterator map_iterator;
@@ -14,6 +16,7 @@ class Response
 		size_t decimal;
 		std::string str;
         std::string tmp;
+		std::string path;
 	public:
 		int file;
 		Response();
@@ -56,7 +59,7 @@ bool directoryExists(std::string path);
 bool fileExists(std::string path);
 std::string getCurrentDateTime();
 
-std::map<std::string, std::string> mimeTypes();
+std::map<std::string, std::string> mimeTypes(); 
 std::map<std::string, std::string> ErrorAssets();
 
 

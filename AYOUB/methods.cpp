@@ -53,17 +53,38 @@ long long convertHexToDec(std::string hex)
     return (decimal);
 }
 
+// void check_type(std::string &dlt)
+// {
+//     if()
+// }
+
 void	Response::POST(int &fd, Request &req)
 {
 
     (void) fd;
     (void) req;
+    static int i;
     if(req.get_header("Transfer-Encoding:").empty())
     {
         if (req.firstTime)
         {
+            std::string type = static_cast<std::string>(req.get_header("Content-Type:"));
+            std::string tmp_ = type.substr(type.find("/") + 1);
+            std::cout << tmp_ << std::endl;
+            type.erase(type.find("/"));
+            type.push_back('.');
+            path = UPLOAD_PATH + ("upload." + tmp_);
+            while (fileExists(path))
+            {
+                i++;
+                std::stringstream ss;
+                ss << i;
+                std::string s;
+                ss >> s;
+                path = UPLOAD_PATH + ("upload" + s + (".") + tmp_);
+            }
             std::string str = req.get_body();
-            out.open((UPLOAD_PATH), std::ios::binary);
+            out.open(path.c_str(), std::ios::binary);
             out.write(str.c_str(), str.size());
             out.flush();
             req.firstTime = false;
@@ -77,23 +98,46 @@ void	Response::POST(int &fd, Request &req)
             buffer[a] = '\0';
             out.write(buffer, a);
             out.flush();
-            std::cout << "read size : " <<req.ra << "\n content length : "<< req.get_header("Content-Length:") <<  std::endl;
         }
-        if(req.ra >= (size_t )atoi(req.get_header("Content-Length:").c_str()))
+        if(req.ra >= (size_t )atof(req.get_header("Content-Length:").c_str()))
+        {
             req.connexion = true;
+             std::ifstream fi("www/server1/suc.html");
+            std::stringstream response;
+            response << "HTTP/1.1 201 Created\r\n"
+                    << "\r\n"
+                    << fi.rdbuf();
+            fi.close();
+            send(fd, response.str().c_str(), response.str().size(),0);
+        }
     }
     else if(req.get_header("Transfer-Encoding:") == "chunked")
     {
         std::string line; 
         if (req.firstTime)
         {
+            std::string type = static_cast<std::string>(req.get_header("Content-Type:"));
+            std::string tmp_ = type.substr(type.find("/") + 1);
+            std::cout << tmp_ << std::endl;
+            type.erase(type.find("/"));
+            type.push_back('.');
+            std::string path = UPLOAD_PATH + ("upload." + tmp_);
+            while (fileExists(path))
+            {
+                i++;
+                std::stringstream ss;
+                ss << i;
+                std::string s;
+                ss >> s;
+                path = UPLOAD_PATH + ("upload" + s + (".") + tmp_);
+            }
             str = req.get_body();
             std::istringstream f(str);
             std::getline(f, line);
             std::cout << line <<std::endl;
             decimal = convertHexToDec(line);
             req.chun++;
-            out.open((UPLOAD_PATH), std::ios::binary);
+            out.open(path.c_str(), std::ios::binary);
             str.erase(0,line.size() + 1);
             tmp.append(str.c_str(), str.size());
             req.firstTime = false;
@@ -105,7 +149,6 @@ void	Response::POST(int &fd, Request &req)
             a = recv(fd, buffer, 1023, 0);
             buffer[a] = '\0';
             tmp.append(buffer, a);
-            std::cout << buffer << std::endl;
             if(tmp.size() >= decimal)
             {
                 size_t distance = tmp.size() - decimal;
@@ -114,7 +157,6 @@ void	Response::POST(int &fd, Request &req)
                 tmp = tmp.substr(decimal + 2, distance);
                 std::istringstream f(tmp);
                 std::getline(f, line);
-                std::cout << RED<< line << DEF<<std::endl;
                 decimal = convertHexToDec(line);
                 req.chun++;
                 tmp.erase(0,line.size() + 1);
@@ -122,13 +164,75 @@ void	Response::POST(int &fd, Request &req)
         }
         if (decimal == 0){
             req.connexion = true;
-            std::cout<< "number : " << req.chun << std::endl;
+            std::ifstream fi("www/server1/suc.html");
+            std::stringstream response;
+            response << "HTTP/1.1 201 Created\r\n"
+                    << "\r\n"
+                    << fi.rdbuf();
+            fi.close();
+            send(fd, response.str().c_str(), response.str().size(),0);
         }
     }
 }
 
-void	Response::DELETE(int &fd, Request &req){
-    (void) fd;
-    (void) req;
+void	Response::DELETE(int &fd, Request &req)
+{
+    std::map<std::string, std::string> map = ErrorAssets();
+    map_iterator it = map.find(req.get_path());
+    if(req.firstTime)
+    {
+
+        std::cout << "old URL : " << req.get_path() << std::endl;
+        if(it != map.end())
+            req.get_path() = it->second;
+        else
+            req.get_path() = (SERVER_ROOT + req.get_path());
+        std::cout << "new URL : " << req.get_path() << std::endl;
+    }
+    std::cout << "you want to delete : " << req.get_path() << std::endl;
+    if(fileExists(req.get_path()))
+    {
+        if (remove(req.get_path().c_str()) != 0)
+        {
+            std::stringstream response;
+            response << "HTTP/1.1 204 No Content\r\n"
+             << "Connection: close\rEncoding\n"
+             << "Server: " << "chabchoub" << "\r\n"
+             << "Date: " << getCurrentDateTime() << "\r\n"
+             << "\r\n";
+            
+            send(fd, response.str().c_str(), response.str().size(), 0);
+            req.connexion = true;
+        }
+        else
+        {
+            std::ifstream ff("www/server1/delete.html", std::ios::binary);
+            
+            std::stringstream response;
+            response << "HTTP/1.1 200 OK\r\n"
+             << "Content-Type: text/html\r\n"
+             
+             << "Connection: close\rEncoding\n"
+             << "Server: " << "chabchoub" << "\r\n"
+             << "Date: " << getCurrentDateTime() << "\r\n"
+             << "\r\n"
+             << ff.rdbuf();
+            
+            std::cout << "response :\n" << response.str()<<std::endl;
+
+            if(send(fd, response.str().c_str(), response.str().size(), 0) == -1)
+            {
+                perror("send :");
+                exit(1);
+            }
+            req.connexion = true;
+            ff.close();
+            // std::cout << "the file was deleted ..." << std::endl;
+        }
+    }
+    else
+    {
+        throw (notFound());
+    }    
     return;
 };

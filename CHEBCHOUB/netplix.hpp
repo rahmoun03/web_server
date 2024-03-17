@@ -59,7 +59,7 @@ class netPlix : public Conf
             std::cout << "---------------------\n";
             while (1)
             {
-                std::cout << GREEN << "LOOP = " << lop << DEF <<std::endl;
+                // std::cout << GREEN << "LOOP = " << lop << DEF <<std::endl;
                 //return only sock<<<<<<< HEADet for wich there are events
                 int wait_fd = epoll_wait(epoll_fd, events, MAX_EVENTS, -1);
                 if (wait_fd == -1){
@@ -69,7 +69,7 @@ class netPlix : public Conf
                 for (int i = 0; i < wait_fd; i++)
                 {
                     int  fd = events[i].data.fd;
-                    std::cout << GREEN << "fd = " << fd << DEF << "/"<< wait_fd <<std::endl;
+                    // std::cout << GREEN << "fd = " << fd << DEF << "/"<< wait_fd <<std::endl;
                     if (fd == socket_fd)
                     {
                         //NEW CONNECTION
@@ -103,47 +103,47 @@ class netPlix : public Conf
                         try
                         {
                             
-                            std::cout << "endOf = " << client[fd].endOf << " ,for fd : "<< fd << std::endl;
+                            // std::cout << "endOf = " << client[fd].endOf << " ,for fd : "<< fd << std::endl;
                             ssize_t a = -1;
                             if (client[fd].endOf == (size_t)-1)
                             {
                                 char buffer[1024];
                                 if ((a = recv(fd, buffer, 1023, 0)) == -1)
                                 {
-                                    std::cerr << "failure in read request !" << std::endl;
+                                    // std::cerr << "failure in read request !" << std::endl;
                                     exit(1);
                                 }
                                 buffer[a] = '\0';
                                 client[fd].buf.write(buffer, a);
-                                std::cout <<"read " << a <<" from fd : "<< fd <<std::endl;
-                                std::cout << "file :\n" << buffer << std::endl;
+                                // std::cout <<"read " << a <<" from fd : "<< fd <<std::endl;
+                                // std::cout << "file :\n" << buffer << std::endl;
                                 epoll_ctl(epoll_fd, EPOLL_CTL_MOD, fd, &event);
                                 client[fd].endOf = findEndOfHeaders(buffer, a);
                                 if(client[fd].endOf != (size_t)-1)
                                     client[fd].endOf = client[fd].buf.str().size() -  (a - client[fd].endOf);
-                                std::cout << "client[fd].endOf now = " << client[fd].endOf << " ,for fd : "<<fd<< std::endl;
+                                // std::cout << "client[fd].endOf now = " << client[fd].endOf << " ,for fd : "<<fd<< std::endl;
                                 
                             }
                             if((a > -1 && a < 1023) || (client[fd].endOf != (size_t)-1))
                             {
                                 if(!client[fd].toRespons)
                                 {
-                                    std:: cout << " <<<<<<<<<<<<<<   Start of Request     >>>>>>>>>>>>>>> " << std::endl;
+                                    // std:: cout << " <<<<<<<<<<<<<<   Start of Request     >>>>>>>>>>>>>>> " << std::endl;
                                     client[fd].toRespons = true;
-                                    std::cout << BLUE << "befor :\n" << client[fd].buf.str() << DEF << std::endl;
+                                    // std::cout << BLUE << "befor :\n" << client[fd].buf.str() << DEF << std::endl;
                                     client[fd].req = Request(client[fd].buf, client[fd].endOf);
                                     client[fd].req.ra += a;
                                     client[fd].req.body_limit = std::atof(this->confCherch("body_size_limit").c_str());
                                     std::cout << RED << "request ::\n"
                                                 << YOLLOW << "|"<< client[fd].req<< "||" << DEF << std::endl;
-                                    std::cout << "loop : " << lop << std::endl;
+                                    // std::cout << "loop : " << lop << std::endl;
                                     // exit(0);
-                                    std:: cout << " <<<<<<<<<<<<<<   End of Request     >>>>>>>>>>>>>>> " << std::endl;
+                                    // std:: cout << " <<<<<<<<<<<<<<   End of Request     >>>>>>>>>>>>>>> " << std::endl;
                                 }
                                 // Handle request and send response
                                 if(client[fd].toRespons)
                                 {
-                                    std:: cout << " <<<<<<<<<<<<<<   Start of Response     >>>>>>>>>>>>>>> " << std::endl;
+                                    // std:: cout << " <<<<<<<<<<<<<<   Start of Response     >>>>>>>>>>>>>>> " << std::endl;
                                     
                                     
                                     
@@ -160,7 +160,7 @@ class netPlix : public Conf
                                         
                                         // if(epoll_ctl(epoll_fd, EPOLL_CTL_MOD, client[fd].res.file, &event) == -1)
                                         //     std::cout << "epoll mod not work" << std::endl;
-                                        std::cout << "epoll_ctl : MOD, for fd : " << fd << std::endl;
+                                        // std::cout << "epoll_ctl : MOD, for fd : " << fd << std::endl;
 
                                     }
                                     catch(std::string &content)
@@ -178,7 +178,7 @@ class netPlix : public Conf
                                         epoll_ctl(epoll_fd, EPOLL_CTL_DEL, fd, &event);
                                         event.events = EPOLLIN;
                                     }
-                                    std:: cout << " <<<<<<<<<<<<<<   End of Response     >>>>>>>>>>>>>>> " << std::endl;
+                                    // std:: cout << " <<<<<<<<<<<<<<   End of Response     >>>>>>>>>>>>>>> " << std::endl;
                                 }
                             }
                         }

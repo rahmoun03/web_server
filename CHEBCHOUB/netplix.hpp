@@ -6,7 +6,7 @@
 /*   By: himejjad <himejjad@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/03/17 03:09:09 by himejjad          #+#    #+#             */
-/*   Updated: 2024/03/17 21:34:31 by himejjad         ###   ########.fr       */
+/*   Updated: 2024/03/17 22:04:21 by himejjad         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -63,8 +63,8 @@ class netPlix{
                     Conf conf(fg);
                     conf.getLocal();
                     server[serverNum] = conf;
-                    std::cout << "---->  : " << server[serverNum].confCherch("server_name") << std::endl;
-                    serverNum++;
+                    // std::cout << "---->  : " << server[serverNum].confCherch("server_name") << std::endl;
+                    serverNum = conf.numOfserver;
                 }
                 fg.close();
             }
@@ -118,7 +118,8 @@ class netPlix{
                 {
                     int  fd = events[i].data.fd;
                     std::cout << GREEN << "fd = " << fd << DEF << " / "<< wait_fd <<" ,his event is : "<< (events[i].events == EPOLLIN ? "EPOLLIN" : "EPOLLOUT") <<std::endl;
-                    if (std::find(socket_acc.begin(),socket_acc.end(),fd) != socket_acc.end())
+                    std::vector<int>::iterator it_serv = std::find(socket_acc.begin(),socket_acc.end(),fd);
+                    if (it_serv != socket_acc.end())
                     {
                         new_socketfd = accept(fd, (struct sockaddr *)&clientaddr, &addrlen);
                         if (new_socketfd == -1){
@@ -132,8 +133,8 @@ class netPlix{
                         event.events = EPOLLIN;
                         epoll_ctl(epoll_fd, EPOLL_CTL_ADD, new_socketfd, &event);
 
-
-                        std::string name = server[std::distance(socket_acc.begin(),std::find(socket_acc.begin(),socket_acc.end(),fd))].confCherch("server_name");
+                        client[new_socketfd].server_index = std::distance(socket_acc.begin(), it_serv);
+                        std::string name = server[client[new_socketfd].server_index].confCherch("server_name");
                         std::cout << GREEN << name << " Received connection from " << inet_ntoa(clientaddr.sin_addr) << " on fd : "<< new_socketfd << DEF << std::endl;
                     }
                     else if ((events[i].events & EPOLLERR) || (events[i].events & EPOLLHUP)) {
@@ -191,7 +192,7 @@ class netPlix{
                                 {
                                     std::cout << GREEN << "parse the request ... for " << DEF << fd << std::endl;
                                     client[fd].req = Request(client[fd].buf, client[fd].endOf);
-                                    client[fd].req.ra += client[fd].buf.str().size();
+                                    client[fd].req.ra += (client[fd].buf.str().size() - client[fd].endOf);
                                     client[fd].req.body_limit = std::atof(server[0].confCherch("body_size_limit").c_str());
 
                                     /***************************/
@@ -215,7 +216,7 @@ class netPlix{
                             {
                                 try
                                 {
-                                    client[fd].res.generateResponse(fd, client[fd].req, events[i].events, server, socket_acc);
+                                    client[fd].res.generateResponse(fd, client[fd].req, events[i].events, server[client[fd].server_index]);
                                 }
                                 catch(std::string &content)
                                 {

@@ -6,7 +6,7 @@
 /*   By: himejjad <himejjad@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/17 11:26:36 by arahmoun          #+#    #+#             */
-/*   Updated: 2024/03/17 02:50:42 by himejjad         ###   ########.fr       */
+/*   Updated: 2024/03/17 22:03:40 by himejjad         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -41,7 +41,7 @@ Request::Request(std::stringstream &buf, size_t &endOf)
 			headers[key] = value;
 			i += key.length() + value.length() + 1;
 		}
-		std:: cout << (endOf + 4) << " > " << buf.str().size() << std::endl;
+		std:: cout << (endOf + 4) << " < " << buf.str().size() << std::endl;
 		if(buf && (endOf + 4) < buf.str().size())
 		{
 			buf >> key;

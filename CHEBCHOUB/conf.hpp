@@ -42,9 +42,9 @@ class Conf {
         std::string name;
         std::map<std::string, loca>::iterator it;
         std::map<std::string,std::string> loc1;
-        std::map<std::string, loca> locat;
         std::map<std::string,std::string>::iterator ito;
     public :
+        std::map<std::string, loca> locat;
         int numOfserver;
         Conf(){
             numOfserver = 0;
@@ -54,9 +54,11 @@ class Conf {
                 std::cout << name << std::endl;
                 try{
                     getline(fg,name);
-                    while (name.empty()){
-                        getline(fg,name);
-                    }
+                    // while (name.empty()){
+                    //     getline(fg,name);
+                        if (name.empty())
+                            return ;
+                    // }
                     if (name.find("server") != std::string::npos)
                         {
                             numOfserver++;

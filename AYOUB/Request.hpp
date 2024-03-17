@@ -6,7 +6,7 @@
 /*   By: himejjad <himejjad@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/17 09:53:30 by arahmoun          #+#    #+#             */
-/*   Updated: 2024/03/14 01:12:43 by himejjad         ###   ########.fr       */
+/*   Updated: 2024/03/17 02:50:50 by himejjad         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -39,7 +39,7 @@
 #define RED "\033[0;31m"
 #define YOLLOW "\033[0;33m"
 #define BLUE "\033[0;34m"
-#define RAN "\033[0;37m"
+#define RAN "\033[0;38m"
 #define DEF "\033[0m"
 
 class Request
@@ -56,14 +56,16 @@ class Request
 	public:
 		int chun;
 		size_t ra;
-		Request();
-		Request(const Request &other);
-		Request &operator=(const Request &other);
-		~Request();
 		bool startLineForma;
 		long int body_limit;
 		bool firstTime;
 		bool connexion;
+		
+		
+		Request();
+		Request(const Request &other);
+		Request &operator=(const Request &other);
+		~Request();
 
 		void clear();
 		Request(std::stringstream &buf, size_t &endOf);

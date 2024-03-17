@@ -2,10 +2,11 @@
 
 #include "Response.hpp"
 
-void    Response::generateResponse(int &fd, Request &req)
+void    Response::generateResponse(int &fd, Request &req, uint32_t &event)
 {
     checkHeaders(req);
     // std::string
+    (void)event;
     if (req.get_method() == "GET")
     {
         std::cout << RED << "GET METHOD" << DEF << std::endl;
@@ -47,12 +48,18 @@ void Response::serv_file(map_iterator &type, int &fd, Request &req)
             std::cout << " <  ---------- Error file --------->\n" << std::endl;
             throw (notFound());
         }
-        std::cout << " <  ---------- YES --------->\n" << std::endl;
+        std::ifstream ff(req.get_path().c_str(), std::ios::binary);
+
+        ff.seekg(0, std::ios::end);
+        std::streampos size =  ff.tellg();
+        ff.seekg(0, std::ios::beg);
+        ff.close();
+
         std::stringstream response;
         response << "HTTP/1.1 200 OK\r\n"
         << "Content-Type: " << type->second << "\r\n"
-        // << "Content-Length: "<< buffer.size() <<"\r\n"
-        << "Connection: close\r\n"
+        << "Content-Length: "<< size <<"\r\n"
+        << "Connection: keep-alive\r\n"
         << "Server: " << "chabchoub" << "\r\n"
         << "Date: " << getCurrentDateTime() << "\r\n"
         << "\r\n";
@@ -77,14 +84,7 @@ void	Response::serv_dir(int &fd, Request &req)
     std::string path = (req.get_path());
     if ( path == SERVER_ROOT)
         throw (badRequest());
-    // if ( path == "./www/server1/")
-    // {
-    //     std::cout << " <  ---------- home --------->\n" << std::endl;
-    //     std::string content = homepage();
-    //     std::cout<< BLUE<<"respone : \n"<<YOLLOW<<content  << std::endl;
-    //     send(fd, content.c_str(), content.size(),0);
-    //     req.connexion = true;
-    // }
+
     else
     {
         if(req.firstTime)
@@ -98,20 +98,31 @@ void	Response::serv_dir(int &fd, Request &req)
                 map_iterator it = mime_map.find(extension(path));
                 if(it != mime_map.end() && fileExists(path))
                 {
+                    std::ifstream ff(path.c_str(), std::ios::binary);
+
+                    ff.seekg(0, std::ios::end);
+                    std::streampos size =  ff.tellg();
+                    ff.seekg(0, std::ios::beg);
+                    ff.close();
+
                     file = open(path.c_str(), O_RDONLY);
-                    std::cout << "the URL is a file : " << it->second << std::endl;
-                    std::cout << " <  ---------- YES --------->\n" << std::endl;
+                    if(file < 0)
+                    {
+                        std::cout << " <  ---------- Error file --------->\n" << std::endl;
+                        throw (notFound());
+                    }
+
                     std::stringstream response;
                     response << "HTTP/1.1 200 OK\r\n"
                                 << "Content-Type: " << it->second << "\r\n"
-                                // << "Content-Length: "<< buffer.size() <<"\r\n"
+                                << "Content-Length: "<< size <<"\r\n"
                                 << "Connection: close\r\n"
                                 << "Server: " << "chabchoub" << "\r\n"
                                 << "Date: " << getCurrentDateTime() << "\r\n"
                                 << "\r\n";
 
 
-                    std::cout<< BLUE<<"respone : \n"<<YOLLOW<< response.str()  << std::endl;
+                    // std::cout<< BLUE<<"respone : \n"<<YOLLOW<< response.str()  << std::endl;
                     send(fd, response.str().c_str(), response.str().size(),0);
                     req.firstTime = false;
 
@@ -151,7 +162,7 @@ void	Response::serv_dir(int &fd, Request &req)
         else
         {
             std::string content = getResource(file, req);
-            std::cout<< BLUE<<"respone : \n"<<YOLLOW<< content  << std::endl;
+            // std::cout<< BLUE<<"respone : \n"<<YOLLOW<< content  << std::endl;
             send(fd, content.c_str(), content.size(), 0);
             // req.connexion = true;
         }
@@ -188,9 +199,9 @@ void	Response::checkHeaders(Request &req)
         std::cout << "protocol is : "<< req.get_protocol() << std::endl;
         throw(httpVersion());
     }
-    if( req.body_limit < atoi(req.get_header("Content-Length:").c_str()))
+    if( req.body_limit < std::atol(req.get_header("Content-Length:").c_str()))
     {
-        std::cout << "" << std::endl;
+        std::cout << "Entity too large : "<< req.body_limit << " < " << std::atol(req.get_header("Content-Length:").c_str()) << std::endl;
         throw(EntityTooLarge());
     }
     if(req.get_path().size() > 2048)
@@ -461,6 +472,8 @@ void Response::clear()
     decimal = 0;
     str.clear();
 	tmp.clear();
+    file = -1;
+    std::cout << RED <<"clear response object" << DEF<< std::endl;
 }
 
 
@@ -490,7 +503,6 @@ std::string getCurrentDateTime() {
     std::strftime(buffer, 80, "%a, %d %b %Y %H:%M:%S GMT", timeinfo);
     return std::string(buffer);
 }
-
 
 bool directoryExists(std::string path) {
     struct stat info;

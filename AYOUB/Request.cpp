@@ -6,7 +6,7 @@
 /*   By: himejjad <himejjad@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/17 11:26:36 by arahmoun          #+#    #+#             */
-/*   Updated: 2024/03/14 01:11:29 by himejjad         ###   ########.fr       */
+/*   Updated: 2024/03/17 02:50:42 by himejjad         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -116,6 +116,8 @@ void Request::clear()
 	firstTime = false;
 	connexion = false;
 	ra = 0;
+	chun = 0;
+    std::cout << RED <<"clear request object" << DEF<< std::endl;
 }
 
 const std::map<std::string, std::string> &Request::get_headers() const

@@ -2,7 +2,7 @@
 
 #include "Response.hpp"
 
-void    Response::generateResponse(int &fd, Request &req, uint32_t &event)
+void    Response::generateResponse(int &fd, Request &req, uint32_t &event, std::map<int,Conf> &server, std::vector<int> &socket_acc)
 {
     checkHeaders(req);
     // std::string
@@ -17,7 +17,7 @@ void    Response::generateResponse(int &fd, Request &req, uint32_t &event)
     {
         // std::cout << RED << "POST METHOD" << DEF << std::endl;
         if(SUPORT_UPLOAD)
-            POST(fd, req);
+            POST(fd, req, server, socket_acc);
         else
         {
             std::cout << "dont suport upload" << std::endl;

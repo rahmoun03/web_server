@@ -1,7 +1,9 @@
-#ifndef CLIENT 
+#ifndef CLIENT
 #define CLIENT
-#include "../AYOUB/Request.hpp"
-#include "../AYOUB/Response.hpp"
+#include "Request.hpp"
+#include "Response.hpp"
+// class Response
+
 
 class Client
 {

@@ -1,3 +1,15 @@
+/* ************************************************************************** */
+/*                                                                            */
+/*                                                        :::      ::::::::   */
+/*   netplix.hpp                                        :+:      :+:    :+:   */
+/*                                                    +:+ +:+         +:+     */
+/*   By: himejjad <himejjad@student.42.fr>          +#+  +:+       +#+        */
+/*                                                +#+#+#+#+#+   +#+           */
+/*   Created: 2024/03/17 03:09:09 by himejjad          #+#    #+#             */
+/*   Updated: 2024/03/17 21:34:31 by himejjad         ###   ########.fr       */
+/*                                                                            */
+/* ************************************************************************** */
+
 
 #ifndef NET_HPP
 #define NET_HPP
@@ -19,17 +31,17 @@ class netPlix{
         // int file;
         Conf conf;
         Client client[MAX_EVENTS];
-        std::map<int,Conf> server;
         int serverNum;
-        int socket_fd[MAX_EVENTS];
-        std::vector<int> socket_acc; //, new_fdsock; // done
         struct  sockaddr_in socketadress, clientaddr;
         socklen_t addrlen;// done
         struct epoll_event event, events[MAX_EVENTS];
+        int socket_fd[MAX_EVENTS];
         int epoll_fd;
+        std::vector<int> socket_acc; //, new_fdsock; // done
     
     
     public :
+        std::map<int,Conf> server;
         void servClient(int &i, int &fd);
         
         
@@ -61,6 +73,7 @@ class netPlix{
                 std::cout << "set default configfile " << std::endl;
                 exit(EXIT_FAILURE);
             }
+            
             std::cout << "number of server : " << serverNum << std::endl;
             for(int i = 0; i < serverNum; i++)
             {
@@ -198,11 +211,11 @@ class netPlix{
                             }
                             // Handle received data
                             // Example: echo back to the client
-                            else
+                            if(client[fd].endOf != (size_t)-1)
                             {
                                 try
                                 {
-                                    client[fd].res.generateResponse(fd, client[fd].req, events[i].events);
+                                    client[fd].res.generateResponse(fd, client[fd].req, events[i].events, server, socket_acc);
                                 }
                                 catch(std::string &content)
                                 {

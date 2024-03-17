@@ -1,5 +1,6 @@
 #include "Response.hpp"
 
+
 void	Response::GET(int &fd, Request &req)
 {
     std::map<std::string, std::string> map = ErrorAssets();
@@ -58,12 +59,18 @@ unsigned long convertHexToDec(std::string hex)
 //     if()
 // }
 
-void	Response::POST(int &fd, Request &req)
+void	Response::POST(int &fd, Request &req, std::map<int,Conf> &server, std::vector<int> &socket_acc)
 {
 
     (void) fd;
     (void) req;
+    // netPlix net;
     static int i;
+    (void) server;
+    // std::cout << net.server[0].root << std::endl;
+    // exit(0);
+    std::cout << server[std::distance(socket_acc.begin(),std::find(socket_acc.begin(),socket_acc.end(),fd))].confCherch("server_name") << std::endl;
+    exit(0);
     if(req.get_header("Transfer-Encoding:").empty())
     {
         if (req.firstTime)

@@ -5,7 +5,10 @@
 // #define UPLOAD_PATH "/nfs/sgoinfre/goinfre/Perso/himejjad/upload/"
 #define UPLOAD_PATH "www/server1/upload/"
 
-
+// class Conf;
+// class netPlix;
+class netPlix;
+class Conf;
 #include "Request.hpp"
 typedef std::map<std::string , std::string>::iterator map_iterator;
 class Response
@@ -24,7 +27,7 @@ class Response
 
 		/*             METHODs              */
 		void	GET(int &fd, Request &req);
-		void	POST(int &fd, Request &req);
+		void	POST(int &fd, Request &req, std::map<int,Conf> &server, std::vector<int> &socket_acc);
 		void	DELETE(int &fd, Request &req);
 		/**************************************/
 
@@ -32,7 +35,9 @@ class Response
 		void 	serv_file(map_iterator &type, int &fd, Request &req);
 		void 	serv_dir(int &fd, Request &req);
 		// void	imageFile(int &fd, Request &req);
-		void	generateResponse(int &fd, Request &req, uint32_t &event);
+        // std::map<int,Conf> server;
+
+		void	generateResponse(int &fd, Request &req, uint32_t &event, std::map<int,Conf> &server, std::vector<int> &socket_acc);
 		void	checkHeaders(Request &req);
 		std::string extension(const std::string &path);
 		

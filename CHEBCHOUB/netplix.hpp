@@ -104,7 +104,7 @@ class netPlix{
                 for (int i = 0; i < wait_fd; i++)
                 {
                     int  fd = events[i].data.fd;
-                    std::cout << GREEN << "fd = " << fd << DEF << " / "<< wait_fd <<std::endl;
+                    std::cout << GREEN << "fd = " << fd << DEF << " / "<< wait_fd <<" ,his event is : "<< (events[i].events == EPOLLIN ? "EPOLLIN" : "EPOLLOUT") <<std::endl;
                     if (std::find(socket_acc.begin(),socket_acc.end(),fd) != socket_acc.end())
                     {
                         new_socketfd = accept(fd, (struct sockaddr *)&clientaddr, &addrlen);
@@ -125,17 +125,22 @@ class netPlix{
                     }
                     else if ((events[i].events & EPOLLERR) || (events[i].events & EPOLLHUP)) {
                         std::cout << "------{ Error Epoll }-------" << std::endl;
-
-                        epoll_ctl(epoll_fd, EPOLL_CTL_DEL, fd, NULL);
+                        std::cout << RED <<"Client disconnected : "<< DEF<< fd<< std::endl;
+                        if (epoll_ctl(epoll_fd, EPOLL_CTL_DEL, fd, NULL) == -1) {
+                            perror("epoll_ctl");
+                            exit(EXIT_FAILURE);
+                        }
+                        client[fd].clear();
                         close(fd);
                     }
                     else
                     {
-                        std::cout << RED << "serv the client " << DEF << std::endl;
+                        std::cout << BLUE << "serv the client : " << DEF << fd << std::endl;
                         char buffer[1024];
                         ssize_t bytes_read = -1;
-                        if(events[i].events == EPOLLIN)
+                        if(events[i].events == EPOLLIN && client[fd].endOf == (size_t)-1)
                         {
+                            std::cout << GREEN << "reading request from : " << DEF << fd <<std::endl;
                             if ((bytes_read = recv(fd, buffer, sizeof(buffer) - 1, 0)) == -1) 
                             {
                                 perror("recv");
@@ -146,16 +151,17 @@ class netPlix{
 
                         if (bytes_read == 0) {
                             // Client disconnected
-                            printf("Client disconnected\n");
+                            std::cout << RED <<"Client disconnected : "<< DEF<< fd<< std::endl;
                             if (epoll_ctl(epoll_fd, EPOLL_CTL_DEL, fd, NULL) == -1) {
                                 perror("epoll_ctl");
                                 exit(EXIT_FAILURE);
                             }
+                            client[fd].clear();
                             close(fd);
                         }
                         else 
                         {
-                            if(client[fd].endOf == (size_t)-1 && bytes_read < 1023 && bytes_read > -1 && events[i].events == EPOLLIN)
+                            if(client[fd].endOf == (size_t)-1 && bytes_read > -1 && events[i].events == EPOLLIN)
                             {
                                 buffer[bytes_read] = '\0';
                                 std::cout << RAN << "request :\n" << buffer << DEF << std::endl;
@@ -170,11 +176,13 @@ class netPlix{
                                 /***********************************************************************/
                                 if(client[fd].endOf != (size_t)-1)
                                 {
+                                    std::cout << GREEN << "parse the request ... for " << DEF << fd << std::endl;
                                     client[fd].req = Request(client[fd].buf, client[fd].endOf);
                                     client[fd].req.ra += client[fd].buf.str().size();
                                     client[fd].req.body_limit = std::atof(server[0].confCherch("body_size_limit").c_str());
 
                                     /***************************/
+                                    // std::cout << YOLLOW << "request :\n" << DEF << client[fd].req << std::endl; 
                                     if(client[fd].req.get_method() == "GET")
                                     {
                                         events[i].events = EPOLLOUT;
@@ -185,16 +193,34 @@ class netPlix{
                                         std::cout << "change event to EPOLLOUT\n";
                                     }
                                     /****************************/
-
-                                    exit(0);
+                                    // exit(0);
                                 }
                             }
                             // Handle received data
                             // Example: echo back to the client
                             else
                             {
-                                client[fd].res.generateResponse(fd, client[fd].req, events[i].events);
+                                try
+                                {
+                                    client[fd].res.generateResponse(fd, client[fd].req, events[i].events);
+                                }
+                                catch(std::string &content)
+                                {
+                                    std::cout<< BLUE<<"respone : \n"<<YOLLOW<< content  << std::endl;
+                                    send(fd, content.c_str(), content.size(), MSG_DONTWAIT);
+                                    client[fd].req.connexion = true;
+                                }
                             }
+                        }
+                        if(client[fd].req.connexion)
+                        {
+                            std::cout << RED <<"Client disconnected : "<< DEF<< fd<< std::endl;
+                            if (epoll_ctl(epoll_fd, EPOLL_CTL_DEL, fd, NULL) == -1) {
+                                perror("epoll_ctl");
+                                exit(EXIT_FAILURE);
+                            }
+                            client[fd].clear();
+                            close(fd);
                         }
                         // servClient(i, fd);
                     }

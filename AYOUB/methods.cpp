@@ -43,9 +43,9 @@ void	Response::GET(int &fd, Request &req)
     }
 }
 
-long long convertHexToDec(std::string hex)
+unsigned long convertHexToDec(std::string hex)
 {
-    long long decimal;
+    unsigned long decimal;
     std::stringstream ss;
 
     ss << hex;
@@ -131,4 +131,4 @@ void	Response::DELETE(int &fd, Request &req){
     (void) fd;
     (void) req;
     return;
-};
+}

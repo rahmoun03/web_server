@@ -25,6 +25,7 @@ void Client::clear()
     endOf = -1;
     req.clear();
     res.clear();
+    std::cout << RED <<"clear Client object" << DEF<< std::endl;
 }
 
 Client::Client(/* args */)

@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Request.cpp                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: ahbajaou <ahbajaou@student.42.fr>          +#+  +:+       +#+        */
+/*   By: arahmoun <arahmoun@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/17 11:26:36 by arahmoun          #+#    #+#             */
-/*   Updated: 2024/03/14 22:13:15 by ahbajaou         ###   ########.fr       */
+/*   Updated: 2024/03/16 23:51:01 by arahmoun         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -117,6 +117,7 @@ void Request::clear()
 	connexion = false;
 	ra = 0;
 	chun = 0;
+    std::cout << RED <<"clear request object" << DEF<< std::endl;
 }
 
 const std::map<std::string, std::string> &Request::get_headers() const

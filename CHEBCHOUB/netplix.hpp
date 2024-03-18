@@ -45,16 +45,18 @@ class netPlix{
                 while (!fg.eof()){
                     Conf conf(fg);
                     conf.getLocal();
+                    // conf.parsAndCheckServer();
                     server[serverNum] = conf;
-                    std::cout << "---->  : " << server[serverNum].confCherch("server_name") << std::endl;
-                     serverNum++;
-                    // std::cout << "number of server : " << conf.numOfserver << std::endl;
-                    // serverNum = conf.numOfserver;
+                    serverNum = conf.numOfserver;
                 }
                 fg.close();
-                    // exit(0);
             }
+            // server[0].parsAndCheck();
+            // for (int p = 0; p < serverNum; ++p){
+            //     std::cout << "-> : " << server[p].confCherch("port") << std::endl;
+            // }
             // std::cout << "number of server : " << serverNum << std::endl;
+            // exit(0);
             for(int i = 0; i < serverNum; i++){
                 std::cout << "---INSIDE LOOP CREATE SOCKET---\n";
                 socket_fd[i] = socket(AF_INET,SOCK_STREAM,0);
@@ -116,7 +118,7 @@ class netPlix{
                                     std::cout << GREEN << "Received connection from " << inet_ntoa(clientaddr.sin_addr) << " on fd : "<< new_socketfd << DEF << std::endl;
                                     epoll_ctl(epoll_fd, EPOLL_CTL_ADD, new_socketfd, &event);
                         }
-                        else if ((events[i].events & EPOLLERR) || (events[i].events & EPOLLHUP) || (!(events[i].events & EPOLLIN))) {
+                        else if ((events[i].events & EPOLLERR) || (events[i].events & EPOLLHUP)) {
                             close(fd);
                         }
                         else

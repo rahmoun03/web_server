@@ -6,7 +6,7 @@
 /*   By: ahbajaou <ahbajaou@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/03/17 03:09:09 by himejjad          #+#    #+#             */
-/*   Updated: 2024/03/19 01:42:44 by ahbajaou         ###   ########.fr       */
+/*   Updated: 2024/03/19 03:21:06 by ahbajaou         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -93,7 +93,7 @@ class netPlix{
                     exit(0);
                 }
                 event.data.fd = socket_fd[i];
-                event.events = EPOLLIN | EPOLLET;
+                event.events = EPOLLIN ;
                 std::cout << server[i].confCherch("port") << std::endl;
                 if (epoll_ctl(epoll_fd,EPOLL_CTL_ADD,socket_fd[i],&event) == -1){
                     perror("epoll_ctl");

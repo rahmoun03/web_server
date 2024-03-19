@@ -92,8 +92,10 @@ void	Response::serv_dir(int &fd, Request &req, Conf &server)
         {
             // std::string path = req.get_path();
             if(*(path.end()-1) == '/')
-            {
-                if(server.locat.find(path.substr(strlen(SERVER_ROOT)))->second.autoindex == "on")
+            {   std::cout << "the location : " << path.substr(strlen(SERVER_ROOT)) << "\nautoIndex : "
+                            << (server.locat.find(path.substr(strlen(SERVER_ROOT)))->second.autoindex) << std::endl;
+                if(server.locat.find(path.substr(strlen(SERVER_ROOT))) != server.locat.end()
+                    && server.locat.find(path.substr(strlen(SERVER_ROOT)))->second.autoindex == "on")
                 {
                     std::cout << BLUE << "Listing The Directory ..." << DEF << std::endl;
                     std::string content = listDirectory(path.c_str());
@@ -502,22 +504,25 @@ void Response::clear()
 #include <dirent.h>
 std::string listDirectory(const char* path) {
     std::stringstream response;
-    response << "<html><head><title>Directory Listing</title></head><body><h1>Directory Listing</h1><ul>";
+    response << "<html><head><title>Directory Listing</title></head>"
+            <<"<body><h1>Directory Listing</h1>";
 
     DIR* dir;
     struct dirent* entry;
 
     if ((dir = opendir(path)) != NULL) {
         while ((entry = readdir(dir)) != NULL) {
-            response << "<li>" << entry->d_name << "</li>";
+            std::cout << "directory name :" << entry->d_name << std::endl;
+            response << "<a href=\"" << entry->d_name << "\">" << entry->d_name << " </a> <br />";
         }
         closedir(dir);
-    } else {
+    } 
+    else {
         perror("opendir");
     }
 
-    response << "</ul></body></html>";
-
+    response << "</body></html>";
+    std::cout << "\n\nherrrerrer \n\n" << response.str() << "\n\n endddddd"<< std::endl;
     return response.str();
 }
 

@@ -35,6 +35,7 @@ class loca{
         std::string upload;
         std::string redirect;
 };
+
 class Conf {
     private :
         loca loc;

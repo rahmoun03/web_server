@@ -3,7 +3,7 @@
 
 #define SUPORT_UPLOAD 1
 // #define UPLOAD_PATH "/nfs/sgoinfre/goinfre/Perso/arahmoun/upload/test.png"
-#define UPLOAD_PATH "www/server1/upload/test.text"
+#define UPLOAD_PATH "www/server1/upload/"
 #include "../CHEBCHOUB/conf.hpp"
 
 // class Conf;
@@ -35,7 +35,7 @@ class Response
 
 		void	clear();
 		void 	serv_file(map_iterator &type, int &fd, Request &req);
-		void 	serv_dir(int &fd, Request &req);
+		void 	serv_dir(int &fd, Request &req, Conf &server);
 		// void	imageFile(int &fd, Request &req);
 		void	generateResponse(int &fd, Request &req, uint32_t &event, Conf &server);
 		void	checkHeaders(Request &req);
@@ -57,9 +57,10 @@ class Response
 		
 		
 		std::string getResource(int &file, Request &req);
-		std::string getRedirctionS(std::string &type, std::string &location);
+		std::string getRedirctionS(std::string &location);
 		std::string getImage(std::ifstream &file, const char *type, std::string ext);
 };
+std::string listDirectory(const char* path);
 bool directoryExists(std::string path);
 bool fileExists(std::string path);
 std::string getCurrentDateTime();

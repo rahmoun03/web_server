@@ -197,7 +197,9 @@ class netPlix{
 
                                     /***************************/
                                     // std::cout << YOLLOW << "request :\n" << DEF << client[fd].req << std::endl; 
-                                    if(client[fd].req.get_method() == "GET")
+                                    if((client[fd].req.get_method() == "GET")
+                                        || (client[fd].req.get_method() == "POST"
+                                            && server[client[fd].server_index].locat.find(client[fd].req.get_path())->second.upload.empty()))
                                     {
                                         events[i].events = EPOLLOUT;
                                         if (epoll_ctl(epoll_fd, EPOLL_CTL_MOD, fd, &events[i]) == -1) {

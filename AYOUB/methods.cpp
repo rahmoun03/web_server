@@ -20,7 +20,7 @@ void	Response::GET(int &fd, Request &req, Conf &server)
     {
         std::cout << "http://{" << req.get_path() << "} \n";
         std::cout << "the URL is a directory \n";
-        serv_dir(fd, req);
+        serv_dir(fd, req, server);
     }
     else if (fileExists(req.get_path()))
     {
@@ -62,16 +62,11 @@ unsigned long convertHexToDec(std::string hex)
 
 void	Response::POST(int &fd, Request &req, Conf &server)
 {
-
-    (void) fd;
-    (void) req;
-    // netPlix net;
-    static int i;
-    (void) server;
+    static int fileIndex;
     // std::cout << net.server[0].root << std::endl;
     // exit(0);
     std::cout << "locaition path :" << server.locat.find(req.get_path())->second.upload << std::endl;
-    exit(0);
+    // exit(0);
     if(req.get_header("Transfer-Encoding:").empty())
     {
         if (req.firstTime)
@@ -84,9 +79,9 @@ void	Response::POST(int &fd, Request &req, Conf &server)
             path = UPLOAD_PATH + ("upload." + tmp_);
             while (fileExists(path))
             {
-                i++;
+                fileIndex++;
                 std::stringstream ss;
-                ss << i;
+                ss << fileIndex;
                 std::string s;
                 ss >> s;
                 path = UPLOAD_PATH + ("upload" + s + (".") + tmp_);
@@ -132,9 +127,9 @@ void	Response::POST(int &fd, Request &req, Conf &server)
             std::string path = UPLOAD_PATH + ("upload." + tmp_);
             while (fileExists(path))
             {
-                i++;
+                fileIndex++;
                 std::stringstream ss;
-                ss << i;
+                ss << fileIndex;
                 std::string s;
                 ss >> s;
                 path = UPLOAD_PATH + ("upload" + s + (".") + tmp_);

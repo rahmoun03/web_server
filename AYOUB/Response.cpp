@@ -2,32 +2,34 @@
 
 #include "Response.hpp"
 
-void    Response::generateResponse(int &fd, Request &req)
+void    Response::generateResponse(int &fd, Request &req, uint32_t &event, Conf &server)
 {
     checkHeaders(req);
     // std::string
+    (void)event;
     if (req.get_method() == "GET")
     {
-        std::cout << RED << "GET METHOD" << DEF << std::endl;
-        GET(fd, req);
+        std::cout << RED << "GET METHOD for " << DEF << server.confCherch("server_name") << std::endl;
+        GET(fd, req, server);
+    
     }
-
     else if(req.get_method() == "POST")
     {
-        std::cout << RED << "POST METHOD" << DEF << std::endl;
-        if(SUPORT_UPLOAD)
-            POST(fd, req);
+        std::string upload = server.locat.find(req.get_path())->second.upload;
+        std::cout << RED << "POST METHOD, upload path : " << DEF << upload << std::endl;
+        if(!upload.empty())
+            POST(fd, req, server);
         else
         {
             std::cout << "dont suport upload" << std::endl;
-            GET(fd, req);
+            GET(fd, req, server);
         }
     }
 
     else if(req.get_method() == "DELETE")
     {
         std::cout << RED << "DELETE METHOD" << DEF << std::endl;
-        DELETE(fd, req);
+        DELETE(fd, req, server);
     }
 
     else
@@ -47,11 +49,17 @@ void Response::serv_file(map_iterator &type, int &fd, Request &req)
             std::cout << " <  ---------- Error file --------->\n" << std::endl;
             throw (notFound());
         }
-        std::cout << " <  ---------- YES --------->\n" << std::endl;
+        std::ifstream ff(req.get_path().c_str(), std::ios::binary);
+
+        ff.seekg(0, std::ios::end);
+        std::streampos size =  ff.tellg();
+        ff.seekg(0, std::ios::beg);
+        ff.close();
+
         std::stringstream response;
         response << "HTTP/1.1 200 OK\r\n"
         << "Content-Type: " << type->second << "\r\n"
-        // << "Content-Length: "<< buffer.size() <<"\r\n"
+        << "Content-Length: "<< size <<"\r\n"
         << "Connection: keep-alive\r\n"
         << "Server: " << "chabchoub" << "\r\n"
         << "Date: " << getCurrentDateTime() << "\r\n"
@@ -72,88 +80,101 @@ void Response::serv_file(map_iterator &type, int &fd, Request &req)
     }
 }
 
-void	Response::serv_dir(int &fd, Request &req)
+void	Response::serv_dir(int &fd, Request &req, Conf &server)
 {
     std::string path = (req.get_path());
     if ( path == SERVER_ROOT)
         throw (badRequest());
-    // if ( path == "./www/server1/")
-    // {
-    //     std::cout << " <  ---------- home --------->\n" << std::endl;
-    //     std::string content = homepage();
-    //     std::cout<< BLUE<<"respone : \n"<<YOLLOW<<content  << std::endl;
-    //     send(fd, content.c_str(), content.size(),0);
-    //     req.connexion = true;
-    // }
+
     else
     {
         if(req.firstTime)
         {
-            std::string path = req.get_path();
+            // std::string path = req.get_path();
             if(*(path.end()-1) == '/')
             {
-                path += "index.html";
-                std::cout << "open index file "<< std::endl;
-                std::map<std::string , std::string> mime_map = mimeTypes();
-                map_iterator it = mime_map.find(extension(path));
-                if(it != mime_map.end() && fileExists(path))
+                if(server.locat.find(path.substr(strlen(SERVER_ROOT))) != server.locat.end() &&  server.locat.find(path.substr(strlen(SERVER_ROOT)))->second.autoindex == true)
                 {
-                    file = open(path.c_str(), O_RDONLY);
-                    std::cout << "the URL is a file : " << it->second << std::endl;
-                    std::cout << " <  ---------- YES --------->\n" << std::endl;
+                    std::cout << BLUE << "Listing The Directory ..." << DEF << std::endl;
+                    std::string content = listDirectory(path.c_str());
                     std::stringstream response;
                     response << "HTTP/1.1 200 OK\r\n"
-                                << "Content-Type: " << it->second << "\r\n"
-                                // << "Content-Length: "<< buffer.size() <<"\r\n"
+                                << "Content-Type: " << "text/html" << "\r\n"
+                                << "Content-Length: "<< content.size() <<"\r\n"
                                 << "Connection: close\r\n"
                                 << "Server: " << "chabchoub" << "\r\n"
                                 << "Date: " << getCurrentDateTime() << "\r\n"
-                                << "\r\n";
-
-
-                    std::cout<< BLUE<<"respone : \n"<<YOLLOW<< response.str()  << std::endl;
+                                << "\r\n"
+                                << content;
                     send(fd, response.str().c_str(), response.str().size(),0);
+                    req.connexion = true;
                     req.firstTime = false;
 
                 }
                 else
                 {
-                    // this is a forbidden folder
-                    std::cout << "this if forbidden folder"<< std::endl;
-                    throw(forbidden());
+                    path += "index.html";
+                    std::cout << "open index file "<< std::endl;
+                    std::map<std::string , std::string> mime_map = mimeTypes();
+                    map_iterator it = mime_map.find(extension(path));
+                    if(it != mime_map.end() && fileExists(path))
+                    {
+                        std::ifstream ff(path.c_str(), std::ios::binary);
+
+                        ff.seekg(0, std::ios::end);
+                        std::streampos size =  ff.tellg();
+                        ff.seekg(0, std::ios::beg);
+                        ff.close();
+
+                        file = open(path.c_str(), O_RDONLY);
+                        if(file < 0)
+                        {
+                            std::cout << " <  ---------- Error file --------->\n" << std::endl;
+                            throw (notFound());
+                        }
+
+                        std::stringstream response;
+                        response << "HTTP/1.1 200 OK\r\n"
+                                    << "Content-Type: " << it->second << "\r\n"
+                                    << "Content-Length: "<< size <<"\r\n"
+                                    << "Connection: close\r\n"
+                                    << "Server: " << "chabchoub" << "\r\n"
+                                    << "Date: " << getCurrentDateTime() << "\r\n"
+                                    << "\r\n";
+
+
+                        // std::cout<< BLUE<<"respone : \n"<<YOLLOW<< response.str()  << std::endl;
+                        send(fd, response.str().c_str(), response.str().size(),0);
+                        req.firstTime = false;
+
+                    }
+                    else
+                    {
+                        std::cout << "this if forbidden folder"<< std::endl;
+                        throw(forbidden());
+                    }
                 }
             }
             else
             {
-                std::string locaition = (path.substr(path.rfind("/"))) + "/";
-                path +=  "/index.html";
+                std::string locaition = (path.substr(strlen(SERVER_ROOT))) + "/";
+
                 std::cout << "make a redirection URL "<< std::endl;
-                std::map<std::string , std::string> mime_map = mimeTypes();
-                map_iterator it = mime_map.find(extension(path));
-                if(it != mime_map.end() && fileExists(path))
-                {
-                    std::ifstream file(path.c_str());
-                    std::cout << "the URL is a file : " << it->second << std::endl;
-                    std::cout << " <  ---------- YES --------->\n" << std::endl;
-                    std::string content = getRedirctionS(it->second, locaition);
-                    std::cout<< BLUE<<"respone : \n"<<YOLLOW<< content  << std::endl;
-                    send(fd, content.c_str(), content.size(), 0);
-                    req.connexion = true;
-                }
-                else
-                {
-                    // this is a forbidden folder
-                    std::cout << "this if forbidden folder"<< std::endl;
-                    throw(forbidden());
-                }
+                std::cout << "from this : " << path.substr(strlen(SERVER_ROOT)) << std::endl;
+                std::cout << "to   this : " << locaition << std::endl;
+
+                std::string content = getRedirctionS(locaition);
+                std::cout<< BLUE<<"respone : \n"<<YOLLOW<< content  << std::endl;
+                send(fd, content.c_str(), content.size(), 0);
+                req.connexion = true;
+                req.firstTime = false;
+
             }
         }
         else
         {
             std::string content = getResource(file, req);
-            std::cout<< BLUE<<"respone : \n"<<YOLLOW<< content  << std::endl;
             send(fd, content.c_str(), content.size(), 0);
-            // req.connexion = true;
         }
     }
 }
@@ -188,9 +209,9 @@ void	Response::checkHeaders(Request &req)
         std::cout << "protocol is : "<< req.get_protocol() << std::endl;
         throw(httpVersion());
     }
-    if( req.body_limit < atoi(req.get_header("Content-Length:").c_str()))
+    if( req.body_limit < std::atol(req.get_header("Content-Length:").c_str()))
     {
-        std::cout << "" << std::endl;
+        std::cout << "Entity too large : "<< req.body_limit << " < " << std::atol(req.get_header("Content-Length:").c_str()) << std::endl;
         throw(EntityTooLarge());
     }
     if(req.get_path().size() > 2048)
@@ -227,13 +248,13 @@ std::string Response::getResource(int &file, Request &req)
     return content.str();
 }
 
-std::string Response::getRedirctionS(std::string &type, std::string &location)
+std::string Response::getRedirctionS(std::string &location)
 {
     std::stringstream response;
     response << "HTTP/1.1 301 Moved Permanently\r\n"
             << "Location: " << location << "\r\n"
-            << "Content-Type: "<< type << "\r\n"
-            << "Connection: close\r\n"
+            // << "Content-Type: "<< type << "\r\n"
+            // << "Connection: k\r\n"
             << "Server: " << "chabchoub" << "\r\n"
             << "Date: " << getCurrentDateTime() << "\r\n"
             << "\r\n";
@@ -462,6 +483,7 @@ void Response::clear()
     str.clear();
 	tmp.clear();
     file = -1;
+    std::cout << RED <<"clear response object" << DEF<< std::endl;
 }
 
 
@@ -477,7 +499,27 @@ void Response::clear()
 //              << buffer.c_str();
 //     return response.str();
 // }
+#include <dirent.h>
+std::string listDirectory(const char* path) {
+    std::stringstream response;
+    response << "<html><head><title>Directory Listing</title></head><body><h1>Directory Listing</h1><ul>";
 
+    DIR* dir;
+    struct dirent* entry;
+
+    if ((dir = opendir(path)) != NULL) {
+        while ((entry = readdir(dir)) != NULL) {
+            response << "<li>" << entry->d_name << "</li>";
+        }
+        closedir(dir);
+    } else {
+        perror("opendir");
+    }
+
+    response << "</ul></body></html>";
+
+    return response.str();
+}
 
 std::string getCurrentDateTime() {
     char buffer[80];
@@ -491,7 +533,6 @@ std::string getCurrentDateTime() {
     std::strftime(buffer, 80, "%a, %d %b %Y %H:%M:%S GMT", timeinfo);
     return std::string(buffer);
 }
-
 
 bool directoryExists(std::string path) {
     struct stat info;

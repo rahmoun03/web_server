@@ -19,9 +19,11 @@
 #include <stdlib.h>
 #include <unistd.h>   //close
 #include <netinet/in.h>
+// #include 
 // #include "location.hpp"
 #include <functional>
 #include "../AYOUB/Response.hpp"
+bool directoryExists(std::string path);
 
 class loca{
     public :
@@ -35,6 +37,7 @@ class loca{
         std::string upload;
         std::string redirect;
 };
+
 class Conf {
     private :
         loca loc;
@@ -42,9 +45,9 @@ class Conf {
         std::string name;
         std::map<std::string, loca>::iterator it;
         std::map<std::string,std::string> loc1;
-        std::map<std::string, loca> locat;
         std::map<std::string,std::string>::iterator ito;
     public :
+        std::map<std::string, loca> locat;
         int numOfserver;
         Conf(){
             numOfserver = 0;
@@ -266,7 +269,10 @@ class Conf {
                         loc.root = it->second;
                     }
                     else if (it->first.find("autoindex") != std::string::npos){
-                        loc.autoindex = true;
+                        if (it->second == "on")
+                            loc.autoindex = true;
+                        else if (it->second == "off")
+                            loc.autoindex = false;
                     }
                     else if (it->first.find("default") != std::string::npos){
                         loc.defau = it->second;

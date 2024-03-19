@@ -28,9 +28,9 @@ class loca{
         bool get;
         bool post;
         bool delet;
+        bool autoindex;
         std::string root;
         std::string location;
-        std::string autoindex;
         std::string defau;
         std::string upload;
         std::string redirect;
@@ -69,7 +69,7 @@ class Conf {
                                     while (getline(fg,name)){
                                     if (name.find("=") != std::string::npos){
                                         parsLocation(fg);
-                                        displayLocation(locat,loc);
+                                        displayLocation();
                                         if (name.find("]") != std::string::npos){
                                             continue;
                                         }
@@ -135,14 +135,35 @@ class Conf {
                                 throw "UPLOAD NOT FOUND!";
                             }
                     }
+                lc = loc1.begin();
+                for(; lc != loc1.end(); lc++){
+                    if (lc->first.compare("cgi") != 0 && lc->first.compare("autoindex") != 0 && lc->first.compare("default") != 0\
+                    && lc->first.compare("location") != 0 && lc->first.compare("root") != 0 && lc->first.compare("method") != 0\
+                    && lc->first.compare("redirect") != 0 && lc->first.compare("upload") != 0)
+                    {
+
+                        throw "SYNTAX ERROR!";
+                    }
+                }
                }
                catch(const char * err){
                     std::cout << err << std::endl;
                     exit(0);
                }
         }
+        void defaultConfic(){
+            map["port"] = "8080";
+            map["host"] = "127.0.0.1";
+            map["server_name"] = "weldjed";
+            map["body_size_limit"] = "10000000";
+            loc1["location"] = "/";
+            loc1["method"] = "GET POST DELETE";
+            loc1["root"] = "www/server1/assets";
+            this->numOfserver = 1;
+        }
         void    parsAndCheckServer(){
             std::map<std::string, std::string>::iterator mp;
+            // for(; mp != )
             try{
                 if ((mp = map.find("port")) == map.end()){
                         throw "PORT NOT FOUND!";
@@ -155,7 +176,10 @@ class Conf {
                         throw "HOST NOT FOUND!";
                 }
                 if (map.find("body_size_limit") == map.end()){
-                        throw "HOST NOT FOUND!";
+                        throw "BODY SIZE LIMIT NOT FOUND!";
+                }
+                if (map.find("root") != map.end()){
+                        throw "YOU SHOULD GIVES ROOT IN LOCATION!";
                 }
 
             }
@@ -216,7 +240,7 @@ class Conf {
                         throw "Ops error config file";
                 }
         }
-        void displayLocation(std::map<std::string,loca> & tmp,loca &loc){
+        void displayLocation(){
             std::map<std::string,std::string>::iterator it = loc1.begin();
             for(;it != loc1.end(); it++){
 
@@ -230,6 +254,7 @@ class Conf {
                             loc.get = false;
                             loc.post = false;
                             loc.delet = false;
+                            loc.autoindex = false;
                         if (it->second.find("GET") != std::string::npos)
                                 loc.get = true;
                         if (it->second.find("POST") != std::string::npos)
@@ -241,7 +266,7 @@ class Conf {
                         loc.root = it->second;
                     }
                     else if (it->first.find("autoindex") != std::string::npos){
-                        loc.autoindex = it->second;
+                        loc.autoindex = true;
                     }
                     else if (it->first.find("default") != std::string::npos){
                         loc.defau = it->second;
@@ -253,7 +278,7 @@ class Conf {
                         loc.redirect = it->second;
                     }
                 }
-                tmp[loc.location] = loc;
+                locat[loc.location] = loc;
             }
         }
         std::map<std::string, loca> getLocal(){

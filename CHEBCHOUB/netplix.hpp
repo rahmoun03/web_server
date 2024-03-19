@@ -27,7 +27,7 @@ class netPlix{
             socklen_t addrlen;// done
         // std::vector<location> loca;
     public :
-        netPlix(char *os)
+        netPlix(const char *os)
         {
             struct epoll_event event, events[MAX_EVENTS];
             int opt = 1;
@@ -44,19 +44,20 @@ class netPlix{
                 serverNum = 0;
                 while (!fg.eof()){
                     Conf conf(fg);
-                    conf.getLocal();
+                    // conf.getLocal();
                     // conf.parsAndCheckServer();
                     server[serverNum] = conf;
                     serverNum = conf.numOfserver;
                 }
                 fg.close();
             }
-            // server[0].parsAndCheck();
-            // for (int p = 0; p < serverNum; ++p){
-            //     std::cout << "-> : " << server[p].confCherch("port") << std::endl;
-            // }
-            // std::cout << "number of server : " << serverNum << std::endl;
-            // exit(0);
+            else{
+                    conf.defaultConfic();
+                    conf.displayLocation();
+                    server[1] = conf;
+                    serverNum = 1;
+            }
+
             for(int i = 0; i < serverNum; i++){
                 std::cout << "---INSIDE LOOP CREATE SOCKET---\n";
                 socket_fd[i] = socket(AF_INET,SOCK_STREAM,0);

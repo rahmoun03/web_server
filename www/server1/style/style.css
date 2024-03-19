@@ -1,7 +1,7 @@
 @import url('https://fonts.googleapis.com/css2?family=Patua+One&display=swap');
 
 body {
-    cursor: url("cursor.png"), default;
+    cursor: url("../assets/cursor.png"), default;
     font-family: 'Patua One', serif;
     color: aliceblue;
     height: 100vh;
@@ -41,7 +41,7 @@ body {
     box-shadow: 0px 0px 20px 0px aquamarine;
     border-radius: 5px;
     border: 0;
-    cursor: url("cursor.png"), auto;
+    cursor: url("../assets/cursor.png"), auto;
     
 }
 
@@ -198,7 +198,7 @@ footer {
     position: fixed;
     justify-content: center;
     align-content: center;
-    cursor: url("cursor.png"), auto;
+    cursor: url("../assets/cursor.png"), auto;
 
 } 
 
@@ -213,7 +213,7 @@ footer nav .menu-button{
     border-radius: 50px;
     border-end-end-radius: 0px;
     border-end-start-radius: 0px;
-    cursor: url("cursor.png"), auto;
+    cursor: url("../assets/cursor.png"), auto;
     bottom: 0;
     right: calc(50% - 60px);
     position: fixed;
@@ -252,6 +252,6 @@ footer nav .more_buttons button{
 
 footer nav .more_buttons button:hover{
     color: burlywood;
-    cursor: url("cursor.png"), auto;
+    cursor: url("../assets/cursor.png"), auto;
     color: rgb(224, 17, 17);
 }

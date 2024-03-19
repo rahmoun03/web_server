@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Request.cpp                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: arahmoun <arahmoun@student.42.fr>          +#+  +:+       +#+        */
+/*   By: himejjad <himejjad@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/17 11:26:36 by arahmoun          #+#    #+#             */
-/*   Updated: 2024/02/29 17:10:04 by arahmoun         ###   ########.fr       */
+/*   Updated: 2024/03/17 22:03:40 by himejjad         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -16,38 +16,80 @@ Request::Request(/* args */)
 {
 }
 
-Request::Request(std::stringstream &buf)
+Request::Request(std::stringstream &buf, size_t &endOf)
 {
-		ss << buf.str();
 		std::string key;
 		std::string dst;
 		std::string value;
-		// std::string body;
+
+		std::getline(buf, dst);
+		size_t i = dst.size() + 1;
 		
-		// std::cout << "request : \n"
-		// 		  << ss.str() << std::endl;
-		ss >> method;
-		ss >> path;
-		ss >> protocol;
-		path = SERVER_ROOT + path;
-		while (ss)
+		startline << dst;
+		startline >> method;
+		startline >> path;
+		startline >> protocol;
+		if(startline.cur)
 		{
-			ss >> key;
-			std::getline(ss, value);
-			headers[key] = value;
-			if(key == "Content-Type:")
-			{
-				ss >> key;
-				body << key;
-				if (ss)
-					body << ss.rdbuf();
-				break;
-			}
+			std::cout << "nice start line request : " << startline.cur << std::endl;
+			startLineForma = true;
 		}
+		// path = SERVER_ROOT + path;
+		
+		while(i < endOf && buf >> key && std::getline(buf, value))
+		{
+			headers[key] = value;
+			i += key.length() + value.length() + 1;
+		}
+		std:: cout << (endOf + 4) << " < " << buf.str().size() << std::endl;
+		if(buf && (endOf + 4) < buf.str().size())
+		{
+			buf >> key;
+			body << key << buf.rdbuf();
+		}
+		chun = 0;
+		ra = 0;
+		firstTime = true;
+		// buf.str("");
 		// std::cout << "\n--------------------------------------------------------\n" <<std::endl;
 }
 
-std::ostream &operator<<(std::ostream &os, const Request &other)
+size_t findEndOfHeaders(char* buffer, ssize_t bufferSize)
+{
+	const char *end = "\r\n\r\n";
+	size_t size = strlen(end);
+	for (ssize_t i = 0; i < bufferSize; i++)
+	{
+		if (strncmp(buffer + i, end, size) == 0)
+		{
+			return i;
+		}
+	}
+	return -1;
+}
+
+Request::Request(const Request &other)
+{
+	*this = other;
+}
+
+
+Request &Request::operator=(const Request &other)
+{
+	if(this != &other)
+	{
+		startline << other.startline.str();
+		method = other.method;
+		path = other.path;
+		protocol = other.protocol;
+		firstTime = other.firstTime;
+		headers = other.headers;
+		body << other.body.str();
+	}
+	return *this;
+}
+
+std::ostream &operator<<(std::ostream &os, Request &other)
 {
 	os << other.get_method() << " ";
 	os << other.get_path() << " ";
@@ -56,8 +98,26 @@ std::ostream &operator<<(std::ostream &os, const Request &other)
 	std::map<std::string, std::string>::const_iterator ite = other.get_headers().end();
 	for (; it != ite; ++it)
 		os << it->first <<BLUE<< "|" <<YOLLOW << it->second << '\n';
-	os << "body :\n" << other.get_body() << '\n';
+	os << "body :\n" << other.get_body() << RED <<"." << '\n';
 	return os;
+}
+
+void Request::clear()
+{
+    startline.str("");
+	method.clear();
+	path.clear();
+	protocol.clear();
+	headers.clear();
+	body.str("");
+
+	startLineForma = false;
+	body_limit = 0;
+	firstTime = false;
+	connexion = false;
+	ra = 0;
+	chun = 0;
+    std::cout << RED <<"clear request object" << DEF<< std::endl;
 }
 
 const std::map<std::string, std::string> &Request::get_headers() const
@@ -67,7 +127,14 @@ const std::map<std::string, std::string> &Request::get_headers() const
 
 const std::string Request::get_header(const char *key)
 {
-    return (headers[key]);
+	if(headers.find(key) != headers.end())
+	{
+		std::stringstream ss(headers.find(key)->second);
+		std::string ret;
+		ss >> ret;
+		return ret;
+	}
+    return ("");
 }
 
 
@@ -78,7 +145,7 @@ const std::string Request::get_body() const
 }
 
 
-const std::string Request::get_path() const
+std::string &Request::get_path()
 {
 	return path;
 }

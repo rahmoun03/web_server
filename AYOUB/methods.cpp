@@ -1,4 +1,12 @@
 #include "Response.hpp"
+#include <filesystem>
+#include<stdio.h>
+#include<sys/stat.h>
+#include<iostream>
+#include<string.h>
+#include<string>
+#include<dirent.h>
+
 
 void	Response::GET(int &fd, Request &req, Conf &server)
 {
@@ -62,29 +70,31 @@ unsigned long convertHexToDec(std::string hex)
 
 void	Response::POST(int &fd, Request &req, Conf &server)
 {
-    static int fileIndex;
-    // std::cout << net.server[0].root << std::endl;
-    // exit(0);
-    std::cout << "locaition path :" << server.locat.find(req.get_path())->second.upload << std::endl;
-    // exit(0);
+
+    (void) fd;
+    (void) req;
+    // netPlix net;
+    static int i;
+    (void) server;
     if(req.get_header("Transfer-Encoding:").empty())
     {
         if (req.firstTime)
         {
+            std::string up_ptah = server.locat.find(req.get_path())->second.upload;
             std::string type = static_cast<std::string>(req.get_header("Content-Type:"));
             std::string tmp_ = type.substr(type.find("/") + 1);
             std::cout << tmp_ << std::endl;
             type.erase(type.find("/"));
             type.push_back('.');
-            path = UPLOAD_PATH + ("upload." + tmp_);
+            path = up_ptah + ("upload." + tmp_);
             while (fileExists(path))
             {
-                fileIndex++;
+                i++;
                 std::stringstream ss;
-                ss << fileIndex;
+                ss << i;
                 std::string s;
                 ss >> s;
-                path = UPLOAD_PATH + ("upload" + s + (".") + tmp_);
+                path = up_ptah + ("upload" + s + (".") + tmp_);
             }
             std::string str = req.get_body();
             out.open(path.c_str(), std::ios::binary);
@@ -119,20 +129,24 @@ void	Response::POST(int &fd, Request &req, Conf &server)
         std::string line; 
         if (req.firstTime)
         {
+            std::cout << "request path : " << req.get_path() << std::endl;
+            std::string up_ptah = server.locat.find(req.get_path())->second.upload;
             std::string type = static_cast<std::string>(req.get_header("Content-Type:"));
             std::string tmp_ = type.substr(type.find("/") + 1);
             std::cout << tmp_ << std::endl;
             type.erase(type.find("/"));
             type.push_back('.');
-            std::string path = UPLOAD_PATH + ("upload." + tmp_);
+            std::string path = up_ptah + ("upload." + tmp_);
+            std::cout << "path : "<< path << std::endl;
+
             while (fileExists(path))
             {
-                fileIndex++;
+                i++;
                 std::stringstream ss;
-                ss << fileIndex;
+                ss << i;
                 std::string s;
                 ss >> s;
-                path = UPLOAD_PATH + ("upload" + s + (".") + tmp_);
+                path = up_ptah + ("upload" + s + (".") + tmp_);
             }
             str = req.get_body();
             std::istringstream f(str);
@@ -194,7 +208,29 @@ void	Response::DELETE(int &fd, Request &req, Conf &server)
         std::cout << "new URL : " << req.get_path() << std::endl;
     }
     std::cout << "you want to delete : " << req.get_path() << std::endl;
-    if(fileExists(req.get_path()))
+    // exit(0);
+    DIR* dir = opendir(req.get_path().c_str());
+    if (dir != NULL) 
+    {
+        struct dirent* entry;
+        while ((entry = readdir(dir)) != NULL) 
+        {
+        std::cout << " ----------   is dir  -----------\n" << entry->d_name <<std::endl;
+            if (strcmp(entry->d_name, ".") != 0 && strcmp(entry->d_name, "..") != 0) 
+            {
+                req.get_path() = req.get_path() + "/" + entry->d_name;
+                struct stat st;
+                if (lstat(req.get_path().c_str(), &st) == 0) 
+                {
+                    if (S_ISDIR(st.st_mode))
+                        DELETE(fd, req, server); 
+                }
+            }
+        }
+            req.connexion = true;
+        closedir(dir);
+    }
+    else if(fileExists(req.get_path()))
     {
         if (remove(req.get_path().c_str()) != 0)
         {

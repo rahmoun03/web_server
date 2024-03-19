@@ -8,8 +8,8 @@
       "args": [],
       "stopAtEntry": false,
       "externalConsole": false,
-      "cwd": "/nfs/homes/ahbajaou/Desktop/web_server",
-      "program": "/nfs/homes/ahbajaou/Desktop/web_server/build/Debug/outDebug",
+      "cwd": "/nfs/homes/ahbajaou/Desktop/web_server/AYOUB",
+      "program": "/nfs/homes/ahbajaou/Desktop/web_server/AYOUB/build/Debug/outDebug",
       "MIMode": "gdb",
       "miDebuggerPath": "gdb",
       "setupCommands": [

@@ -5,6 +5,7 @@
 // #define UPLOAD_PATH "/nfs/sgoinfre/goinfre/Perso/arahmoun/upload/test.png"
 #define UPLOAD_PATH "www/server1/upload/"
 #include "../CHEBCHOUB/conf.hpp"
+#include <filesystem>
 
 // class Conf;
 // class netPlix;

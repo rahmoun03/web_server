@@ -95,7 +95,7 @@ void	Response::serv_dir(int &fd, Request &req, Conf &server)
             {   std::cout << "the location : " << path.substr(strlen(SERVER_ROOT)) << "\nautoIndex : "
                             << (server.locat.find(path.substr(strlen(SERVER_ROOT)))->second.autoindex) << std::endl;
                 if(server.locat.find(path.substr(strlen(SERVER_ROOT))) != server.locat.end()
-                    && server.locat.find(path.substr(strlen(SERVER_ROOT)))->second.autoindex == "on")
+                    && server.locat.find(path.substr(strlen(SERVER_ROOT)))->second.autoindex)
                 {
                     std::cout << BLUE << "Listing The Directory ..." << DEF << std::endl;
                     std::string content = listDirectory(path.c_str());

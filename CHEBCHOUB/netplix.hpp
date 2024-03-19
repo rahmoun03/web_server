@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   netplix.hpp                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: himejjad <himejjad@student.42.fr>          +#+  +:+       +#+        */
+/*   By: ahbajaou <ahbajaou@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/03/17 03:09:09 by himejjad          #+#    #+#             */
-/*   Updated: 2024/03/17 22:04:21 by himejjad         ###   ########.fr       */
+/*   Updated: 2024/03/19 03:21:06 by ahbajaou         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -45,7 +45,7 @@ class netPlix{
         void servClient(int &i, int &fd);
         
         
-        netPlix(char *os)
+        netPlix(const char *os)
         {
             int opt = 1;
             int new_socketfd;
@@ -61,17 +61,19 @@ class netPlix{
                 serverNum = 0;
                 while (!fg.eof()){
                     Conf conf(fg);
-                    conf.getLocal();
+                    // conf.getLocal();
+                    // conf.parsAndCheckServer();
                     server[serverNum] = conf;
                     // std::cout << "---->  : " << server[serverNum].confCherch("server_name") << std::endl;
                     serverNum = conf.numOfserver;
                 }
                 fg.close();
             }
-            else
-            {
-                std::cout << "set default configfile " << std::endl;
-                exit(EXIT_FAILURE);
+            else{
+                    conf.defaultConfic();
+                    conf.displayLocation();
+                    server[0] = conf;
+                    serverNum = 1;
             }
             
             std::cout << "number of server : " << serverNum << std::endl;
@@ -91,12 +93,13 @@ class netPlix{
                     exit(0);
                 }
                 event.data.fd = socket_fd[i];
-                event.events = EPOLLIN | EPOLLET;
+                event.events = EPOLLIN ;
                 std::cout << server[i].confCherch("port") << std::endl;
                 if (epoll_ctl(epoll_fd,EPOLL_CTL_ADD,socket_fd[i],&event) == -1){
                     perror("epoll_ctl");
                     exit(0);
                 }
+                std::cout << "num of servre is " << i << std::endl;
                 std::cout<< BLUE << "the server listening on port : "<< DEF << server[i].confCherch("port") << std::endl;
             }
             

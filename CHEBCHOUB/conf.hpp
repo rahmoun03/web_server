@@ -11,6 +11,7 @@
 #include <string>
 #include <fstream>
 #include <algorithm>
+#include <sstream>
 #include <map>
 #include <vector>
 #include <stdio.h>
@@ -19,6 +20,7 @@
 #include <stdlib.h>
 #include <unistd.h>   //close
 #include <netinet/in.h>
+// #include <fstream>
 // #include 
 // #include "location.hpp"
 #include <functional>
@@ -30,7 +32,7 @@ class loca{
         bool get;
         bool post;
         bool delet;
-        bool autoindex;
+        bool  autoindex;
         std::string root;
         std::string location;
         std::string defau;
@@ -40,7 +42,7 @@ class loca{
 
 class Conf {
     private :
-        loca loc;
+        // loca loc;
         std::map<std::string, std::string> map;
         std::string name;
         std::map<std::string, loca>::iterator it;
@@ -71,9 +73,10 @@ class Conf {
                                 {
                                     while (getline(fg,name)){
                                     if (name.find("=") != std::string::npos){
+                                        parseFrom(name);
                                         parsLocation(fg);
-                                        displayLocation();
                                         if (name.find("]") != std::string::npos){
+                                            displayLocation();
                                             continue;
                                         }
                                         name.erase(std::remove_if(name.begin(),name.end(),isspace),name.end());
@@ -112,6 +115,32 @@ class Conf {
                     std::cout << err << std::endl;
                     exit(0);
                 }
+
+        }
+        void parseFrom(std::string name){
+            try
+            {
+                std::string form;
+                std::vector<std::string> str;
+                std::stringstream ss(name);
+                while (ss >> form){
+                    str.push_back(form);
+                }
+                if (str[0] == "]")
+                    return ;
+                if (str[1] != "=")
+                    throw "FORM NOT VALID!";
+            }
+            catch(const char *e)
+            {
+                std::cerr << e  << '\n';
+                exit(0);
+            }
+        }
+        std::string isspaceRemove(std::string tmp){
+            std::string separate = tmp;
+            separate.erase(std::remove_if(separate.begin(),separate.end(),isspace),separate.end());
+            return  separate;
         }
         void    parseAndCheckLocation(){
                 std::map<std::string,std::string>::iterator lc;
@@ -119,22 +148,16 @@ class Conf {
                     if (loc1.find("method") == loc1.end()){
                         throw "METHOD NOT FOUND!";
                     }
-                    if ((lc = loc1.find("location")) != loc1.end()){
-                        if (directoryExists(lc->second) != true){
-                            throw "LOCATION NOT FOUND!";
-                        }
-                    }
                     if ((lc = loc1.find("root")) == loc1.end()){
                         throw "ROOT NOT FOUND!";
                     }
                     else{
-                            if (directoryExists(lc->second) != true){
+                            if (directoryExists(isspaceRemove(lc->second)) != true){
                                 throw "ROOT NOT FOUND!";
                         }
                     }
                     if ((lc = loc1.find("upload")) != loc1.end()){
-                
-                            if (directoryExists(lc->second) != true){
+                            if (directoryExists(isspaceRemove(lc->second)) != true){
                                 throw "UPLOAD NOT FOUND!";
                             }
                     }
@@ -166,7 +189,6 @@ class Conf {
         }
         void    parsAndCheckServer(){
             std::map<std::string, std::string>::iterator mp;
-            // for(; mp != )
             try{
                 if ((mp = map.find("port")) == map.end()){
                         throw "PORT NOT FOUND!";
@@ -203,6 +225,7 @@ class Conf {
             int rooty = 0;
             if (name.find("location") != std::string::npos)
                 {
+                    loc1.clear();
                     if (name.find("=") != std::string::npos){
                         name.erase(std::remove_if(name.begin(),name.end(),isspace),name.end());
                         loc1[name.substr(0,name.find("="))] = (name.substr(name.find("=") + 1));
@@ -210,14 +233,14 @@ class Conf {
                         if (name.find("[") != std::string::npos)
                         {
                             while (getline(fg,name)){
+                                parseFrom(name);
                                 if (name.find("=") != std::string::npos){
                                     if (name.find("root") != std::string::npos){
                                         rooty++;
                                         if (rooty == 2)
                                             throw "YOU SHOULD ENTER ONE ROOT!";
                                     }
-                                    name.erase(std::remove_if(name.begin(),name.end(),isspace),name.end());
-                                    loc1[name.substr(0,name.find("="))] = (name.substr(name.find("=") + 1));
+                                    loc1[isspaceRemove(name.substr(0,name.find("=")))] = (name.substr(name.find("=") + 1));
                                     if (name.find("]") != std::string::npos){
                                         break;
                                     }
@@ -242,56 +265,58 @@ class Conf {
                     else
                         throw "Ops error config file";
                 }
+
         }
         void displayLocation(){
+            std::map<std::string,std::string>::iterator it = loc1.begin();
+            loca loc = loca();
             try{
-
-                std::map<std::string,std::string>::iterator it = loc1.begin();
                 for(;it != loc1.end(); it++){
-
                     if (it->first.find("location") != std::string::npos){
-                        loc = loca();
-                        loc.location = it->second;;
+                        loc.location = it->second;
+        
                     }
-                    else
-                    {
-                        if (it->first.find("method") != std::string::npos){
-                                loc.get = false;
-                                loc.post = false;
-                                loc.delet = false;
-                                loc.autoindex = false;
-                            if (it->second.find("GET") != std::string::npos)
-                                    loc.get = true;
-                            else if (it->second.find("POST") != std::string::npos)
+        
+                    else if (it->first == "method"){
+                            loc.get = false;
+                            loc.post = false;
+                            loc.delet = false;
+                            std::string met;
+                            std::stringstream spl(it->second);
+                            while (spl >> met){
+                                if (met == "POST")
                                     loc.post = true;
-                            else if (it->second.find("DELETE") != std::string::npos)
+                                else if (met == "GET")
+                                    loc.get = true;
+                                else if (met == "DELETE")
                                     loc.delet = true;
-                            else
-                                throw "METHOUD NOT FOUND!";
-                        }
-                        else if (it->first.find("root") != std::string::npos){
-                            loc.root = it->second;
-                        }
-                        else if (it->first.find("autoindex") != std::string::npos){
-                            if (it->second == "on")
-                                loc.autoindex = true;
-                            else if (it->second == "off")
-                                loc.autoindex = false;
-                            else
-                                throw "AUTOINDEX NOT FOUND!";
-                        }
-                        else if (it->first.find("default") != std::string::npos){
-                            loc.defau = it->second;
-                        }
-                        else if (it->first.find("upload") != std::string::npos){
-                            loc.upload = it->second;
-                        }
-                        else if (it->first.find("redirect") != std::string::npos){
-                            loc.redirect = it->second;
-                        }
+                                else
+                                    throw "METHODE NOT FOUND!";
+                            }
                     }
-                    locat[loc.location] = loc;
+                    else if (it->first.find("root") != std::string::npos){
+                        loc.root = it->second;
+                    }
+                    else if (it->first == "autoindex"){
+
+                        if (isspaceRemove(it->second) == "on")
+                            loc.autoindex = true;
+                        else if (isspaceRemove(it->second) == "off")
+                            loc.autoindex = false;
+                        else
+                            throw "AUTOINDEX NOT FOUND!";
+                    }
+                    else if (it->first.find("default") != std::string::npos){
+                        loc.defau = isspaceRemove(it->second);
+                    }
+                    else if (it->first.find("upload") != std::string::npos){
+                        loc.upload = isspaceRemove(it->second);
+                    }
+                    else if (it->first.find("redirect") != std::string::npos){
+                        loc.redirect = isspaceRemove(it->second);
+                    }
                 }
+                locat[loc.location] = loc;
             }
             catch(const char *err){
                 std::cout << err << std::endl;

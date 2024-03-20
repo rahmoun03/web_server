@@ -30,7 +30,7 @@ class loca{
         bool get;
         bool post;
         bool delet;
-        bool autoindex;
+        bool  autoindex;
         std::string root;
         std::string location;
         std::string defau;
@@ -40,7 +40,7 @@ class loca{
 
 class Conf {
     private :
-        loca loc;
+        // loca loc;
         std::map<std::string, std::string> map;
         std::string name;
         std::map<std::string, loca>::iterator it;
@@ -72,8 +72,8 @@ class Conf {
                                     while (getline(fg,name)){
                                     if (name.find("=") != std::string::npos){
                                         parsLocation(fg);
-                                        displayLocation();
                                         if (name.find("]") != std::string::npos){
+                                            displayLocation();
                                             continue;
                                         }
                                         name.erase(std::remove_if(name.begin(),name.end(),isspace),name.end());
@@ -112,6 +112,8 @@ class Conf {
                     std::cout << err << std::endl;
                     exit(0);
                 }
+                    // displayLocation();
+
         }
         void    parseAndCheckLocation(){
                 std::map<std::string,std::string>::iterator lc;
@@ -119,11 +121,11 @@ class Conf {
                     if (loc1.find("method") == loc1.end()){
                         throw "METHOD NOT FOUND!";
                     }
-                    if ((lc = loc1.find("location")) != loc1.end()){
-                        if (directoryExists(lc->second) != true){
-                            throw "LOCATION NOT FOUND!";
-                        }
-                    }
+                    // if ((lc = loc1.find("location")) != loc1.end()){
+                    //     if (directoryExists(lc->second) != true){
+                    //         throw "LOCATION NOT FOUND!";
+                    //     }
+                    // }
                     if ((lc = loc1.find("root")) == loc1.end()){
                         throw "ROOT NOT FOUND!";
                     }
@@ -203,6 +205,8 @@ class Conf {
             int rooty = 0;
             if (name.find("location") != std::string::npos)
                 {
+                    // displayLocation();
+                    loc1.clear();
                     if (name.find("=") != std::string::npos){
                         name.erase(std::remove_if(name.begin(),name.end(),isspace),name.end());
                         loc1[name.substr(0,name.find("="))] = (name.substr(name.find("=") + 1));
@@ -242,50 +246,64 @@ class Conf {
                     else
                         throw "Ops error config file";
                 }
+
         }
         void displayLocation(){
             std::map<std::string,std::string>::iterator it = loc1.begin();
+            loca loc = loca();
+            // int flag = 0 ;
             for(;it != loc1.end(); it++){
-
+                std::cout << it->first <<" ==== "<< it->second <<std::endl;
                 if (it->first.find("location") != std::string::npos){
-                    loc = loca();
-                    loc.location = it->second;;
+                    loc.location = it->second;
+                    // std::cout << "location name : " << it->second << std::endl;
+                    // flag = 1;
                 }
-                else
-                {
-                    if (it->first.find("method") != std::string::npos){
-                            loc.get = false;
-                            loc.post = false;
-                            loc.delet = false;
-                            loc.autoindex = false;
-                        if (it->second.find("GET") != std::string::npos)
-                                loc.get = true;
-                        if (it->second.find("POST") != std::string::npos)
-                                loc.post = true;
-                        if (it->second.find("DELETE") != std::string::npos)
-                                loc.delet = true;
+                // else
+                // {
+                else if (it->first.find("method") != std::string::npos){
+                        loc.get = false;
+                        loc.post = false;
+                        loc.delet = false;
+                        // loc.autoindex = false;
+                    if (it->second.find("GET") != std::string::npos)
+                            loc.get = true;
+                    if (it->second.find("POST") != std::string::npos)
+                            loc.post = true;
+                    if (it->second.find("DELETE") != std::string::npos)
+                            loc.delet = true;
+                }
+                else if (it->first.find("root") != std::string::npos){
+                    loc.root = it->second;
+                }
+                else if (it->first == "autoindex"){
+
+                        // loc.autoindex  = it->second;
+                    if (it->second == "on")
+                    {
+                        loc.autoindex = true;
+
                     }
-                    else if (it->first.find("root") != std::string::npos){
-                        loc.root = it->second;
-                    }
-                    else if (it->first.find("autoindex") != std::string::npos){
-                        if (it->second == "on")
-                            loc.autoindex = true;
-                        else if (it->second == "off")
-                            loc.autoindex = false;
-                    }
-                    else if (it->first.find("default") != std::string::npos){
-                        loc.defau = it->second;
-                    }
-                    else if (it->first.find("upload") != std::string::npos){
-                        loc.upload = it->second;
-                    }
-                    else if (it->first.find("redirect") != std::string::npos){
-                        loc.redirect = it->second;
+                    if (it->second == "off")
+                    {
+                        loc.autoindex = false;
+
                     }
                 }
-                locat[loc.location] = loc;
+                else if (it->first.find("default") != std::string::npos){
+                    loc.defau = it->second;
+                }
+                else if (it->first.find("upload") != std::string::npos){
+                    loc.upload = it->second;
+                }
+                else if (it->first.find("redirect") != std::string::npos){
+                    loc.redirect = it->second;
+                }
+                    // flag = 0;
+                // }
             }
+            locat[loc.location] = loc;
+                std::cout << "---------------------------------------\n";
         }
         std::map<std::string, loca> getLocal(){
             return locat;

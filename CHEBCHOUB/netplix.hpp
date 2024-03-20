@@ -75,7 +75,12 @@ class netPlix{
                     server[0] = conf;
                     serverNum = 1;
             }
-            
+            // std::cout << server[0].locat.find("/assets/")->second.get << std::endl;
+            // std::cout << "autoindex : " << server[0].locat.find("/assets/")->second.autoindex << std::endl;
+            // std::cout << "autoindex : " << server[0].locat.find("/assets/")->second.defau << std::endl;
+            // std::cout << "autoindex : " << server[0].locat.find("/assets/")->second.root << std::endl;
+            // std::cout << server[0].locat.find("/assets/")->second.post << std::endl;          
+
             std::cout << "number of server : " << serverNum << std::endl;
             for(int i = 0; i < serverNum; i++)
             {

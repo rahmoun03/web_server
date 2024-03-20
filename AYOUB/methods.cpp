@@ -11,17 +11,30 @@
 void	Response::GET(int &fd, Request &req, Conf &server)
 {
     (void) server;
-
+    std::string _path = req.get_path();
     std::map<std::string, std::string> map = ErrorAssets();
     map_iterator it = map.find(req.get_path());
     if(req.firstTime)
     {
-
         std::cout << "old URL : " << req.get_path() << std::endl;
         if(it != map.end())
             req.get_path() = it->second;
         else
-            req.get_path() = (SERVER_ROOT + req.get_path());
+        {
+            std::cout << "test : " << _path << std::endl;
+            // exit(0);
+            while (server.locat.find(_path + "/") == server.locat.end())
+            {
+                size_t e = _path.rfind("/");
+                _path = _path.substr(0, e);
+            }
+            if (server.locat.find(_path + "/") != server.locat.end())
+            {
+                std::cout << "Add root to the URI ..." << (server.locat.find(_path + "/")->second.root) << std::endl;
+                req.root_end = strlen((server.locat.find(_path + "/")->second.root).c_str());
+                req.get_path() = server.locat.find(_path + "/")->second.root + req.get_path();
+            }
+        }
         std::cout << "new URL : " << req.get_path() << std::endl;
     }
     if(directoryExists(req.get_path()))
@@ -62,11 +75,6 @@ unsigned long convertHexToDec(std::string hex)
     ss >> std::hex >> decimal;
     return (decimal);
 }
-
-// void check_type(std::string &dlt)
-// {
-//     if()
-// }
 
 void	Response::POST(int &fd, Request &req, Conf &server)
 {

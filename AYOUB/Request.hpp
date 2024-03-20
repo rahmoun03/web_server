@@ -61,6 +61,7 @@ class Request
 		long int body_limit;
 		bool firstTime;
 		bool connexion;
+		size_t root_end;
 		
 		
 		Request();

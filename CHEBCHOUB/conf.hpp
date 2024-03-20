@@ -54,109 +54,111 @@ class Conf {
         }
         Conf(std::ifstream & fg)
         {
-                std::cout << name << std::endl;
-                try{
+            std::cout << name << std::endl;
+            try{
+                getline(fg,name);
+                while (name.empty()){
                     getline(fg,name);
-                    while (name.empty()){
+                    if (name.empty()){
+                        return ;
+                    }
+                }
+                if (name.find("server") != std::string::npos)
+                    {
+                        numOfserver++;
                         getline(fg,name);
-                        if (name.empty()){
-                            return ;
-                        }
-                    }
-                    if (name.find("server") != std::string::npos)
-                        {
-                            numOfserver++;
-                            getline(fg,name);
-                            if (name.find("{") != std::string::npos)
-                                {
-                                    while (getline(fg,name)){
-                                    if (name.find("=") != std::string::npos){
-                                        parsLocation(fg);
-                                        if (name.find("]") != std::string::npos){
-                                            displayLocation();
-                                            continue;
-                                        }
-                                        name.erase(std::remove_if(name.begin(),name.end(),isspace),name.end());
-                                        map[name.substr(0,name.find("="))] = name.substr(name.find("=") + 1);
-                                        if (name.find("}") != std::string::npos){
-                                            break; 
-                                        }
-                                        if (name.find("server") != std::string::npos && name.size() == 6){
-                                            throw "Ops error config file";
-                                        }
-                                        }
-                                        else if (name.find("}") != std::string::npos){
-                                            parsAndCheckServer();
-                                            break;
-                                        }
-                                        else
-                                        {
-                                            if (!name.empty())
-                                                throw "Ops error config file";
-                                        }
-
+                        if (name.find("{") != std::string::npos)
+                            {
+                                while (getline(fg,name)){
+                                if (name.find("=") != std::string::npos){
+                                    parsLocation(fg);
+                                    if (name.find("]") != std::string::npos){
+                                        displayLocation();
+                                        continue;
                                     }
-                                }
-                                else
-                                {
-                                    throw "Ops error config file";
-                                }
-                        }
-                        else
-                        {
-                            throw "Ops error config file";
-                        }
+                                    name.erase(std::remove_if(name.begin(),name.end(),isspace),name.end());
+                                    map[name.substr(0,name.find("="))] = name.substr(name.find("=") + 1);
+                                    if (name.find("}") != std::string::npos){
+                                        break; 
+                                    }
+                                    if (name.find("server") != std::string::npos && name.size() == 6){
+                                        throw "Ops error config file";
+                                    }
+                                    }
+                                    else if (name.find("}") != std::string::npos){
+                                        parsAndCheckServer();
+                                        break;
+                                    }
+                                    else
+                                    {
+                                        if (!name.empty())
+                                            throw "Ops error config file";
+                                    }
 
-                }
-                catch (const char * err){
-                    std::cout << err << std::endl;
-                    exit(0);
-                }
-                    // displayLocation();
-
-        }
-        void    parseAndCheckLocation(){
-                std::map<std::string,std::string>::iterator lc;
-               try{
-                    if (loc1.find("method") == loc1.end()){
-                        throw "METHOD NOT FOUND!";
-                    }
-                    // if ((lc = loc1.find("location")) != loc1.end()){
-                    //     if (directoryExists(lc->second) != true){
-                    //         throw "LOCATION NOT FOUND!";
-                    //     }
-                    // }
-                    if ((lc = loc1.find("root")) == loc1.end()){
-                        throw "ROOT NOT FOUND!";
-                    }
-                    else{
-                            if (directoryExists(lc->second) != true){
-                                throw "ROOT NOT FOUND!";
-                        }
-                    }
-                    if ((lc = loc1.find("upload")) != loc1.end()){
-                
-                            if (directoryExists(lc->second) != true){
-                                throw "UPLOAD NOT FOUND!";
+                                }
+                            }
+                            else
+                            {
+                                throw "Ops error config file";
                             }
                     }
-                lc = loc1.begin();
-                for(; lc != loc1.end(); lc++){
-                    if (lc->first.compare("cgi") != 0 && lc->first.compare("autoindex") != 0 && lc->first.compare("default") != 0\
-                    && lc->first.compare("location") != 0 && lc->first.compare("root") != 0 && lc->first.compare("method") != 0\
-                    && lc->first.compare("redirect") != 0 && lc->first.compare("upload") != 0)
+                    else
                     {
+                        throw "Ops error config file";
+                    }
 
-                        throw "SYNTAX ERROR!";
+            }
+            catch (const char * err){
+                std::cout << err << std::endl;
+                exit(0);
+            }
+                // displayLocation();
+
+        }
+        void    parseAndCheckLocation()
+        {
+            std::map<std::string,std::string>::iterator lc;
+            try{
+                if (loc1.find("method") == loc1.end()){
+                    throw "METHOD NOT FOUND!";
+                }
+                // if ((lc = loc1.find("location")) != loc1.end()){
+                //     if (directoryExists(lc->second) != true){
+                //         throw "LOCATION NOT FOUND!";
+                //     }
+                // }
+                if ((lc = loc1.find("root")) == loc1.end()){
+                    throw "ROOT NOT FOUND!";
+                }
+                else{
+                        if (directoryExists(lc->second) != true){
+                            throw "ROOT NOT FOUND!";
                     }
                 }
-               }
-               catch(const char * err){
-                    std::cout << err << std::endl;
-                    exit(0);
-               }
+                if ((lc = loc1.find("upload")) != loc1.end()){
+            
+                        if (directoryExists(lc->second) != true){
+                            throw "UPLOAD NOT FOUND!";
+                        }
+                }
+            lc = loc1.begin();
+            for(; lc != loc1.end(); lc++){
+                if (lc->first.compare("cgi") != 0 && lc->first.compare("autoindex") != 0 && lc->first.compare("default") != 0\
+                && lc->first.compare("location") != 0 && lc->first.compare("root") != 0 && lc->first.compare("method") != 0\
+                && lc->first.compare("redirect") != 0 && lc->first.compare("upload") != 0)
+                {
+
+                    throw "SYNTAX ERROR!";
+                }
+            }
+            }
+            catch(const char * err){
+                std::cout << err << std::endl;
+                exit(0);
+            }
         }
-        void defaultConfic(){
+        void defaultConfic()
+        {
             map["port"] = "8080";
             map["host"] = "127.0.0.1";
             map["server_name"] = "weldjed";
@@ -166,7 +168,8 @@ class Conf {
             loc1["root"] = "www/server1/assets";
             this->numOfserver = 1;
         }
-        void    parsAndCheckServer(){
+        void    parsAndCheckServer()
+        {
             std::map<std::string, std::string>::iterator mp;
             // for(; mp != )
             try{
@@ -200,7 +203,8 @@ class Conf {
             }
             return "not found";
         }
-        void parsLocation(std::ifstream & fg){
+        void parsLocation(std::ifstream & fg)
+        {
             (void)fg;
             int rooty = 0;
             if (name.find("location") != std::string::npos)

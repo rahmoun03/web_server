@@ -15,10 +15,13 @@ void    Response::generateResponse(int &fd, Request &req, uint32_t &event, Conf 
     }
     else if(req.get_method() == "POST")
     {
-        std::string upload = server.locat.find(req.get_path())->second.upload;
-        std::cout << RED << "POST METHOD, upload path : " << DEF << upload << std::endl;
-        if(!upload.empty())
+        if(server.locat.find(req.get_path()) != server.locat.end()
+            && !(server.locat.find(req.get_path())->second.upload.empty()))
+        {
+            std::cout << RED << "POST METHOD, upload path : " << DEF
+                        << server.locat.find(req.get_path())->second.upload<< std::endl;
             POST(fd, req, server);
+        }
         else
         {
             std::cout << "dont suport upload" << std::endl;
@@ -74,7 +77,7 @@ void Response::serv_file(map_iterator &type, int &fd, Request &req)
     {
         std::cout << "second time" << std::endl;
         std::string content = getResource(file, req);
-        std::cout << RAN << content << DEF << std::endl;
+        // std::cout << RAN << content << DEF << std::endl;
         send(fd, content.c_str(), content.size(),0);
         // req.connexion = true;
     }
@@ -82,23 +85,25 @@ void Response::serv_file(map_iterator &type, int &fd, Request &req)
 
 void	Response::serv_dir(int &fd, Request &req, Conf &server)
 {
-    std::string path = (req.get_path());
-    if ( path == SERVER_ROOT)
+    std::string _path = (req.get_path());
+    if ( _path == SERVER_ROOT)
         throw (badRequest());
 
     else
     {
-        if(req.firstTime)
-        {
-            // std::string path = req.get_path();
-            if(*(path.end()-1) == '/')
-            {   std::cout << "the location : " << path.substr(strlen(SERVER_ROOT)) << "\nautoIndex : "
-                            << (server.locat.find(path.substr(strlen(SERVER_ROOT)))->second.autoindex) << std::endl;
-                if(server.locat.find(path.substr(strlen(SERVER_ROOT))) != server.locat.end()
-                    && server.locat.find(path.substr(strlen(SERVER_ROOT)))->second.autoindex)
+        // if(req.firstTime)
+        // {
+            if(*(_path.end()-1) == '/')
+            {
+                std::cout << "just location : " << _path.substr(req.root_end) << std::endl;
+                if(server.locat.find(_path.substr(req.root_end)) != server.locat.end()
+                    && server.locat.find(_path.substr(req.root_end))->second.autoindex)
                 {
+                    std::cout << "the location : " << _path.substr(req.root_end) << "\nautoIndex : "
+                                << (server.locat.find(_path.substr(req.root_end))->second.autoindex) << std::endl;
                     std::cout << BLUE << "Listing The Directory ..." << DEF << std::endl;
-                    std::string content = listDirectory(path.c_str());
+                    
+                    std::string content = listDirectory(_path.c_str());
                     std::stringstream response;
                     response << "HTTP/1.1 200 OK\r\n"
                                 << "Content-Type: " << "text/html" << "\r\n"
@@ -115,39 +120,41 @@ void	Response::serv_dir(int &fd, Request &req, Conf &server)
                 }
                 else
                 {
-                    path += "index.html";
+                    _path += "index.html";
                     std::cout << "open index file "<< std::endl;
                     std::map<std::string , std::string> mime_map = mimeTypes();
-                    map_iterator it = mime_map.find(extension(path));
-                    if(it != mime_map.end() && fileExists(path))
+                    map_iterator it = mime_map.find(extension(_path));
+                    if(it != mime_map.end() && fileExists(_path))
                     {
-                        std::ifstream ff(path.c_str(), std::ios::binary);
+                        req.get_path() = _path;
+                        serv_file(it, fd, req);
+                        // std::ifstream ff(path.c_str(), std::ios::binary);
 
-                        ff.seekg(0, std::ios::end);
-                        std::streampos size =  ff.tellg();
-                        ff.seekg(0, std::ios::beg);
-                        ff.close();
+                        // ff.seekg(0, std::ios::end);
+                        // std::streampos size =  ff.tellg();
+                        // ff.seekg(0, std::ios::beg);
+                        // ff.close();
 
-                        file = open(path.c_str(), O_RDONLY);
-                        if(file < 0)
-                        {
-                            std::cout << " <  ---------- Error file --------->\n" << std::endl;
-                            throw (notFound());
-                        }
+                        // file = open(_path.c_str(), O_RDONLY);
+                        // if(file < 0)
+                        // {
+                        //     std::cout << " <  ---------- Error file --------->\n" << std::endl;
+                        //     throw (notFound());
+                        // }
 
-                        std::stringstream response;
-                        response << "HTTP/1.1 200 OK\r\n"
-                                    << "Content-Type: " << it->second << "\r\n"
-                                    << "Content-Length: "<< size <<"\r\n"
-                                    << "Connection: close\r\n"
-                                    << "Server: " << "chabchoub" << "\r\n"
-                                    << "Date: " << getCurrentDateTime() << "\r\n"
-                                    << "\r\n";
+                        // std::stringstream response;
+                        // response << "HTTP/1.1 200 OK\r\n"
+                        //             << "Content-Type: " << it->second << "\r\n"
+                        //             << "Content-Length: "<< size <<"\r\n"
+                        //             << "Connection: close\r\n"
+                        //             << "Server: " << "chabchoub" << "\r\n"
+                        //             << "Date: " << getCurrentDateTime() << "\r\n"
+                        //             << "\r\n";
 
 
-                        // std::cout<< BLUE<<"respone : \n"<<YOLLOW<< response.str()  << std::endl;
-                        send(fd, response.str().c_str(), response.str().size(),0);
-                        req.firstTime = false;
+                        // // std::cout<< BLUE<<"respone : \n"<<YOLLOW<< response.str()  << std::endl;
+                        // send(fd, response.str().c_str(), response.str().size(),0);
+                        // req.firstTime = false;
 
                     }
                     else
@@ -159,10 +166,10 @@ void	Response::serv_dir(int &fd, Request &req, Conf &server)
             }
             else
             {
-                std::string locaition = (path.substr(strlen(SERVER_ROOT))) + "/";
+                std::string locaition = (_path.substr(req.root_end - 1)) + "/";
 
                 std::cout << "make a redirection URL "<< std::endl;
-                std::cout << "from this : " << path.substr(strlen(SERVER_ROOT)) << std::endl;
+                std::cout << "from this : " << _path.substr(req.root_end - 1) << std::endl;
                 std::cout << "to   this : " << locaition << std::endl;
 
                 std::string content = getRedirctionS(locaition);
@@ -172,12 +179,12 @@ void	Response::serv_dir(int &fd, Request &req, Conf &server)
                 req.firstTime = false;
 
             }
-        }
-        else
-        {
-            std::string content = getResource(file, req);
-            send(fd, content.c_str(), content.size(), 0);
-        }
+        // }
+        // else
+        // {
+        //     std::string content = getResource(file, req);
+        //     send(fd, content.c_str(), content.size(), 0);
+        // }
     }
 }
 

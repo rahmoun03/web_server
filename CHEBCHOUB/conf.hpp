@@ -32,6 +32,7 @@ class loca{
         bool get;
         bool post;
         bool delet;
+        bool cgi;
         bool  autoindex;
         std::string root;
         std::string location;
@@ -58,21 +59,21 @@ class Conf {
         {
                 std::cout << name << std::endl;
                 try{
-                    getline(fg,name);
-                    while (name.empty()){
                         getline(fg,name);
-                        if (name.empty()){
+                        if (name.empty())
+                        {
                             return ;
                         }
-                    }
-                    if (name.find("server") != std::string::npos)
+                        if (name.find("server") != std::string::npos)
                         {
                             numOfserver++;
                             getline(fg,name);
                             if (name.find("{") != std::string::npos)
+                            {
+                                while (getline(fg,name))
                                 {
-                                    while (getline(fg,name)){
-                                    if (name.find("=") != std::string::npos){
+                                    if (name.find("=") != std::string::npos)
+                                    {
                                         parseFrom(name);
                                         parsLocation(fg);
                                         if (name.find("]") != std::string::npos){
@@ -84,39 +85,41 @@ class Conf {
                                         if (name.find("}") != std::string::npos){
                                             break; 
                                         }
-                                        if (name.find("server") != std::string::npos && name.size() == 6){
+                                        if (name.find("server") != std::string::npos && name.size() == 6)
+                                        {
                                             throw "Ops error config file";
                                         }
-                                        }
-                                        else if (name.find("}") != std::string::npos){
-                                            parsAndCheckServer();
-                                            break;
-                                        }
-                                        else
-                                        {
-                                            if (!name.empty())
-                                                throw "Ops error config file";
-                                        }
-
+                                    }
+                                    else if (name.find("}") != std::string::npos)
+                                    {
+                                        parsAndCheckServer();
+                                        break;
+                                    }
+                                    else
+                                    {
+                                        if (!name.empty())
+                                            throw "Ops error config file";
                                     }
                                 }
-                                else
-                                {
-                                    throw "Ops error config file";
-                                }
+                            }
+                            else
+                            {
+                                throw "Ops error config file";
+                            }
                         }
                         else
                         {
                             throw "Ops error config file";
                         }
 
-                }
-                catch (const char * err){
-                    std::cout << err << std::endl;
-                    exit(0);
-                }
+            }
+            catch (const char * err){
+                std::cout << err << std::endl;
+                exit(0);
+            }
 
-        }
+}
+
         void parseFrom(std::string name){
             try
             {
@@ -295,7 +298,7 @@ class Conf {
                             }
                     }
                     else if (it->first.find("root") != std::string::npos){
-                        loc.root = it->second;
+                        loc.root = isspaceRemove(it->second);
                     }
                     else if (it->first == "autoindex"){
 
@@ -305,6 +308,15 @@ class Conf {
                             loc.autoindex = false;
                         else
                             throw "AUTOINDEX NOT FOUND!";
+                    }
+                    else if (it->first == "cgi"){
+
+                        if (isspaceRemove(it->second) == "on")
+                            loc.cgi = true;
+                        else if (isspaceRemove(it->second) == "off")
+                            loc.cgi = false;
+                        else
+                            throw "CGI NOT FOUND!";
                     }
                     else if (it->first.find("default") != std::string::npos){
                         loc.defau = isspaceRemove(it->second);
@@ -320,6 +332,7 @@ class Conf {
             }
             catch(const char *err){
                 std::cout << err << std::endl;
+                exit(0);
             }
         }
         std::map<std::string, loca> getLocal(){

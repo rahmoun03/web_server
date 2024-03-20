@@ -511,8 +511,10 @@ void Response::clear()
 #include <dirent.h>
 std::string listDirectory(const char* path) {
     std::stringstream response;
-    response << "<html><head><title>Directory Listing</title></head>"
-            <<"<body><h1>Directory Listing</h1>";
+    response << "<html><head><title>Directory Listing</title>"
+            << "</head>"
+            <<"<body>"
+            << "<h1>Directory Listing</h1>";
 
     DIR* dir;
     struct dirent* entry;

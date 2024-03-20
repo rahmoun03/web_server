@@ -51,8 +51,18 @@ class Conf {
         int numOfserver;
         Conf(){
             numOfserver = 0;
-        }                    // displayLocation();
-
+        }
+        Conf(std::ifstream & fg)
+        {
+            std::cout << name << std::endl;
+            try{
+                getline(fg,name);
+                while (name.empty()){
+                    getline(fg,name);
+                    if (name.empty()){
+                        return ;
+                    }
+                }
                 if (name.find("server") != std::string::npos)
                 {
                     numOfserver++;

@@ -512,9 +512,43 @@ void Response::clear()
 std::string listDirectory(const char* path) {
     std::stringstream response;
     response << "<html><head><title>Directory Listing</title>"
+    << "<style>"
+    << "    body {"
+    << "        display: flex;"
+    << "        justify-content: center;"
+    << "        align-items: center;"
+    << "        height: 100vh;"
+    << "        background-color: rgb(0, 4, 4);"
+    << "    }"
+    << "    .main-content {"
+    << "        box-shadow: inset 0px 0px 30px 30px rgb(0, 0, 0);"
+    << "        background-color: hsla(0, 0%, 100%, 0.3);"
+    << "        border-radius: 50px;"
+    << "        display: block;"
+    << "        width: 80%;"
+    << "        height: 80%;"
+    << "        justify-content: center;"
+    << "        align-items: center;"
+    << "        text-align: center;"
+    << "        padding: 20px;"
+    << "    }"
+    << "    .main-content h1 {"
+    << "        width: 40%;"
+    << "        height: auto;"
+    << "        display: block;"
+    << "        margin: 0 auto;"
+    << "        font-size: 40px;"
+    << "        color: azure;"
+    << "    }"
+    << "    .main-content p {"
+    << "        color: rgb(255, 0, 0);"
+    << "    }"
+    << "</style>"
             << "</head>"
             <<"<body>"
-            << "<h1>Directory Listing</h1>";
+            << "    <div class=\"main-content\">"
+            << "<h1>Directory Listing</h1>"
+            << "<hr size=\"2\" color=\"white\" width=\"70%\">";
 
     DIR* dir;
     struct dirent* entry;
@@ -529,7 +563,7 @@ std::string listDirectory(const char* path) {
     else {
         perror("opendir");
     }
-
+    response << "</div>";
     response << "</body></html>";
     std::cout << "\n\nherrrerrer \n\n" << response.str() << "\n\n endddddd"<< std::endl;
     return response.str();

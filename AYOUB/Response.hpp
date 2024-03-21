@@ -56,6 +56,7 @@ class Response
 			std::string homepage(); // 200 home
 		/***********************/
 		
+		void Redirect(std::string &location, Request &req, int &fd);
 		
 		std::string getResource(int &file, Request &req);
 		std::string getRedirctionS(std::string &location);

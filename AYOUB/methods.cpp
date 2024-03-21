@@ -30,6 +30,7 @@ void	Response::GET(int &fd, Request &req, Conf &server)
             }
             if (server.locat.find(_path + "/") != server.locat.end())
             {
+                std::cout << "location : " << (_path + "/") << std::endl;
                 std::cout << "Add root to the URI ..." << (server.locat.find(_path + "/")->second.root) << std::endl;
                 req.root_end = strlen((server.locat.find(_path + "/")->second.root).c_str());
                 req.get_path() = server.locat.find(_path + "/")->second.root + req.get_path();
@@ -174,9 +175,17 @@ void	Response::POST(int &fd, Request &req, Conf &server)
             a = recv(fd, buffer, 1023, 0);
             buffer[a] = '\0';
             tmp.append(buffer, a);
-            if(tmp.size() >= decimal)
+            if((tmp.size() > (decimal + 10))
+                || ((tmp.size() >= decimal + 5 ) && (*(tmp.end() - 1) == '\n') && (*(tmp.end() - 2) == '\r')))
             {
-                size_t distance = tmp.size() - decimal;
+                size_t distance = tmp.size() - (decimal + 2);
+
+                
+                std::cout   << "tmp size : " << tmp.size()
+                            << "\ndecimal size : " << decimal
+                            << "\ndistance : " << distance << std::endl;
+                
+                
                 out.write(tmp.c_str(), decimal);
                 out.flush();
                 tmp = tmp.substr(decimal + 2, distance);
@@ -185,6 +194,7 @@ void	Response::POST(int &fd, Request &req, Conf &server)
                 decimal = convertHexToDec(line);
                 req.chun++;
                 tmp.erase(0,line.size() + 1);
+                std::cout << "now decimal = " << decimal << std::endl;
             }
         }
         if (decimal == 0){

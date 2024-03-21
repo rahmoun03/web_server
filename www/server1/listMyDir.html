@@ -9,10 +9,12 @@
 <h1>Directory Listing</h1>
 <ul id="directory-list"></ul>
 
+</body>
+</html>
 <script>
 // Function to fetch directory contents
 function fetchDirectoryContents() {
-    fetch('/path/to/your/directory') // Replace '/path/to/your/directory' with the actual directory path
+    fetch('.') // Replace '/path/to/your/directory' with the actual directory path
         .then(response => response.text())
         .then(data => {
             const directoryList = document.getElementById('directory-list');
@@ -34,5 +36,3 @@ function fetchDirectoryContents() {
 // Fetch directory contents when the page loads
 window.addEventListener('load', fetchDirectoryContents);
 </script>
-</body>
-</html>

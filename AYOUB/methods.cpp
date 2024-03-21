@@ -6,6 +6,9 @@
 #include<string.h>
 #include<string>
 #include<dirent.h>
+#include <iostream>
+#include <cstdlib> // For system function
+#include <unistd.h>
 
 
 void	Response::GET(int &fd, Request &req, Conf &server)
@@ -127,6 +130,7 @@ void	Response::POST(int &fd, Request &req, Conf &server)
     else if(req.get_header("Transfer-Encoding:") == "chunked")
     {
         std::string line; 
+        std::cout << "------------BEFRO POST ------------------------------------\n";
         if (req.firstTime)
         {
             std::cout << "request path : " << req.get_path() << std::endl;
@@ -159,16 +163,18 @@ void	Response::POST(int &fd, Request &req, Conf &server)
             tmp.append(str.c_str(), str.size());
             req.firstTime = false;
         }
-        else 
+         else 
         {
             size_t a;
             char buffer[1024];
             a = recv(fd, buffer, 1023, 0);
             buffer[a] = '\0';
             tmp.append(buffer, a);
-            if(tmp.size() >= decimal)
+            std::cout << "here\n";
+            if((tmp.size() > (decimal + 10))
+                || ((tmp.size() >= decimal + 5 ) && (*(tmp.end() - 1) == '\n') && (*(tmp.end() - 2) == '\r')))
             {
-                size_t distance = tmp.size() - decimal;
+                size_t distance = tmp.size() - (decimal + 2);
                 out.write(tmp.c_str(), decimal);
                 out.flush();
                 tmp = tmp.substr(decimal + 2, distance);
@@ -177,9 +183,11 @@ void	Response::POST(int &fd, Request &req, Conf &server)
                 decimal = convertHexToDec(line);
                 req.chun++;
                 tmp.erase(0,line.size() + 1);
+                std::cout << "now decimal = " << decimal << std::endl;
             }
         }
         if (decimal == 0){
+            std::cout << "------------------ LAST CHUNKED --------------------------\n";
             req.connexion = true;
             std::ifstream fi("www/server1/suc.html");
             std::stringstream response;
@@ -208,7 +216,6 @@ void	Response::DELETE(int &fd, Request &req, Conf &server)
         std::cout << "new URL : " << req.get_path() << std::endl;
     }
     std::cout << "you want to delete : " << req.get_path() << std::endl;
-    // exit(0);
     DIR* dir = opendir(req.get_path().c_str());
     if (dir != NULL) 
     {
@@ -217,16 +224,13 @@ void	Response::DELETE(int &fd, Request &req, Conf &server)
         {
             if (strcmp(entry->d_name, ".") != 0 && strcmp(entry->d_name, "..") != 0) 
             {
-                std::string filePath = req.get_path() + "/" + entry->d_name;
-                struct stat st;
-                if (lstat(filePath.c_str(), &st) == 0) 
-                {
-                    if (S_ISDIR(st.st_mode))
-                        DELETE(fd, req, server); 
-                }
+                std::string filePath = req.get_path() + entry->d_name;
+                if(directoryExists(filePath))
+                    rmdir(filePath.c_str());
+                remove(filePath.c_str());
             }
         }
-            req.connexion = true;
+        req.connexion = true;
         closedir(dir);
     }
     else if(fileExists(req.get_path()))
@@ -266,7 +270,6 @@ void	Response::DELETE(int &fd, Request &req, Conf &server)
             }
             req.connexion = true;
             ff.close();
-            // std::cout << "the file was deleted ..." << std::endl;
         }
     }
     else

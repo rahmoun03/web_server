@@ -29,8 +29,59 @@ void Response::generateResponse(int &fd, Request &req, uint32_t &event, Conf &se
 
     else if (req.get_method() == "DELETE")
     {
+        std::map<std::string, std::string> map = ErrorAssets();
+        map_iterator it = map.find(req.get_path());
+        if(req.firstTime)
+        {
+
+            std::cout << "old URL : " << req.get_path() << std::endl;
+            if(it != map.end())
+                req.get_path() = it->second;
+            else
+                req.get_path() = (SERVER_ROOT + req.get_path());
+            std::cout << "new URL : " << req.get_path() << std::endl;
+        }
         std::cout << RED << "DELETE METHOD" << DEF << std::endl;
-        DELETE(fd, req, server);
+        int d = DELETE(fd, req, server, req.get_path());
+        if(d == 1)
+        {
+            std::ifstream ff("www/server1/delete.html", std::ios::binary);
+            
+            std::stringstream response;
+            response << "HTTP/1.1 200 OK\r\n"
+             << "Content-Type: text/html\r\n"
+             << "Connection: close\rEncoding\n"
+             << "Server: " << "chabchoub" << "\r\n"
+             << "Date: " << getCurrentDateTime() << "\r\n"
+             << "\r\n"
+             << ff.rdbuf();
+            
+            std::cout << "response :\n" << YOLLOW << response.str() << DEF <<std::endl;
+
+            if(send(fd, response.str().c_str(), response.str().size(), 0) == -1)
+            {
+                perror("send :");
+                exit(1);
+            }
+            req.connexion = true;
+            ff.close();
+        }
+        else
+        {
+            std::stringstream response;
+            response << "HTTP/1.1 204 No Content\r\n"
+             << "Connection: close\r\n"
+             << "Server: " << "chabchoub" << "\r\n"
+             << "Date: " << getCurrentDateTime() << "\r\n"
+             << "\r\n";
+            
+            std::cout << "response :\n" << YOLLOW << response.str() << DEF <<std::endl;
+
+            send(fd, response.str().c_str(), response.str().size(), 0);
+
+            
+            req.connexion = true;
+        }
     }
 
     else

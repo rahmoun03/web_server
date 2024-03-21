@@ -31,7 +31,7 @@ class Response
 		/*             METHODs              */
 		void	GET(int &fd, Request &req, Conf &server);
 		void	POST(int &fd, Request &req, Conf &server);
-		void	DELETE(int &fd, Request &req, Conf &server);
+		int	DELETE(int &fd, Request &req, Conf &server, std::string dpath);
 		/**************************************/
 
 		void	clear();

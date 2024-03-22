@@ -37,7 +37,6 @@ class Response
 		void	clear();
 		void 	serv_file(map_iterator &type, int &fd, Request &req);
 		void 	serv_dir(int &fd, Request &req, Conf &server);
-		// void	imageFile(int &fd, Request &req);
 		void	generateResponse(int &fd, Request &req, uint32_t &event, Conf &server);
 		void	checkHeaders(Request &req);
 		std::string extension(const std::string &path);
@@ -53,14 +52,13 @@ class Response
 			std::string notImplement(); //   501
 			std::string httpVersion();//     505
 		
-			std::string homepage(); // 200 home
+			// std::string homepage(); // 200 home
 		/***********************/
 		
 		void Redirect(std::string &location, Request &req, int &fd);
 		
 		std::string getResource(int &file, Request &req);
 		std::string getRedirctionS(std::string &location);
-		std::string getImage(std::ifstream &file, const char *type, std::string ext);
 };
 std::string listDirectory(const char* path);
 bool directoryExists(std::string path);

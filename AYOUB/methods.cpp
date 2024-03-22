@@ -24,8 +24,6 @@ void	Response::GET(int &fd, Request &req, Conf &server)
             req.get_path() = it->second;
         else
         {
-            std::cout << "test : " << _path << std::endl;
-            // exit(0);
             while (server.locat.find(_path + "/") == server.locat.end())
             {
                 size_t e = _path.rfind("/");
@@ -33,18 +31,24 @@ void	Response::GET(int &fd, Request &req, Conf &server)
             }
             if (server.locat.find(_path + "/") != server.locat.end())
             {
+                loca _location = server.locat.find(_path + "/")->second;
                 std::cout << "location : " << (_path + "/") << std::endl;
-                std::cout << "Add root to the URI ..." << (server.locat.find(_path + "/")->second.root) << std::endl;
-                req.root_end = strlen((server.locat.find(_path + "/")->second.root).c_str());
-                req.get_path() = server.locat.find(_path + "/")->second.root + req.get_path();
+                std::cout << "Add root to the URI : " << (_location.root) << std::endl;
+                req.root_end = strlen((_location.root).c_str());
+                req.get_path() = _location.root + req.get_path();
+                req.red_path = _location.redirect;
             }
         }
         std::cout << "new URL : " << req.get_path() << std::endl;
     }
-    if(directoryExists(req.get_path()))
+    if(!req.red_path.empty())
+            Redirect(req.red_path, req, fd);
+    else if(directoryExists(req.get_path()))
     {
         std::cout << "http://{" << req.get_path() << "} \n";
         std::cout << "the URL is a directory \n";
+        if(!req.red_path.empty())
+            Redirect(req.red_path, req, fd);
         serv_dir(fd, req, server);
     }
     else if (fileExists(req.get_path()))

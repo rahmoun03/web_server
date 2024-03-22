@@ -62,6 +62,7 @@ class Request
 		bool firstTime;
 		bool connexion;
 		size_t root_end;
+		std::string red_path;
 		
 		
 		Request();

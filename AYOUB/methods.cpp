@@ -7,6 +7,61 @@
 #include<string>
 #include<dirent.h>
 
+       #include <sys/types.h>
+       #include <sys/wait.h>
+
+void Response::serv_cgi(int &fd, Request &req) {
+    (void)fd;
+    (void)req;
+    // int file;
+    // int cgi_pid;
+    // int pip[2];
+    // char* args[3];
+    // args[0] = const_cast<char*>(req.get_path().c_str());
+    // args[1] = const_cast<char*>("/usr/local/bin/php-cgi");
+    // args[2] = NULL;
+    // char* env[] = {const_cast<char*>("REQUEST_METHOD=GET"), const_cast<char*>("SCRIPT_FILENAME=/path/to/cgi_script.cgi"), NULL};
+
+    // file = open(req.get_path().c_str(), O_RDONLY);
+    std::cout << "content of file" << req.get_path().c_str() << std::endl;
+    // if (file < 0) {
+    //     exit(0);
+    //     // throw (notFound());
+    // }
+    // char buff[1024];
+    // re(file,buff,1023,0);
+    // std::cout << "bpdy of file : " << buff << std::endl;
+    // exit(0);
+
+    // if (pipe(pip) == -1) {
+    //     perror("pipe : ");
+    //     exit(0);
+    // }
+
+    // cgi_pid = fork();
+    // if (cgi_pid == 0) {
+    //     // close(pip[1]);
+    //     // dup2(pip[0], file);
+    //     // dup2(fd, STDOUT_FILENO);
+    //     execve(args[0], args, env);
+    //     exit(0); 
+    // } else if (cgi_pid == -1) {
+    //     perror("fork : ");
+    //     exit(0);
+    // }
+    // write()
+
+    // Close unused file descriptors
+    // fd = pip[1];
+    // close(pip[0]);
+    // close(file);
+    // const char* http_header = "HTTP/1.1 200 OK\r\nContent-Type: text/html\r\n\r\n";
+    // send(fd, http_header, strlen(http_header), 0);
+    // // int status;
+    // // waitpid(cgi_pid, &status, 0);
+    // req.connexion = true;
+    exit(0);
+}
 
 void	Response::GET(int &fd, Request &req, Conf &server)
 {
@@ -33,6 +88,7 @@ void	Response::GET(int &fd, Request &req, Conf &server)
                 std::cout << "Add root to the URI ..." << (server.locat.find(_path + "/")->second.root) << std::endl;
                 req.root_end = strlen((server.locat.find(_path + "/")->second.root).c_str());
                 req.get_path() = server.locat.find(_path + "/")->second.root + req.get_path();
+                req.CGI =  server.locat.find(_path + "/")->second.cgi ;
             }
         }
         std::cout << "new URL : " << req.get_path() << std::endl;
@@ -47,11 +103,18 @@ void	Response::GET(int &fd, Request &req, Conf &server)
     {
         std::map<std::string , std::string> mime_map = mimeTypes();
         it = mime_map.find(extension(req.get_path()));
-        if(it != mime_map.end())
+        if(it != mime_map.end() || extension(req.get_path()) == "cpp")
         {
             std::cout << "http://{" << req.get_path() << "} \n";
-            std::cout << "the URL is a file : " << it->second << std::endl;
-            serv_file(it, fd, req);
+            // // if (server.locat.find("/")->second.cgi)
+            // std::cout << "---------------------HERE--------------------\n";
+            if (!req.CGI)
+            {
+                std::cout << "the URL is a file : " << it->second << std::endl;
+                serv_file(it, fd, req);
+            }
+            else 
+                serv_cgi(fd,req);
         }
         else
         {
@@ -75,6 +138,7 @@ unsigned long convertHexToDec(std::string hex)
     ss >> std::hex >> decimal;
     return (decimal);
 }
+
 
 void	Response::POST(int &fd, Request &req, Conf &server)
 {

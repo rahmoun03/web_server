@@ -20,9 +20,6 @@
 #include <stdlib.h>
 #include <unistd.h>   //close
 #include <netinet/in.h>
-// #include <fstream>
-// #include 
-// #include "location.hpp"
 #include <functional>
 #include "../AYOUB/Response.hpp"
 bool directoryExists(std::string path);

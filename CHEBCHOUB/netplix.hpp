@@ -6,7 +6,7 @@
 /*   By: ahbajaou <ahbajaou@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/03/17 03:09:09 by himejjad          #+#    #+#             */
-/*   Updated: 2024/03/23 00:01:32 by ahbajaou         ###   ########.fr       */
+/*   Updated: 2024/03/23 02:13:34 by ahbajaou         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -71,14 +71,10 @@ class netPlix{
                     conf.displayLocation();
                     server[0] = conf;
                     serverNum = 1;
-            }        
+            }   
             std::cout << "you will serv " << serverNum << " server" << std::endl;
             for(int i = 0; i < serverNum; i++)
-            {
-                std::cout << "-------------------------------------------------\n";
-                std::cout << "name : " << server[i].confCherch("server_name") <<std::endl;
-                std::cout << "host : " << server[i].confCherch("host") << std::endl;
-                std::cout << "port : " << server[i].confCherch("port") << std::endl;
+            {   
                 socket_fd[i] = socket(AF_INET,SOCK_STREAM,0);
                 socket_acc.push_back(socket_fd[i]);
                 setsockopt(socket_fd[i],SOL_SOCKET,SO_REUSEADDR,&opt,sizeof(opt));
@@ -98,6 +94,7 @@ class netPlix{
                     exit(0);
                 }
             }
+            exit(0);
             
             for (size_t i = 0; i < MAX_EVENTS; i++)
                 client[i].endOf = -1;

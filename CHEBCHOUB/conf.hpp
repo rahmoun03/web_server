@@ -24,6 +24,7 @@
 #include "../AYOUB/Response.hpp"
 
 bool directoryExists(std::string path);
+bool fileExists(std::string path);
 
 class loca{
 	public :
@@ -79,8 +80,22 @@ class Conf {
 											displayLocation();
 											continue;
 										}
-										name.erase(std::remove_if(name.begin(),name.end(),isspace),name.end());
-										map[name.substr(0,name.find("="))] = name.substr(name.find("=") + 1);
+										if (isspaceRemove(name.substr(0,name.find("="))) == "error_page"){
+											std::stringstream ss(name.substr(name.find("=") + 1));
+											std::string key;
+											std::string value;
+											std::string err;
+											ss >> key;
+											ss >> value;
+											if (ss >> err || !fileExists(value.c_str()))
+													throw "Ops error config file";
+											map[key] = value;
+										}
+										else
+										{
+											name.erase(std::remove_if(name.begin(),name.end(),isspace),name.end());
+											map[name.substr(0,name.find("="))] = name.substr(name.find("=") + 1);
+										}
 										if (name.find("}") != std::string::npos){
 											break; 
 										}
@@ -186,7 +201,7 @@ class Conf {
 			map["body_size_limit"] = "10000000";
 			loc1["location"] = "/";
 			loc1["method"] = "GET POST DELETE";
-			loc1["root"] = "www/server1/assets";
+			loc1["root"] = "www/server1";
 			this->numOfserver = 1;
 		}
 		void    parsAndCheckServer(){

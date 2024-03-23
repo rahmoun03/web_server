@@ -10,7 +10,6 @@
 #include <cstdlib> // For system function
 #include <unistd.h>
 
-
 void	Response::GET(int &fd, Request &req, Conf &server)
 {
     (void) server;
@@ -53,7 +52,7 @@ void	Response::GET(int &fd, Request &req, Conf &server)
     {
         std::map<std::string , std::string> mime_map = mimeTypes();
         it = mime_map.find(extension(req.get_path()));
-        if(it != mime_map.end())
+        if(it != mime_map.end() || extension(req.get_path()) == "cpp")
         {
             // std::cout << "http://{" << req.get_path() << "} \n";
             // std::cout << "the URL is a file : " << it->second << std::endl;
@@ -81,6 +80,7 @@ unsigned long convertHexToDec(std::string hex)
     ss >> std::hex >> decimal;
     return (decimal);
 }
+
 
 void	Response::POST(int &fd, Request &req, Conf &server)
 {

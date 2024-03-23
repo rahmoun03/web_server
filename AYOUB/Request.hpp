@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Request.hpp                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: himejjad <himejjad@student.42.fr>          +#+  +:+       +#+        */
+/*   By: ahbajaou <ahbajaou@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/17 09:53:30 by arahmoun          #+#    #+#             */
-/*   Updated: 2024/03/17 03:22:56 by himejjad         ###   ########.fr       */
+/*   Updated: 2024/03/21 03:21:54 by ahbajaou         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -61,6 +61,7 @@ class Request
 		long int body_limit;
 		bool firstTime;
 		bool connexion;
+		bool CGI;
 		size_t root_end;
 		std::string red_path;
 		

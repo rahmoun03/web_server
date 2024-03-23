@@ -37,7 +37,7 @@ class Response
 		void	clear();
 		void 	serv_file(map_iterator &type, int &fd, Request &req);
 		void 	serv_dir(int &fd, Request &req, Conf &server);
-		void 	serv_cgi(int &fd, Request &req);
+		// void 	serv_cgi(int &fd, Request &req);
 
 		// void	imageFile(int &fd, Request &req);
 		void	generateResponse(int &fd, Request &req, uint32_t &event, Conf &server);

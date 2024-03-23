@@ -49,15 +49,15 @@ class netPlix{
                 while (loc_it != loc_ite)
                 {
                     std::cout << RED << "location : " << BLUE << loc_it->first << std::endl; 
-                    std::cout << "POST          :" << (loc_it->second.post ? "yes" : "no") << std::endl;
-                    std::cout << "GET           :" << (loc_it->second.get ? "yes" : "no") << std::endl;
-                    std::cout << "DELETE        :" << (loc_it->second.delet ? "yes" : "no") << std::endl;
-                    std::cout << "default       :" << loc_it->second.defau << std::endl;
-                    std::cout << "root          :" << loc_it->second.root << std::endl;
-                    std::cout << "upload        :" << loc_it->second.upload << std::endl;
-                    std::cout << "autoindex     :" << (loc_it->second.autoindex ? "yes" : "no") << std::endl;
-                    std::cout << "redirect      :" << loc_it->second.redirect << std::endl;
-                    std::cout << "CGI           :" << (loc_it->second.cgi ? "yes" : "no") << DEF <<std::endl;
+                    std::cout << "  POST          :" << (loc_it->second.post ? "yes" : "no") << std::endl;
+                    std::cout << "  GET           :" << (loc_it->second.get ? "yes" : "no") << std::endl;
+                    std::cout << "  DELETE        :" << (loc_it->second.delet ? "yes" : "no") << std::endl;
+                    std::cout << "  default       :" << loc_it->second.defau << std::endl;
+                    std::cout << "  root          :" << loc_it->second.root << std::endl;
+                    std::cout << "  upload        :" << loc_it->second.upload << std::endl;
+                    std::cout << "  autoindex     :" << (loc_it->second.autoindex ? "yes" : "no") << std::endl;
+                    std::cout << "  redirect      :" << loc_it->second.redirect << std::endl;
+                    std::cout << "  CGI           :" << (loc_it->second.cgi ? "yes" : "no") << DEF <<std::endl;
                     loc_it++;
                 }
             }
@@ -113,7 +113,7 @@ class netPlix{
                 }
             }
             printServer();
-            exit(0);
+            // exit(0);
             
             for (size_t i = 0; i < MAX_EVENTS; i++)
                 client[i].endOf = -1;

@@ -43,12 +43,12 @@ class loca{
 class Conf {
 	private :
 		// loca loc;
-		std::map<std::string, std::string> map;
 		std::string name;
 		std::map<std::string, loca>::iterator it;
 		std::map<std::string,std::string> loc1;
 		std::map<std::string,std::string>::iterator ito;
 	public :
+		std::map<std::string, std::string> map;
 		std::map<std::string, loca> locat;
 		int numOfserver;
 		Conf(){

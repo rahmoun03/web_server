@@ -6,7 +6,7 @@
 /*   By: ahbajaou <ahbajaou@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/03/17 03:09:09 by himejjad          #+#    #+#             */
-/*   Updated: 2024/03/23 02:13:34 by ahbajaou         ###   ########.fr       */
+/*   Updated: 2024/03/23 03:59:26 by ahbajaou         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -71,7 +71,8 @@ class netPlix{
                     conf.displayLocation();
                     server[0] = conf;
                     serverNum = 1;
-            }   
+            }
+            exit(0);
             std::cout << "you will serv " << serverNum << " server" << std::endl;
             for(int i = 0; i < serverNum; i++)
             {   

@@ -9,20 +9,20 @@ void Response::generateResponse(int &fd, Request &req, uint32_t &event, Conf &se
     (void)event;
     if (req.get_method() == "GET")
     {
-        std::cout << RED << "GET METHOD for " << DEF << server.confCherch("server_name") << std::endl;
+        // std::cout << RED << "GET METHOD for " << DEF << server.confCherch("server_name") << std::endl;
         GET(fd, req, server);
     }
     else if (req.get_method() == "POST")
     {
         if (server.locat.find(req.get_path()) != server.locat.end() && !(server.locat.find(req.get_path())->second.upload.empty()))
         {
-            std::cout << RED << "POST METHOD, upload path : " << DEF
-                      << server.locat.find(req.get_path())->second.upload << std::endl;
+            // std::cout << RED << "POST METHOD, upload path : " << DEF
+                    //   << server.locat.find(req.get_path())->second.upload << std::endl;
             POST(fd, req, server);
         }
         else
         {
-            std::cout << "dont suport upload" << std::endl;
+            // std::cout << "dont suport upload" << std::endl;
             GET(fd, req, server);
         }
     }
@@ -34,14 +34,14 @@ void Response::generateResponse(int &fd, Request &req, uint32_t &event, Conf &se
         if(req.firstTime)
         {
 
-            std::cout << "old URL : " << req.get_path() << std::endl;
+            // std::cout << "old URL : " << req.get_path() << std::endl;
             if(it != map.end())
                 req.get_path() = it->second;
             else
                 req.get_path() = (SERVER_ROOT + req.get_path());
-            std::cout << "new URL : " << req.get_path() << std::endl;
+            // std::cout << "new URL : " << req.get_path() << std::endl;
         }
-        std::cout << RED << "DELETE METHOD" << DEF << std::endl;
+        // std::cout << RED << "DELETE METHOD" << DEF << std::endl;
         int d = DELETE(fd, req, server, req.get_path());
         if(d == 1)
         {
@@ -56,8 +56,8 @@ void Response::generateResponse(int &fd, Request &req, uint32_t &event, Conf &se
              << "\r\n"
              << ff.rdbuf();
             
-            std::cout << "response :\n" << YOLLOW << response.str() << DEF <<std::endl;
-
+            // std::cout << "response :\n" << YOLLOW << response.str() << DEF <<std::endl;
+            std::cout << YOLLOW << "send response to client ==> " << DEF << std::endl;
             if(send(fd, response.str().c_str(), response.str().size(), 0) == -1)
             {
                 perror("send :");
@@ -75,8 +75,8 @@ void Response::generateResponse(int &fd, Request &req, uint32_t &event, Conf &se
              << "Date: " << getCurrentDateTime() << "\r\n"
              << "\r\n";
             
-            std::cout << "response :\n" << YOLLOW << response.str() << DEF <<std::endl;
-
+            // std::cout << "response :\n" << YOLLOW << response.str() << DEF <<std::endl;
+            std::cout << YOLLOW << "send response to client ==> " << DEF << std::endl;
             send(fd, response.str().c_str(), response.str().size(), 0);
 
             
@@ -96,7 +96,7 @@ void Response::serv_file(map_iterator &type, int &fd, Request &req)
     if (req.firstTime)
     {
         file = open(req.get_path().c_str(), O_RDONLY);
-        std::cout << "first time , fd file = " << file << std::endl;
+        // std::cout << "first time , fd file = " << file << std::endl;
         if (file < 0)
         {
             std::cout << " <  ---------- Error file --------->\n"
@@ -121,16 +121,18 @@ void Response::serv_file(map_iterator &type, int &fd, Request &req)
                  << "Date: " << getCurrentDateTime() << "\r\n"
                  << "\r\n";
 
-        std::cout << BLUE << "respone : \n"
-                  << YOLLOW << response.str() << std::endl;
+        // std::cout << BLUE << "respone : \n"
+        //           << YOLLOW << response.str() << std::endl;
+        std::cout << YOLLOW << "send response to client" << DEF << std::endl;
         send(fd, response.str().c_str(), response.str().size(), 0);
         req.firstTime = false;
     }
     else
     {
-        std::cout << "second time" << std::endl;
+        // std::cout << "second time" << std::endl;
         std::string content = getResource(file, req);
         // std::cout << RAN << content << DEF << std::endl;
+        std::cout << YOLLOW << "send response to client " << DEF << std::endl;
         send(fd, content.c_str(), content.size(), 0);
         // req.connexion = true;
     }
@@ -146,27 +148,25 @@ void Response::serv_dir(int &fd, Request &req, Conf &server)
     {
         if (*(_path.end() - 1) == '/')
         {
-            std::cout << "just location : " << _path.substr(req.root_end) << std::endl;
+            // std::cout << "just location : " << _path.substr(req.root_end) << std::endl;
             if (server.locat.find(_path.substr(req.root_end)) != server.locat.end() && server.locat.find(_path.substr(req.root_end))->second.autoindex)
             {
-                std::cout << "the location : " << _path.substr(req.root_end) << "\nautoIndex : "
-                          << (server.locat.find(_path.substr(req.root_end))->second.autoindex) << std::endl;
-                std::cout << BLUE << "Listing The Directory ..." << DEF << std::endl;
+                // std::cout << "the location : " << _path.substr(req.root_end) << "\nautoIndex : "
+                        //   << (server.locat.find(_path.substr(req.root_end))->second.autoindex) << std::endl;
+                // std::cout << BLUE << "Listing The Directory ..." << DEF << std::endl;
 
                 std::string content = listDirectory(_path.c_str());
                 std::stringstream response;
                 response << "HTTP/1.1 200 OK\r\n"
-                         << "Content-Type: "
-                         << "text/html"
-                         << "\r\n"
+                         << "Content-Type: text/html\r\n"
                          << "Content-Length: " << content.size() << "\r\n"
                          << "Connection: close\r\n"
-                         << "Server: "
-                         << "chabchoub"
-                         << "\r\n"
+                         << "Server: chabchoub\r\n"
                          << "Date: " << getCurrentDateTime() << "\r\n"
                          << "\r\n"
                          << content;
+                std::cout << YOLLOW << "send response to client " << DEF << std::endl;
+
                 send(fd, response.str().c_str(), response.str().size(), 0);
                 req.connexion = true;
                 req.firstTime = false;
@@ -174,7 +174,7 @@ void Response::serv_dir(int &fd, Request &req, Conf &server)
             else
             {
                 _path += "index.html";
-                std::cout << "open index file " << std::endl;
+                // std::cout << "open index file " << std::endl;
                 std::map<std::string, std::string> mime_map = mimeTypes();
                 map_iterator it = mime_map.find(extension(_path));
                 if (it != mime_map.end() && fileExists(_path))
@@ -193,9 +193,9 @@ void Response::serv_dir(int &fd, Request &req, Conf &server)
         {
             std::string location = (_path.substr(req.root_end)) + "/";
 
-            std::cout << "make a redirection URL " << std::endl;
-            std::cout << "from this : " << _path.substr(req.root_end) << std::endl;
-            std::cout << "to   this : " << location << std::endl;
+            // std::cout << "make a redirection URL " << std::endl;
+            // std::cout << "from this : " << _path.substr(req.root_end) << std::endl;
+            // std::cout << "to   this : " << location << std::endl;
 
             Redirect(location, req, fd);
         }
@@ -328,14 +328,15 @@ void Response::clear()
     str.clear();
     tmp.clear();
     file = -1;
-    std::cout << RED << "clear response object" << DEF << std::endl;
+    // std::cout << RED << "clear response object" << DEF << std::endl;
 }
 
 void Response::Redirect(std::string &location, Request &req, int &fd)
 {
     std::string content = getRedirctionS(location);
-    std::cout << BLUE << "respone : \n"
-              << YOLLOW << content << std::endl;
+    // std::cout << BLUE << "respone : \n"
+    //           << YOLLOW << content << std::endl;
+    std::cout << YOLLOW << "send response to client " << DEF << std::endl;
     send(fd, content.c_str(), content.size(), 0);
     req.connexion = true;
     req.firstTime = false;
@@ -423,8 +424,8 @@ std::string listDirectory(const char *path)
     }
     response << "</div></div>";
     response << "</body></html>";
-    std::cout << "\n\nherrrerrer \n\n"
-              << response.str() << "\n\n endddddd" << std::endl;
+    // std::cout << "\n\nherrrerrer \n\n"
+    //           << response.str() << "\n\n endddddd" << std::endl;
     return response.str();
 }
 

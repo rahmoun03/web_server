@@ -61,10 +61,7 @@ class netPlix{
                 serverNum = 0;
                 while (!fg.eof()){
                     Conf conf(fg);
-                    // conf.getLocal();
-                    // conf.parsAndCheckServer();
                     server[serverNum] = conf;
-                    // std::cout << "---->  : " << server[serverNum].confCherch("server_name") << std::endl;
                     serverNum = conf.numOfserver;
                 }
                 fg.close();
@@ -74,17 +71,14 @@ class netPlix{
                     conf.displayLocation();
                     server[0] = conf;
                     serverNum = 1;
-            }
-            // std::cout << server[0].locat.find("/assets/")->second.get << std::endl;
-            // std::cout << "autoindex : " << server[0].locat.find("/assets/")->second.autoindex << std::endl;
-            // std::cout << "autoindex : " << server[0].locat.find("/assets/")->second.defau << std::endl;
-            // std::cout << "autoindex : " << server[0].locat.find("/assets/")->second.root << std::endl;
-            // std::cout << server[0].locat.find("/assets/")->second.post << std::endl;          
-
-            std::cout << "number of server : " << serverNum << std::endl;
+            }        
+            std::cout << "you will serv " << serverNum << " server" << std::endl;
             for(int i = 0; i < serverNum; i++)
             {
-                std::cout << "---INSIDE LOOP CREATE SOCKET---\n";
+                std::cout << "-------------------------------------------------\n";
+                std::cout << "name : " << server[i].confCherch("server_name") <<std::endl;
+                std::cout << "host : " << server[i].confCherch("host") << std::endl;
+                std::cout << "port : " << server[i].confCherch("port") << std::endl;
                 socket_fd[i] = socket(AF_INET,SOCK_STREAM,0);
                 socket_acc.push_back(socket_fd[i]);
                 setsockopt(socket_fd[i],SOL_SOCKET,SO_REUSEADDR,&opt,sizeof(opt));
@@ -99,24 +93,20 @@ class netPlix{
                 }
                 event.data.fd = socket_fd[i];
                 event.events = EPOLLIN ;
-                std::cout << server[i].confCherch("port") << std::endl;
                 if (epoll_ctl(epoll_fd,EPOLL_CTL_ADD,socket_fd[i],&event) == -1){
                     perror("epoll_ctl");
                     exit(0);
                 }
-                std::cout << "num of servre is " << i << std::endl;
-                std::cout<< BLUE << "the server listening on port : "<< DEF << server[i].confCherch("port") << std::endl;
             }
             
             for (size_t i = 0; i < MAX_EVENTS; i++)
                 client[i].endOf = -1;
             int lop = 1;
-            std::cout << "---------------------\n";
+            std::cout << "---------------------------------------------\n";
             while (1)
             {
-                std::cout << GREEN << "LOOP = " << lop << DEF <<std::endl;
+                // std::cout << GREEN << "LOOP = " << lop << DEF <<std::endl;
                 std::cout << "epoll waiting for events ...\n";
-                //return only socket for wich there are events
                 int wait_fd = epoll_wait(epoll_fd, events, MAX_EVENTS, -1);
                 if (wait_fd == -1){
                     perror("epoll_wait");
@@ -125,7 +115,7 @@ class netPlix{
                 for (int i = 0; i < wait_fd; i++)
                 {
                     int  fd = events[i].data.fd;
-                    std::cout << GREEN << "fd = " << fd << DEF << " / "<< wait_fd <<" ,his event is : "<< (events[i].events == EPOLLIN ? "EPOLLIN" : "EPOLLOUT") <<std::endl;
+                    // std::cout << GREEN << "fd = " << fd << DEF << " / "<< wait_fd <<" ,his event is : "<< (events[i].events == EPOLLIN ? "EPOLLIN" : "EPOLLOUT") <<std::endl;
                     std::vector<int>::iterator it_serv = std::find(socket_acc.begin(),socket_acc.end(),fd);
                     if (it_serv != socket_acc.end())
                     {
@@ -143,7 +133,7 @@ class netPlix{
 
                         client[new_socketfd].server_index = std::distance(socket_acc.begin(), it_serv);
                         std::string name = server[client[new_socketfd].server_index].confCherch("server_name");
-                        std::cout << GREEN << name << " Received connection from " << inet_ntoa(clientaddr.sin_addr) << " on fd : "<< new_socketfd << DEF << std::endl;
+                        std::cout << BLUE << name << GREEN << " Received connection from ==> " << DEF << inet_ntoa(clientaddr.sin_addr) << ", on fd : "<< new_socketfd << DEF << std::endl;
                     }
                     else if ((events[i].events & EPOLLERR) || (events[i].events & EPOLLHUP)) {
                         std::cout << "------{ Error Epoll }-------" << std::endl;
@@ -157,12 +147,12 @@ class netPlix{
                     }
                     else
                     {
-                        std::cout << BLUE << "serv the client : " << DEF << fd << std::endl;
+                        // std::cout << BLUE << "serv the client : " << DEF << fd << std::endl;
                         char buffer[1024];
                         ssize_t bytes_read = -1;
                         if(events[i].events == EPOLLIN && client[fd].endOf == (size_t)-1)
                         {
-                            std::cout << GREEN << "reading request from : " << DEF << fd <<std::endl;
+                            // std::cout << GREEN << "reading request from : " << DEF << fd <<std::endl;
                             if ((bytes_read = recv(fd, buffer, sizeof(buffer) - 1, 0)) == -1) 
                             {
                                 perror("recv");
@@ -172,7 +162,6 @@ class netPlix{
 
 
                         if (bytes_read == 0) {
-                            // Client disconnected
                             std::cout << RED <<"Client disconnected : "<< DEF<< fd<< std::endl;
                             if (epoll_ctl(epoll_fd, EPOLL_CTL_DEL, fd, NULL) == -1) {
                                 perror("epoll_ctl");
@@ -186,7 +175,7 @@ class netPlix{
                             if(client[fd].endOf == (size_t)-1 && bytes_read > -1 && events[i].events == EPOLLIN)
                             {
                                 buffer[bytes_read] = '\0';
-                                std::cout << RAN << "request :\n" << buffer << DEF << std::endl;
+                                // std::cout << RAN << "request :\n" << buffer << DEF << std::endl;
                                 
                                 /***********************************************************************/
 
@@ -198,7 +187,7 @@ class netPlix{
                                 /***********************************************************************/
                                 if(client[fd].endOf != (size_t)-1)
                                 {
-                                    std::cout << GREEN << "parse the request ... for " << DEF << fd << std::endl;
+                                    // std::cout << GREEN << "parse the request ... for " << DEF << fd << std::endl;
                                     client[fd].req = Request(client[fd].buf, client[fd].endOf);
                                     client[fd].req.ra += (client[fd].buf.str().size() - client[fd].endOf);
                                     client[fd].req.body_limit = std::atof(server[0].confCherch("body_size_limit").c_str());
@@ -214,7 +203,7 @@ class netPlix{
                                             perror("epoll_ctl");
                                             exit(EXIT_FAILURE);
                                         }
-                                        std::cout << "change event to EPOLLOUT\n";
+                                        // std::cout << "change event to EPOLLOUT\n";
                                     }
                                     /****************************/
                                     // exit(0);
@@ -231,7 +220,7 @@ class netPlix{
                                 catch(std::string &content)
                                 {
                                     std::cout<< BLUE<<"respone : \n"<<YOLLOW<< content  << std::endl;
-                                    send(fd, content.c_str(), content.size(), MSG_DONTWAIT);
+                                    send(fd, content.c_str(), content.size(), 0);
                                     client[fd].req.connexion = true;
                                 }
                             }

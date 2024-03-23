@@ -19,7 +19,7 @@ void	Response::GET(int &fd, Request &req, Conf &server)
     map_iterator it = map.find(req.get_path());
     if(req.firstTime)
     {
-        std::cout << "old URL : " << req.get_path() << std::endl;
+        // std::cout << "old URL : " << req.get_path() << std::endl;
         if(it != map.end())
             req.get_path() = it->second;
         else
@@ -32,23 +32,21 @@ void	Response::GET(int &fd, Request &req, Conf &server)
             if (server.locat.find(_path + "/") != server.locat.end())
             {
                 loca _location = server.locat.find(_path + "/")->second;
-                std::cout << "location : " << (_path + "/") << std::endl;
-                std::cout << "Add root to the URI : " << (_location.root) << std::endl;
+                // std::cout << "location : " << (_path + "/") << std::endl;
+                // std::cout << "Add root to the URI : " << (_location.root) << std::endl;
                 req.root_end = strlen((_location.root).c_str());
                 req.get_path() = _location.root + req.get_path();
                 req.red_path = _location.redirect;
             }
         }
-        std::cout << "new URL : " << req.get_path() << std::endl;
+        // std::cout << "new URL : " << req.get_path() << std::endl;
     }
     if(!req.red_path.empty())
             Redirect(req.red_path, req, fd);
     else if(directoryExists(req.get_path()))
     {
-        std::cout << "http://{" << req.get_path() << "} \n";
-        std::cout << "the URL is a directory \n";
-        if(!req.red_path.empty())
-            Redirect(req.red_path, req, fd);
+        // std::cout << "http://{" << req.get_path() << "} \n";
+        // std::cout << "the URL is a directory \n";
         serv_dir(fd, req, server);
     }
     else if (fileExists(req.get_path()))
@@ -57,8 +55,8 @@ void	Response::GET(int &fd, Request &req, Conf &server)
         it = mime_map.find(extension(req.get_path()));
         if(it != mime_map.end())
         {
-            std::cout << "http://{" << req.get_path() << "} \n";
-            std::cout << "the URL is a file : " << it->second << std::endl;
+            // std::cout << "http://{" << req.get_path() << "} \n";
+            // std::cout << "the URL is a file : " << it->second << std::endl;
             serv_file(it, fd, req);
         }
         else

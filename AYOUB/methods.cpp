@@ -24,15 +24,11 @@ void	Response::GET(int &fd, Request &req, Conf &server)
     {
         std::map<std::string , std::string> mime_map = mimeTypes();
         map_iterator it = mime_map.find(extension(req.get_path()));
-        if(it != mime_map.end())
+        if(it != mime_map.end() || extension(req.get_path()) == "cpp")
         {
             // std::cout << "http://{" << req.get_path() << "} \n";
             // std::cout << "the URL is a file : " << it->second << std::endl;
             serv_file(it, fd, req);
-        }
-        else if(extension(req.get_path()) == "php" && server.locat.find(req.locationPath)->second.cgi)
-        {
-            executeCGI(fd, req);
         }
         else
         {
@@ -47,33 +43,6 @@ void	Response::GET(int &fd, Request &req, Conf &server)
     }
 }
 
-void Response::executeCGI(int &fd, Request &req)
-{
-    pid_t pid = fork();
-    if (pid == 0)
-    {
-        dup2(fd, STDOUT_FILENO);
-        close(fd);
-
-        char* args[] = {NULL}; 
-        char* env[] = {NULL}; 
-        execve(req.get_path().c_str(), args, env);
-
-        std::cerr << "Failed to execute CGI script\n";
-        exit(EXIT_FAILURE);
-    }
-    // else if (pid > 0) 
-    // {
-    //     int status;
-    //     // waitpid(pid, &status, 0);
-    // }
-    // else
-    // {
-    //     std::cerr << "Failed to fork process\n";
-    //     throw internalServerError();
-    // }
-}
-
 unsigned long convertHexToDec(std::string hex)
 {
     unsigned long decimal;
@@ -83,8 +52,6 @@ unsigned long convertHexToDec(std::string hex)
     ss >> std::hex >> decimal;
     return (decimal);
 }
-
-
 
 
 void	Response::POST(int &fd, Request &req, Conf &server)
@@ -220,8 +187,6 @@ int	Response::DELETE(int &fd, Request &req, Conf &server, std::string dpath)
     (void) server;
 
     std::cout << "you want to delete : " << dpath.c_str() << std::endl;
-    if (req.get_path().find(server.locat.find(req.locationPath)->second.root) != 0)
-        forbidden();
     if(directoryExists(dpath.c_str()))
     {
         DIR* dir = opendir(dpath.c_str());

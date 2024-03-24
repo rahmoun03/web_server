@@ -58,10 +58,11 @@ class Conf {
 		{
 				try{
 						getline(fg,name);
-						if (name.empty())
-						{
-							return ;
-						}
+						size_t tab = static_cast<size_t>(std::count(name.begin(),name.end(),'\t'));
+						size_t spac = static_cast<size_t>(std::count(name.begin(),name.end(),' '));
+						if ((name.empty()) || (spac == name.size())
+							|| (tab == name.size()) || (spac + tab == name.size()))
+							return;
 						if (name.find("server") != std::string::npos)
 						{
 							numOfserver++;
@@ -70,7 +71,10 @@ class Conf {
 							{	
 								while (getline(fg,name))
 								{
-									if (name.empty() || (static_cast<size_t>(std::count(name.begin(),name.end(),' ')) == name.size()))
+									size_t tab = static_cast<size_t>(std::count(name.begin(),name.end(),'\t'));
+									size_t spac = static_cast<size_t>(std::count(name.begin(),name.end(),' '));
+									if ((name.empty()) || (spac == name.size())
+										|| (tab == name.size()) || (spac + tab == name.size()))
 										continue;
 									if (name.find("=") != std::string::npos)
 									{
@@ -107,6 +111,8 @@ class Conf {
 									else if (name.find("}") != std::string::npos)
 									{
 										parsAndCheckServer();
+										if (loc1.empty())
+											throw "LOCATION NOT FOUND!";
 										break;
 									}
 									else
@@ -240,7 +246,11 @@ class Conf {
 		void parsLocation(std::ifstream & fg){
 			(void)fg;
 			int rooty = 0;
-			if (name.find("location") != std::string::npos)
+			if (isspaceRemove(name.substr(0,name.find("="))) == "port" || isspaceRemove(name.substr(0,name.find("="))) == "host"
+				|| isspaceRemove(name.substr(0,name.find("="))) == "server_name" || isspaceRemove(name.substr(0,name.find("="))) == "body_size_limit"
+				|| isspaceRemove(name.substr(0,name.find("="))) == "error_page")
+				return ;
+			if (isspaceRemove(name.substr(0,name.find("="))) == "location")
 				{
 					loc1.clear();
 					if (name.find("=") != std::string::npos){
@@ -250,11 +260,13 @@ class Conf {
 						if (name.find("[") != std::string::npos)
 						{
 							while (getline(fg,name)){
-									if (name.empty() || (static_cast<size_t>(std::count(name.begin(),name.end(),' ')) == name.size()))
-									{
-										continue;
-
-									}
+								size_t tab = static_cast<size_t>(std::count(name.begin(),name.end(),'\t'));
+								size_t spac = static_cast<size_t>(std::count(name.begin(),name.end(),' '));
+								if ((name.empty()) || (spac == name.size())
+									|| (tab == name.size()) || (spac + tab == name.size()))
+								{
+									continue;
+								}
 								parseFrom(name);
 								if (name.find("=") != std::string::npos){
 									if (name.find("root") != std::string::npos){
@@ -287,6 +299,13 @@ class Conf {
 					else
 						throw "Ops error config file";
 				}
+				else
+				{
+					if (name.find("#") != std::string::npos)
+						throw "CONFIG FILE NOT SEPORT COMMENT!";
+					else
+						throw "LOCATION NOT FOUND!";
+				}
 
 		}
 		void displayLocation(){
@@ -296,7 +315,6 @@ class Conf {
 				for(;it != loc1.end(); it++){
 					if (it->first.find("location") != std::string::npos){
 						loc.location = it->second;
-		
 					}
 		
 					else if (it->first == "method"){
@@ -366,7 +384,6 @@ class Conf {
 			return locat;
 		}
 		~Conf(){
-			// parsAndCheck();
 		}
 };
 

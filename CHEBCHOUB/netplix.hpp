@@ -1,3 +1,16 @@
+/* ************************************************************************** */
+/*                                                                            */
+/*                                                        :::      ::::::::   */
+/*   netplix.hpp                                        :+:      :+:    :+:   */
+/*                                                    +:+ +:+         +:+     */
+/*   By: ahbajaou <ahbajaou@student.42.fr>          +#+  +:+       +#+        */
+/*                                                +#+#+#+#+#+   +#+           */
+/*   Created: 2024/03/17 03:09:09 by himejjad          #+#    #+#             */
+/*   Updated: 2024/03/24 01:00:30 by ahbajaou         ###   ########.fr       */
+/*                                                                            */
+/* ************************************************************************** */
+
+
 #ifndef NET_HPP
 #define NET_HPP
 
@@ -43,6 +56,7 @@ class netPlix{
                     std::cout << it->first << " = " << it->second << std::endl;
                     it++;
                 }
+				
                 std::map<std::string, loca>::iterator loc_it = server[i].locat.begin();
                 std::map<std::string, loca>::iterator loc_ite = server[i].locat.end();
 
@@ -89,8 +103,7 @@ class netPlix{
                     conf.displayLocation();
                     server[0] = conf;
                     serverNum = 1;
-            }   
-            std::cout << "you will serv " << serverNum << " server" << std::endl;
+            }
             for(int i = 0; i < serverNum; i++)
             {   
                 socket_fd[i] = socket(AF_INET,SOCK_STREAM,0);
@@ -99,7 +112,12 @@ class netPlix{
                 socketadress.sin_family = AF_INET;
                 socketadress.sin_port = htons(atoi(server[i].confCherch("port").c_str()));
                 socketadress.sin_addr.s_addr = inet_addr(server[i].confCherch("host").c_str());
-                bind(socket_fd[i],(struct  sockaddr*)&socketadress,sizeof(socketadress));
+                int bin = bind(socket_fd[i],(struct  sockaddr*)&socketadress,sizeof(socketadress));
+				if (bin < 0)
+				{
+					perror("bind");
+					exit(0);
+				}
                 listen(socket_fd[i],SOMAXCONN);
                 if (socket_fd[i] == -1){
                     perror("could not create socket");
@@ -113,7 +131,6 @@ class netPlix{
                 }
             }
             printServer();
-            // exit(0);
             
             for (size_t i = 0; i < MAX_EVENTS; i++)
                 client[i].endOf = -1;

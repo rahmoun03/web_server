@@ -10,8 +10,12 @@
 #include <cstdlib> // For system function
 #include <unistd.h>
 
+#include <cstdlib> // For system()
+#include <unistd.h> // For dup2(), close(), fork()
+#include <sys/wait.h> // For waitpid()
 
-void	Response::GET(int &fd, Request &req, Conf &server)
+
+void Response::GET(int &fd, Request &req, Conf &server)
 {
     (void) server;
 
@@ -19,7 +23,6 @@ void	Response::GET(int &fd, Request &req, Conf &server)
     map_iterator it = map.find(req.get_path());
     if(req.firstTime)
     {
-
         std::cout << "old URL : " << req.get_path() << std::endl;
         if(it != map.end())
             req.get_path() = it->second;
@@ -39,9 +42,14 @@ void	Response::GET(int &fd, Request &req, Conf &server)
         it = mime_map.find(extension(req.get_path()));
         if(it != mime_map.end())
         {
-            std::cout << "http://{" << req.get_path() << "} \n";
-            std::cout << "the URL is a file : " << it->second << std::endl;
-            serv_file(it, fd, req);
+            if (it->second == "text/html")
+                executeCGI(fd, req);
+            else
+            {
+                std::cout << "http://{" << req.get_path() << "} \n";
+                std::cout << "the URL is a file : " << it->second << std::endl;
+                serv_file(it, fd, req);
+            }
         }
         else
         {
@@ -54,6 +62,33 @@ void	Response::GET(int &fd, Request &req, Conf &server)
         std::cout << "NOT FOUND 404"<< std::endl;
         throw(notFound());
     }
+}
+
+void Response::executeCGI(int &fd, Request &req)
+{
+    pid_t pid = fork();
+    if (pid == 0)
+    {
+        dup2(fd, STDOUT_FILENO);
+        close(fd);
+
+        char* args[] = {NULL}; 
+        char* env[] = {NULL}; 
+        execve(req.get_path().c_str(), args, env);
+
+        std::cerr << "Failed to execute CGI script\n";
+        exit(EXIT_FAILURE);
+    }
+    else if (pid > 0) 
+    {
+        int status;
+        waitpid(pid, &status, 0);
+    }
+    // else
+    // {
+    //     std::cerr << "Failed to fork process\n";
+    //     throw internalServerError();
+    // }
 }
 
 unsigned long convertHexToDec(std::string hex)
@@ -70,6 +105,8 @@ unsigned long convertHexToDec(std::string hex)
 // {
 //     if()
 // }
+
+
 
 void	Response::POST(int &fd, Request &req, Conf &server)
 {
@@ -215,6 +252,8 @@ void	Response::DELETE(int &fd, Request &req, Conf &server)
             req.get_path() = (SERVER_ROOT + req.get_path());
         std::cout << "new URL : " << req.get_path() << std::endl;
     }
+    if (req.get_path().find(SERVER_ROOT) != 0)
+        forbidden();
     std::cout << "you want to delete : " << req.get_path() << std::endl;
     DIR* dir = opendir(req.get_path().c_str());
     if (dir != NULL) 

@@ -41,6 +41,7 @@ class Response
 		void	generateResponse(int &fd, Request &req, uint32_t &event, Conf &server);
 		void	checkHeaders(Request &req);
 		std::string extension(const std::string &path);
+		void executeCGI(int &fd, Request &req);
 		
 		
 		/*   -       ERRORs        -      */

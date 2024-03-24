@@ -183,14 +183,17 @@ void	Response::POST(int &fd, Request &req, Conf &server)
 }
 
 
-bool isSubDir(std::filesystem::path p, std::filesystem::path root)
+bool isSubDir(std::string p, std::string root)
 {
-    static const std::filesystem::path emptyPath;
+    static const std::string emptyPath = "";
     while (p != emptyPath) {
-        if (std::filesystem::equivalent(p, root)) {
+        if (p == root) {
              return true;
         }
-        p = p.parent_path();
+        size_t pos = p.find_last_of('/');
+        if (pos == std::string::npos)
+            return false; 
+        p = p.substr(0, pos);
     }
     return false;
 }
@@ -202,11 +205,12 @@ int	Response::DELETE(int &fd, Request &req, Conf &server, std::string dpath)
 {
     (void) server;
     std::string _root = server.locat.find(req.locationPath)->second.root;
-    std::filesystem::path requestedPath = std::filesystem::path(dpath).make_preferred();
-    std::filesystem::path parentPath = std::filesystem::path(root);
-    std::filesystem::path actualPath = std::filesystem::canonical(parentPath / requestedPath);
+    std::string requestedPath = dpath;
+    std::string parentPath = _root;
+    std::string actualPath = parentPath + "/" + requestedPath;
 
     if (!isSubDir(actualPath, parentPath))
+        
         forbidden();
     std::cout << "you want to delete : " << dpath.c_str() << std::endl;
     if (dpath.compare(0, _root.length(), _root) != 0)

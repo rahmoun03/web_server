@@ -43,12 +43,12 @@ class loca{
 class Conf {
 	private :
 		// loca loc;
-		std::map<std::string, std::string> map;
 		std::string name;
 		std::map<std::string, loca>::iterator it;
 		std::map<std::string,std::string> loc1;
 		std::map<std::string,std::string>::iterator ito;
 	public :
+		std::map<std::string, std::string> map;
 		std::map<std::string, loca> locat;
 		int numOfserver;
 		Conf(){
@@ -108,6 +108,8 @@ class Conf {
 									{
 										parsAndCheckServer();
 										break;
+										if (loc1.empty())
+											throw "LOCATION NOT FOUND!";
 									}
 									else
 									{
@@ -240,7 +242,11 @@ class Conf {
 		void parsLocation(std::ifstream & fg){
 			(void)fg;
 			int rooty = 0;
-			if (name.find("location") != std::string::npos)
+			if (isspaceRemove(name.substr(0,name.find("="))) == "port" || isspaceRemove(name.substr(0,name.find("="))) == "host"
+			|| isspaceRemove(name.substr(0,name.find("="))) == "server_name" || isspaceRemove(name.substr(0,name.find("="))) == "body_size_limit"
+			|| isspaceRemove(name.substr(0,name.find("="))) == "error_page")
+				return ;
+			if (isspaceRemove(name.substr(0,name.find("="))) == "location")
 				{
 					loc1.clear();
 					if (name.find("=") != std::string::npos){
@@ -287,6 +293,8 @@ class Conf {
 					else
 						throw "Ops error config file";
 				}
+				else
+					throw "LOCATION NOT FOUND!";
 
 		}
 		void displayLocation(){
@@ -296,7 +304,6 @@ class Conf {
 				for(;it != loc1.end(); it++){
 					if (it->first.find("location") != std::string::npos){
 						loc.location = it->second;
-		
 					}
 		
 					else if (it->first == "method"){
@@ -366,7 +373,6 @@ class Conf {
 			return locat;
 		}
 		~Conf(){
-			// parsAndCheck();
 		}
 };
 

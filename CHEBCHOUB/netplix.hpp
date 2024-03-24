@@ -6,7 +6,7 @@
 /*   By: ahbajaou <ahbajaou@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/03/17 03:09:09 by himejjad          #+#    #+#             */
-/*   Updated: 2024/03/23 03:59:26 by ahbajaou         ###   ########.fr       */
+/*   Updated: 2024/03/24 00:12:44 by ahbajaou         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -44,6 +44,38 @@ class netPlix{
         std::map<int,Conf> server;
         void servClient(int &i, int &fd);
         
+        void printServer()
+        {
+            for (int i = 0; i < serverNum; i++)
+            {
+                std::cout << "------------------------------------------------------\n";
+                std::map<std::string, std::string>::iterator it = server[i].map.begin();
+                std::map<std::string, std::string>::iterator ite = server[i].map.end();
+                while (it != ite)
+                {
+                    std::cout << it->first << " = " << it->second << std::endl;
+                    it++;
+                }
+				
+                std::map<std::string, loca>::iterator loc_it = server[i].locat.begin();
+                std::map<std::string, loca>::iterator loc_ite = server[i].locat.end();
+
+                while (loc_it != loc_ite)
+                {
+                    std::cout << RED << "location : " << BLUE << loc_it->first << std::endl; 
+                    std::cout << "  POST          :" << (loc_it->second.post ? "yes" : "no") << std::endl;
+                    std::cout << "  GET           :" << (loc_it->second.get ? "yes" : "no") << std::endl;
+                    std::cout << "  DELETE        :" << (loc_it->second.delet ? "yes" : "no") << std::endl;
+                    std::cout << "  default       :" << loc_it->second.defau << std::endl;
+                    std::cout << "  root          :" << loc_it->second.root << std::endl;
+                    std::cout << "  upload        :" << loc_it->second.upload << std::endl;
+                    std::cout << "  autoindex     :" << (loc_it->second.autoindex ? "yes" : "no") << std::endl;
+                    std::cout << "  redirect      :" << loc_it->second.redirect << std::endl;
+                    std::cout << "  CGI           :" << (loc_it->second.cgi ? "yes" : "no") << DEF <<std::endl;
+                    loc_it++;
+                }
+            }
+        }
         
         netPlix(const char *os)
         {
@@ -66,12 +98,14 @@ class netPlix{
                 }
                 fg.close();
             }
+			// else if ()
             else{
                     conf.defaultConfic();
                     conf.displayLocation();
                     server[0] = conf;
                     serverNum = 1;
             }
+			printServer();
             exit(0);
             std::cout << "you will serv " << serverNum << " server" << std::endl;
             for(int i = 0; i < serverNum; i++)
@@ -95,7 +129,8 @@ class netPlix{
                     exit(0);
                 }
             }
-            exit(0);
+            printServer();
+            // exit(0);
             
             for (size_t i = 0; i < MAX_EVENTS; i++)
                 client[i].endOf = -1;

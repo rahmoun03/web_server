@@ -34,19 +34,20 @@ class Response
 		void 	serv_file(map_iterator &type, int &fd, Request &req);
 		void 	serv_dir(int &fd, Request &req, Conf &server);
 		void	generateResponse(int &fd, Request &req, uint32_t &event, Conf &server);
-		void	checkHeaders(Request &req);
+		void	checkHeaders(Request &req, Conf &server);
 		std::string extension(const std::string &path);
 		
 		
 		/*   -       ERRORs        -      */
 		
-			std::string badRequest();//      400
-			std::string forbidden();//       403
-			std::string notFound(); //       404
-			std::string EntityTooLarge(); // 413
-			std::string longRequest();//     414
-			std::string notImplement(); //   501
-			std::string httpVersion();//     505
+			std::string badRequest();//      		400
+			std::string forbidden();//       		403
+			std::string notFound(); //      	 	404
+			std::string notAllow(std::string method); // 	405
+			std::string EntityTooLarge(); // 		413
+			std::string longRequest();//     		414
+			std::string notImplement(); //  		501
+			std::string httpVersion();//    	 	505
 		
 			// std::string homepage(); // 200 home
 		/***********************/
@@ -61,8 +62,7 @@ bool directoryExists(std::string path);
 bool fileExists(std::string path);
 std::string getCurrentDateTime();
 
-std::map<std::string, std::string> mimeTypes(); 
-std::map<std::string, std::string> ErrorAssets();
+std::map<std::string, std::string> mimeTypes();
 
 
 #endif

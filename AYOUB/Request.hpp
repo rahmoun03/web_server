@@ -64,6 +64,7 @@ class Request
 		bool CGI;
 		size_t root_end;
 		std::string red_path;
+		std::string locationPath;
 		
 		
 		Request();

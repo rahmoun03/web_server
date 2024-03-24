@@ -4,9 +4,27 @@
 
 void Response::generateResponse(int &fd, Request &req, uint32_t &event, Conf &server)
 {
-    checkHeaders(req);
-    // std::string
     (void)event;
+    if(req.firstTime)
+    {
+        std::string _path = req.get_path();
+        while (server.locat.find(_path + "/") == server.locat.end())
+        {
+            size_t e = _path.rfind("/");
+            _path = _path.substr(0, e);
+        }
+        if (server.locat.find(_path + "/") != server.locat.end())
+        {
+            loca _location = server.locat.find(_path + "/")->second;
+            std::cout << "location : " << (_path + "/") << std::endl;
+            std::cout << "Add root : " << (_location.root) << std::endl;
+            req.root_end = strlen((_location.root).c_str());
+            req.get_path() = _location.root + req.get_path();
+            req.red_path = _location.redirect;
+            req.locationPath = (_path + "/");
+        }
+        checkHeaders(req, server);
+    }
     if (req.get_method() == "GET")
     {
         // std::cout << RED << "GET METHOD for " << DEF << server.confCherch("server_name") << std::endl;
@@ -14,7 +32,7 @@ void Response::generateResponse(int &fd, Request &req, uint32_t &event, Conf &se
     }
     else if (req.get_method() == "POST")
     {
-        if (server.locat.find(req.get_path()) != server.locat.end() && !(server.locat.find(req.get_path())->second.upload.empty()))
+        if (server.locat.find(req.locationPath) != server.locat.end() && !(server.locat.find(req.locationPath)->second.upload.empty()))
         {
             // std::cout << RED << "POST METHOD, upload path : " << DEF
                     //   << server.locat.find(req.get_path())->second.upload << std::endl;
@@ -29,18 +47,18 @@ void Response::generateResponse(int &fd, Request &req, uint32_t &event, Conf &se
 
     else if (req.get_method() == "DELETE")
     {
-        std::map<std::string, std::string> map = ErrorAssets();
-        map_iterator it = map.find(req.get_path());
-        if(req.firstTime)
-        {
+        // std::map<std::string, std::string> map = ErrorAssets();
+        // map_iterator it = map.find(req.get_path());
+        // if(req.firstTime)
+        // {
 
-            // std::cout << "old URL : " << req.get_path() << std::endl;
-            if(it != map.end())
-                req.get_path() = it->second;
-            else
-                req.get_path() = (SERVER_ROOT + req.get_path());
-            // std::cout << "new URL : " << req.get_path() << std::endl;
-        }
+        //     // std::cout << "old URL : " << req.get_path() << std::endl;
+        //     if(it != map.end())
+        //         req.get_path() = it->second;
+        //     else
+        //         req.get_path() = (SERVER_ROOT + req.get_path());
+        //     // std::cout << "new URL : " << req.get_path() << std::endl;
+        // }
         // std::cout << RED << "DELETE METHOD" << DEF << std::endl;
         int d = DELETE(fd, req, server, req.get_path());
         if(d == 1)
@@ -86,6 +104,7 @@ void Response::generateResponse(int &fd, Request &req, uint32_t &event, Conf &se
 
     else
     {
+        req.connexion = true;
         std::cout << RED << "UNKOWN METHOD" << DEF << std::endl;
     }
 }
@@ -148,8 +167,9 @@ void Response::serv_dir(int &fd, Request &req, Conf &server)
     {
         if (*(_path.end() - 1) == '/')
         {
-            // std::cout << "just location : " << _path.substr(req.root_end) << std::endl;
-            if (server.locat.find(_path.substr(req.root_end)) != server.locat.end() && server.locat.find(_path.substr(req.root_end))->second.autoindex)
+            std::cout << GREEN <<"location : " << req.locationPath <<DEF << std::endl;
+            if (server.locat.find(req.locationPath) != server.locat.end()
+                && server.locat.find(req.locationPath)->second.autoindex)
             {
                 // std::cout << "the location : " << _path.substr(req.root_end) << "\nautoIndex : "
                         //   << (server.locat.find(_path.substr(req.root_end))->second.autoindex) << std::endl;
@@ -173,8 +193,8 @@ void Response::serv_dir(int &fd, Request &req, Conf &server)
             }
             else
             {
-                _path += "index.html";
-                // std::cout << "open index file " << std::endl;
+                _path += server.locat.find(req.locationPath)->second.defau;
+                std::cout << "open index file :  " << path << std::endl;
                 std::map<std::string, std::string> mime_map = mimeTypes();
                 map_iterator it = mime_map.find(extension(_path));
                 if (it != mime_map.end() && fileExists(_path))
@@ -202,7 +222,7 @@ void Response::serv_dir(int &fd, Request &req, Conf &server)
     }
 }
 
-void Response::checkHeaders(Request &req)
+void Response::checkHeaders(Request &req, Conf &server)
 {
     std::map<std::string, std::string> head;
 
@@ -211,6 +231,17 @@ void Response::checkHeaders(Request &req)
     {
         std::cout << "Transfer-Encoding Not chanked" << std::endl;
         throw(notImplement());
+    }
+    if(req.get_method().empty() || req.get_path().empty())
+    {
+        std::cout << "requist line not correct" << std::endl;
+        throw(badRequest());
+    }
+    if((req.get_method() == "GET" && !(server.locat.find(req.locationPath)->second.get))
+        || (req.get_method() == "DELETE" && !(server.locat.find(req.locationPath)->second.delet))
+         || (req.get_method() == "POST" && !(server.locat.find(req.locationPath)->second.post)))
+    {
+        throw (notAllow(req.get_method()));
     }
     if (req.get_method() == "POST" && !head.count("Transfer-Encoding:") && !head.count("Content-Length:"))
     {

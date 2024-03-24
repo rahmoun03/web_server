@@ -12,34 +12,6 @@
 
 void	Response::GET(int &fd, Request &req, Conf &server)
 {
-    (void) server;
-    std::string _path = req.get_path();
-    std::map<std::string, std::string> map = ErrorAssets();
-    map_iterator it = map.find(req.get_path());
-    if(req.firstTime)
-    {
-        // std::cout << "old URL : " << req.get_path() << std::endl;
-        if(it != map.end())
-            req.get_path() = it->second;
-        else
-        {
-            while (server.locat.find(_path + "/") == server.locat.end())
-            {
-                size_t e = _path.rfind("/");
-                _path = _path.substr(0, e);
-            }
-            if (server.locat.find(_path + "/") != server.locat.end())
-            {
-                loca _location = server.locat.find(_path + "/")->second;
-                // std::cout << "location : " << (_path + "/") << std::endl;
-                // std::cout << "Add root to the URI : " << (_location.root) << std::endl;
-                req.root_end = strlen((_location.root).c_str());
-                req.get_path() = _location.root + req.get_path();
-                req.red_path = _location.redirect;
-            }
-        }
-        // std::cout << "new URL : " << req.get_path() << std::endl;
-    }
     if(!req.red_path.empty())
             Redirect(req.red_path, req, fd);
     else if(directoryExists(req.get_path()))
@@ -51,7 +23,7 @@ void	Response::GET(int &fd, Request &req, Conf &server)
     else if (fileExists(req.get_path()))
     {
         std::map<std::string , std::string> mime_map = mimeTypes();
-        it = mime_map.find(extension(req.get_path()));
+        map_iterator it = mime_map.find(extension(req.get_path()));
         if(it != mime_map.end() || extension(req.get_path()) == "cpp")
         {
             // std::cout << "http://{" << req.get_path() << "} \n";
@@ -94,7 +66,7 @@ void	Response::POST(int &fd, Request &req, Conf &server)
     {
         if (req.firstTime)
         {
-            std::string up_ptah = server.locat.find(req.get_path())->second.upload;
+            std::string up_ptah = server.locat.find(req.locationPath)->second.upload;
             std::string type = static_cast<std::string>(req.get_header("Content-Type:"));
             std::string tmp_ = type.substr(type.find("/") + 1);
             std::cout << tmp_ << std::endl;
@@ -145,7 +117,7 @@ void	Response::POST(int &fd, Request &req, Conf &server)
         if (req.firstTime)
         {
             std::cout << "request path : " << req.get_path() << std::endl;
-            std::string up_ptah = server.locat.find(req.get_path())->second.upload;
+            std::string up_ptah = server.locat.find(req.locationPath)->second.upload;
             std::string type = static_cast<std::string>(req.get_header("Content-Type:"));
             std::string tmp_ = type.substr(type.find("/") + 1);
             std::cout << tmp_ << std::endl;

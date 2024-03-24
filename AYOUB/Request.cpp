@@ -117,6 +117,8 @@ void Request::clear()
 	connexion = false;
 	ra = 0;
 	chun = 0;
+	red_path.clear();
+	locationPath.clear();
     // std::cout << RED <<"clear request object" << DEF<< std::endl;
 }
 

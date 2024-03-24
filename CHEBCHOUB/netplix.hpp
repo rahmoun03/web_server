@@ -196,9 +196,9 @@ class netPlix{
                                 /***********************************************************************/
 
                                 client[fd].buf.write(buffer, bytes_read);
-                                client[fd].endOf = findEndOfHeaders(buffer, bytes_read);
-                                if(client[fd].endOf != (size_t)-1)
-                                    client[fd].endOf = client[fd].buf.str().size() -  (bytes_read - client[fd].endOf);
+                                client[fd].endOf = findEndOfHeaders(const_cast<char *>(client[fd].buf.str().c_str()) , (ssize_t)client[fd].buf.str().size());
+                                // if(client[fd].endOf != (size_t)-1)
+                                //     client[fd].endOf = client[fd].buf.str().size() -  (bytes_read - client[fd].endOf);
                                 
                                 /***********************************************************************/
                                 if(client[fd].endOf != (size_t)-1)
@@ -209,7 +209,7 @@ class netPlix{
                                     client[fd].req.body_limit = std::atof(server[0].confCherch("body_size_limit").c_str());
 
                                     /***************************/
-                                    // std::cout << YOLLOW << "request :\n" << DEF << client[fd].req << std::endl; 
+                                    std::cout << YOLLOW << "request :\n" << DEF << client[fd].req << std::endl; 
                                     if((client[fd].req.get_method() == "GET")
                                         || (client[fd].req.get_method() == "POST"
                                             && server[client[fd].server_index].locat.find(client[fd].req.get_path())->second.upload.empty()))

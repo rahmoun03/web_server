@@ -294,7 +294,12 @@ class Conf {
 						throw "Ops error config file";
 				}
 				else
-					throw "LOCATION NOT FOUND!";
+				{
+					if (name.find("#") != std::string::npos)
+						throw "CONFIG FILE NOT SEPORT COMMENT!";
+					else
+						throw "LOCATION NOT FOUND!";
+				}
 
 		}
 		void displayLocation(){

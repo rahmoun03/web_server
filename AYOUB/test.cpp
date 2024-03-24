@@ -53,6 +53,7 @@
 //         {
 //             if (it->second == "text/html")
 //                 executeCGI(fd, req);
+
 //             else
 //             {
 //                 std::cout << "http://{" << req.get_path() << "} \n";
@@ -82,7 +83,7 @@
 //         // Redirect STDOUT to the client socket
 //         dup2(fd, STDOUT_FILENO);
 //         close(fd);
-
+//  if (req.get_path().find(SERVER_ROOT) != 0) {
 //         // Execute the CGI script
 //         char* args[] = {NULL}; // You may need to pass arguments to the CGI script
 //         char* env[] = {NULL}; // You may need to set environment variables
@@ -104,5 +105,3 @@
 //         throw internalServerError();
 //     }
 // }
-
-

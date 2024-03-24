@@ -29,7 +29,7 @@ void Client::clear()
     server_index = 0;
     req.clear();
     res.clear();
-    std::cout << RED <<"clear Client object" << DEF<< std::endl;
+    // std::cout << RED <<"clear Client object" << DEF<< std::endl;
 }
 
 Client::Client()

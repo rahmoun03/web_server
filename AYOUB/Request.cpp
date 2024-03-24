@@ -29,11 +29,11 @@ Request::Request(std::stringstream &buf, size_t &endOf)
 		startline >> method;
 		startline >> path;
 		startline >> protocol;
-		if(startline.cur)
-		{
-			std::cout << "nice start line request : " << startline.cur << std::endl;
-			startLineForma = true;
-		}
+		// if(startline.cur)
+		// {
+		// 	std::cout << "nice start line request : " << startline.cur << std::endl;
+		// 	startLineForma = true;
+		// }
 		// path = SERVER_ROOT + path;
 		
 		while(i < endOf && buf >> key && std::getline(buf, value))
@@ -41,7 +41,7 @@ Request::Request(std::stringstream &buf, size_t &endOf)
 			headers[key] = value;
 			i += key.length() + value.length() + 1;
 		}
-		std:: cout << (endOf + 4) << " < " << buf.str().size() << std::endl;
+		// std:: cout << (endOf + 4) << " < " << buf.str().size() << std::endl;
 		if(buf && (endOf + 4) < buf.str().size())
 		{
 			buf >> key;
@@ -117,7 +117,9 @@ void Request::clear()
 	connexion = false;
 	ra = 0;
 	chun = 0;
-    std::cout << RED <<"clear request object" << DEF<< std::endl;
+	red_path.clear();
+	locationPath.clear();
+    // std::cout << RED <<"clear request object" << DEF<< std::endl;
 }
 
 const std::map<std::string, std::string> &Request::get_headers() const

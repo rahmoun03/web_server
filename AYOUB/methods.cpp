@@ -10,46 +10,29 @@
 #include <cstdlib> // For system function
 #include <unistd.h>
 
-#include <cstdlib> // For system()
-#include <unistd.h> // For dup2(), close(), fork()
-#include <sys/wait.h> // For waitpid()
-
-
-void Response::GET(int &fd, Request &req, Conf &server)
+void	Response::GET(int &fd, Request &req, Conf &server)
 {
-    (void) server;
-
-    std::map<std::string, std::string> map = ErrorAssets();
-    map_iterator it = map.find(req.get_path());
-    if(req.firstTime)
+    if(!req.red_path.empty())
+            Redirect(req.red_path, req, fd);
+    else if(directoryExists(req.get_path()))
     {
-        std::cout << "old URL : " << req.get_path() << std::endl;
-        if(it != map.end())
-            req.get_path() = it->second;
-        else
-            req.get_path() = (SERVER_ROOT + req.get_path());
-        std::cout << "new URL : " << req.get_path() << std::endl;
-    }
-    if(directoryExists(req.get_path()))
-    {
-        std::cout << "http://{" << req.get_path() << "} \n";
-        std::cout << "the URL is a directory \n";
-        serv_dir(fd, req);
+        // std::cout << "http://{" << req.get_path() << "} \n";
+        // std::cout << "the URL is a directory \n";
+        serv_dir(fd, req, server);
     }
     else if (fileExists(req.get_path()))
     {
         std::map<std::string , std::string> mime_map = mimeTypes();
-        it = mime_map.find(extension(req.get_path()));
+        map_iterator it = mime_map.find(extension(req.get_path()));
         if(it != mime_map.end())
         {
-            if (it->second == "text/html")
-                executeCGI(fd, req);
-            else
-            {
-                std::cout << "http://{" << req.get_path() << "} \n";
-                std::cout << "the URL is a file : " << it->second << std::endl;
-                serv_file(it, fd, req);
-            }
+            // std::cout << "http://{" << req.get_path() << "} \n";
+            // std::cout << "the URL is a file : " << it->second << std::endl;
+            serv_file(it, fd, req);
+        }
+        else if(extension(req.get_path()) == "php" && server.locat.find(req.locationPath)->second.cgi)
+        {
+            executeCGI(fd, req);
         }
         else
         {
@@ -79,11 +62,11 @@ void Response::executeCGI(int &fd, Request &req)
         std::cerr << "Failed to execute CGI script\n";
         exit(EXIT_FAILURE);
     }
-    else if (pid > 0) 
-    {
-        int status;
-        waitpid(pid, &status, 0);
-    }
+    // else if (pid > 0) 
+    // {
+    //     int status;
+    //     // waitpid(pid, &status, 0);
+    // }
     // else
     // {
     //     std::cerr << "Failed to fork process\n";
@@ -101,10 +84,6 @@ unsigned long convertHexToDec(std::string hex)
     return (decimal);
 }
 
-// void check_type(std::string &dlt)
-// {
-//     if()
-// }
 
 
 
@@ -120,7 +99,7 @@ void	Response::POST(int &fd, Request &req, Conf &server)
     {
         if (req.firstTime)
         {
-            std::string up_ptah = server.locat.find(req.get_path())->second.upload;
+            std::string up_ptah = server.locat.find(req.locationPath)->second.upload;
             std::string type = static_cast<std::string>(req.get_header("Content-Type:"));
             std::string tmp_ = type.substr(type.find("/") + 1);
             std::cout << tmp_ << std::endl;
@@ -171,7 +150,7 @@ void	Response::POST(int &fd, Request &req, Conf &server)
         if (req.firstTime)
         {
             std::cout << "request path : " << req.get_path() << std::endl;
-            std::string up_ptah = server.locat.find(req.get_path())->second.upload;
+            std::string up_ptah = server.locat.find(req.locationPath)->second.upload;
             std::string type = static_cast<std::string>(req.get_header("Content-Type:"));
             std::string tmp_ = type.substr(type.find("/") + 1);
             std::cout << tmp_ << std::endl;
@@ -207,7 +186,6 @@ void	Response::POST(int &fd, Request &req, Conf &server)
             a = recv(fd, buffer, 1023, 0);
             buffer[a] = '\0';
             tmp.append(buffer, a);
-            std::cout << "here\n";
             if((tmp.size() > (decimal + 10))
                 || ((tmp.size() >= decimal + 5 ) && (*(tmp.end() - 1) == '\n') && (*(tmp.end() - 2) == '\r')))
             {
@@ -237,83 +215,44 @@ void	Response::POST(int &fd, Request &req, Conf &server)
     }
 }
 
-void	Response::DELETE(int &fd, Request &req, Conf &server)
+int	Response::DELETE(int &fd, Request &req, Conf &server, std::string dpath)
 {
     (void) server;
-    std::map<std::string, std::string> map = ErrorAssets();
-    map_iterator it = map.find(req.get_path());
-    if(req.firstTime)
-    {
 
-        std::cout << "old URL : " << req.get_path() << std::endl;
-        if(it != map.end())
-            req.get_path() = it->second;
-        else
-            req.get_path() = (SERVER_ROOT + req.get_path());
-        std::cout << "new URL : " << req.get_path() << std::endl;
-    }
-    if (req.get_path().find(SERVER_ROOT) != 0)
+    std::cout << "you want to delete : " << dpath.c_str() << std::endl;
+    if (req.get_path().find(server.locat.find(req.locationPath)->second.root) != 0)
         forbidden();
-    std::cout << "you want to delete : " << req.get_path() << std::endl;
-    DIR* dir = opendir(req.get_path().c_str());
-    if (dir != NULL) 
+    if(directoryExists(dpath.c_str()))
     {
-        struct dirent* entry;
-        while ((entry = readdir(dir)) != NULL) 
+        DIR* dir = opendir(dpath.c_str());
+        if (dir != NULL) 
         {
-            if (strcmp(entry->d_name, ".") != 0 && strcmp(entry->d_name, "..") != 0) 
+            struct dirent* entry;
+            while ((entry = readdir(dir)) != NULL) 
             {
-                std::string filePath = req.get_path() + entry->d_name;
-                if(directoryExists(filePath))
-                    rmdir(filePath.c_str());
-                remove(filePath.c_str());
+                std::cout << " ----------   is dir  -----------\n" << entry->d_name <<std::endl;
+                if (strcmp(entry->d_name, ".") != 0 && strcmp(entry->d_name, "..") != 0) 
+                {
+                    std::string filePath = dpath + entry->d_name;
+                    if(directoryExists(filePath.c_str()))
+                        filePath += "/";
+                    std::cout << "DELETE : " << filePath <<std::endl;
+                    DELETE(fd, req, server, filePath);
+                }
             }
+            if(req.get_path() != dpath)
+                rmdir(dpath.c_str());
+            req.connexion = true;
+            closedir(dir);
         }
-        req.connexion = true;
-        closedir(dir);
     }
-    else if(fileExists(req.get_path()))
+    else if(fileExists(dpath.c_str()))
     {
-        if (remove(req.get_path().c_str()) != 0)
-        {
-            std::stringstream response;
-            response << "HTTP/1.1 204 No Content\r\n"
-             << "Connection: close\rEncoding\n"
-             << "Server: " << "chabchoub" << "\r\n"
-             << "Date: " << getCurrentDateTime() << "\r\n"
-             << "\r\n";
-            
-            send(fd, response.str().c_str(), response.str().size(), 0);
-            req.connexion = true;
-        }
-        else
-        {
-            std::ifstream ff("www/server1/delete.html", std::ios::binary);
-            
-            std::stringstream response;
-            response << "HTTP/1.1 200 OK\r\n"
-             << "Content-Type: text/html\r\n"
-             
-             << "Connection: close\rEncoding\n"
-             << "Server: " << "chabchoub" << "\r\n"
-             << "Date: " << getCurrentDateTime() << "\r\n"
-             << "\r\n"
-             << ff.rdbuf();
-            
-            std::cout << "response :\n" << response.str()<<std::endl;
-
-            if(send(fd, response.str().c_str(), response.str().size(), 0) == -1)
-            {
-                perror("send :");
-                exit(1);
-            }
-            req.connexion = true;
-            ff.close();
-        }
+        return remove(dpath.c_str());
     }
     else
     {
         throw (notFound());
-    }    
-    return;
+    }
+    return 0;
 }

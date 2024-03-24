@@ -183,19 +183,37 @@ void	Response::POST(int &fd, Request &req, Conf &server)
 }
 
 
-bool isSubDir(std::string p, std::string root)
+std::string normalizePath(const std::string& path) 
 {
-    static const std::string emptyPath = "";
-    while (p != emptyPath) {
-        if (p == root) {
-             return true;
+    std::string result;
+    const char* delim = "/";
+    char* token = std::strtok(const_cast<char*>(path.c_str()), delim);
+    while (token != NULL) 
+    {
+        if (strcmp(token, "..") == 0) 
+        {
+            if (!result.empty()) 
+            {
+                size_t pos = result.find_last_of("/");
+                if (pos != std::string::npos)
+                    result.erase(pos);
+            }
+        } 
+        else if (strcmp(token, ".") != 0) 
+        {
+            result += "/";
+            result += token;
         }
-        size_t pos = p.find_last_of('/');
-        if (pos == std::string::npos)
-            return false; 
-        p = p.substr(0, pos);
+        token = std::strtok(NULL, delim);
     }
-    return false;
+    return result;
+}
+
+bool isPathOutside(const std::string& pathA, const std::string& pathB) {
+    std::string normalizedPathA = normalizePath(pathA);
+    std::string normalizedPathB = normalizePath(pathB);
+
+    return normalizedPathA.find(normalizedPathB) != 0;
 }
 
 
@@ -203,17 +221,8 @@ bool isSubDir(std::string p, std::string root)
 
 int	Response::DELETE(int &fd, Request &req, Conf &server, std::string dpath)
 {
-    (void) server;
-    std::string _root = server.locat.find(req.locationPath)->second.root;
-    std::string requestedPath = dpath;
-    std::string parentPath = _root;
-    std::string actualPath = parentPath + "/" + requestedPath;
-
-    if (!isSubDir(actualPath, parentPath))
-        
-        forbidden();
-    std::cout << "you want to delete : " << dpath.c_str() << std::endl;
-    if (dpath.compare(0, _root.length(), _root) != 0)
+    std::string root_ = server.locat.find(req.locationPath)->second.root;
+    if (isPathOutside(root_, dpath))
         forbidden();
     if(directoryExists(dpath.c_str()))
     {

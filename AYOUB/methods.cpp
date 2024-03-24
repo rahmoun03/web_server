@@ -187,6 +187,8 @@ int	Response::DELETE(int &fd, Request &req, Conf &server, std::string dpath)
     (void) server;
 
     std::cout << "you want to delete : " << dpath.c_str() << std::endl;
+    if(dpath.find(server.locat.find(req.locationPath)->second.root) != 0)
+        forbidden();
     if(directoryExists(dpath.c_str()))
     {
         DIR* dir = opendir(dpath.c_str());

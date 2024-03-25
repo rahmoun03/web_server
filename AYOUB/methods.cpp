@@ -182,47 +182,17 @@ void	Response::POST(int &fd, Request &req, Conf &server)
     }
 }
 
-
-std::string normalizePath(const std::string& path) 
+bool isOutside(const std::string& root, const std::string& dpath) 
 {
-    std::string result;
-    const char* delim = "/";
-    char* token = std::strtok(const_cast<char*>(path.c_str()), delim);
-    while (token != NULL) 
-    {
-        if (strcmp(token, "..") == 0) 
-        {
-            if (!result.empty()) 
-            {
-                size_t pos = result.find_last_of("/");
-                if (pos != std::string::npos)
-                    result.erase(pos);
-            }
-        } 
-        else if (strcmp(token, ".") != 0) 
-        {
-            result += "/";
-            result += token;
-        }
-        token = std::strtok(NULL, delim);
-    }
-    return result;
+    return dpath.find(root) != 0;
 }
-
-bool isPathOutside(const std::string& pathA, const std::string& pathB) {
-    std::string normalizedPathA = normalizePath(pathA);
-    std::string normalizedPathB = normalizePath(pathB);
-
-    return normalizedPathA.find(normalizedPathB) != 0;
-}
-
 
 
 
 int	Response::DELETE(int &fd, Request &req, Conf &server, std::string dpath)
 {
-    std::string root_ = server.locat.find(req.locationPath)->second.root;
-    if (isPathOutside(root_, dpath))
+    std::string root = server.locat.find(req.locationPath)->second.root;
+    if (isOutside(root, dpath))
         forbidden();
     if(directoryExists(dpath.c_str()))
     {

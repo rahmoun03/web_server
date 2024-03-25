@@ -197,7 +197,14 @@ int	Response::DELETE(int &fd, Request &req, Conf &server, std::string dpath)
 {
     std::string root = server.locat.find(req.locationPath)->second.root;
     if (!isPathInside(root, dpath))
+    {
+        std::cout "here\n";
+        exit(1);
         forbidden();
+
+    }
+    std::cout << dpath << std::endl;
+    exit(1);
     if(directoryExists(dpath.c_str()))
     {
         DIR* dir = opendir(dpath.c_str());
@@ -224,6 +231,8 @@ int	Response::DELETE(int &fd, Request &req, Conf &server, std::string dpath)
     }
     else if(fileExists(dpath.c_str()))
     {
+        if (access(dpath.c_str(), W_OK) != 0)
+            forbidden();
         return remove(dpath.c_str());
     }
     else

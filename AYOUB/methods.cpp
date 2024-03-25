@@ -201,8 +201,6 @@ int	Response::DELETE(int &fd, Request &req, Conf &server, std::string dpath)
         // std::cout << "here\n";
         throw (forbidden());
     }
-    std::cout << dpath << std::endl;
-    exit(1);
     if(directoryExists(dpath.c_str()))
     {
         DIR* dir = opendir(dpath.c_str());

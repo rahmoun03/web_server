@@ -33,6 +33,8 @@ class Response
 		void	clear();
 		void 	serv_file(map_iterator &type, int &fd, Request &req);
 		void 	serv_dir(int &fd, Request &req, Conf &server);
+		void	serveCgi(std::string &path);
+
 		void	generateResponse(int &fd, Request &req, uint32_t &event, Conf &server);
 		void	checkHeaders(Request &req, Conf &server);
 		std::string extension(const std::string &path);
@@ -45,6 +47,7 @@ class Response
 			std::string notFound(); //      	 			404
 			std::string notAllow(std::string method); // 	405
 			std::string timeOut(std::string path);//		408
+			std::string lengthRequired(std::string path);// 411	
 			std::string EntityTooLarge(); // 				413
 			std::string longRequest();//     				414
 			std::string notImplement(); //  				501

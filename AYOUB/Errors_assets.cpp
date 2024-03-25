@@ -2,6 +2,79 @@
 
 /******************************************************************************/
 
+std::string Response::lengthRequired(std::string path)
+{
+    std::ifstream fi(path.c_str());
+    std::stringstream response;
+    response << "HTTP/1.1 411 Length Required\r\n"
+            << "Content-Type: text/html\r\n"
+            << "Connection: close\r\n"
+            << "Server: chabchoub\r\n"
+            << "Date: " << getCurrentDateTime() << "\r\n";
+    if (!fi.is_open())
+    {
+        std::cerr << RED << "failure in 411 page" << std::endl;
+        std::stringstream con ; 
+        con << "<!DOCTYPE html>"
+            << "<html>"
+            << "<head>"
+            << "    <base href=\"/Errors/\" />"
+            << "    <style>"
+            << "        body {"
+            << "            display: flex;"
+            << "            justify-content: center;"
+            << "            align-items: center;"
+            << "            height: 100vh;"
+            << "            background-color: rgb(0, 4, 4);"
+            << "            margin: 0; "
+            << "        }"
+            << "        .main-content {"
+            << "            box-shadow: inset 0px 0px 30px 30px rgb(0, 0, 0);"
+            << "            background-color: hsla(0, 0%, 100%, 0.3);"
+            << "            border-radius: 50px;"
+            << "            display: block;"
+            << "            width: 80%;"
+            << "            height: 80%;"
+            << "            justify-content: center;"
+            << "            align-items: center;"
+            << "            text-align: center;" 
+            << "            padding: 20px; "
+            << "        }"
+            << "        .main-content h1 {"
+            << "            width: 40%;"
+            << "            height: auto;" 
+            << "            display: block;" 
+            << "            margin: 0 auto;"
+            << "            font-size: 40px;"
+            << "            color: azure; "
+            << "        }"
+            << "        .main-content p {"
+            << "            color: rgb(255, 0, 0);"
+            << "        }"
+            << "    </style>"
+            << "</head>"
+            << "<body>"
+            << "    <div class=\"main-content\">"
+            << "        <h1>411 Length Required</h1>"
+            << "        <hr size=\"2\" color=\"white\" width=\"70%\">"
+            << "        <p> the server refuses to accept the request without a defined Content-Length header ,chabchob server</p>"
+            << "    </div>"
+            << "</body>"
+            << "</html>";
+        response << "Content-Length: " << con.str().size() << "\r\n"
+                << "\r\n"
+                << con.str();
+    }
+    else
+    {
+        std::string buffer((std::istreambuf_iterator<char>(fi)), std::istreambuf_iterator<char>());
+        response << "Content-Length: " << buffer.size() << "\r\n"
+                << "\r\n"
+                << buffer;
+    }
+    return response.str();
+}
+
 std::string Response::timeOut(std::string path)
 {
     std::ifstream fi(path.c_str());

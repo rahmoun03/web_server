@@ -51,6 +51,7 @@ Request::Request(std::stringstream &buf, size_t &endOf)
 	chun = 0;
 	ra = 0;
 	firstTime = true;
+	replacePercent20(path);
 	std::cout << (startLineForma ? "yes" : "no") << std::endl;
 }
 
@@ -164,4 +165,15 @@ const std::string Request::get_protocol() const
 
 Request::~Request()
 {
+}
+
+void replacePercent20(std::string& str) {
+    std::string::size_type pos = 0;
+    const std::string pattern = "%20";
+    const std::string space = " ";
+
+    while ((pos = str.find(pattern, pos)) != std::string::npos) {
+        str.replace(pos, pattern.length(), space);
+        pos += space.length();
+    }
 }

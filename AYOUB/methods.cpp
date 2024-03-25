@@ -24,11 +24,29 @@ void	Response::GET(int &fd, Request &req, Conf &server)
     {
         std::map<std::string , std::string> mime_map = mimeTypes();
         map_iterator it = mime_map.find(extension(req.get_path()));
-        if(it != mime_map.end() || extension(req.get_path()) == "cpp")
+        if(it != mime_map.end()) 
         {
             // std::cout << "http://{" << req.get_path() << "} \n";
             // std::cout << "the URL is a file : " << it->second << std::endl;
             serv_file(it, fd, req);
+        }
+        else if (extension(req.get_path()) == "php" && server.locat.find(req.locationPath)->second.cgi)
+        {
+            serveCgi(req.get_path());
+            std::ifstream ff("./cgi_output.txt");
+            std::stringstream response;
+            response << "HTTP/1.1 411 Length Required\r\n"
+                    << "Content-Type: text/plain\r\n"
+                    << "Connection: close\r\n"
+                    << "Server: chabchoub\r\n"
+                    << "Date: " << getCurrentDateTime() << "\r\n";
+            std::string res = std::string(std::istreambuf_iterator<char>(ff), std::istreambuf_iterator<char>()); 
+            response << "Content-Length: " << res.size() << "\r\n"
+                << "\r\n"
+                << res;
+            std::cout << "response : \n" << response.str() << std::endl;
+            send(fd, response.str().c_str() , response.str().size(), 0);
+            req.connexion = true;
         }
         else
         {
@@ -137,18 +155,27 @@ void	Response::POST(int &fd, Request &req, Conf &server)
                 ss >> s;
                 path = up_ptah + ("upload" + s + (".") + tmp_);
             }
+            out.open(path.c_str(), std::ios::binary);
             str = req.get_body();
             std::istringstream f(str);
             std::getline(f, line);
-            std::cout << line <<std::endl;
-            decimal = convertHexToDec(line);
-            req.chun++;
-            out.open(path.c_str(), std::ios::binary);
-            str.erase(0,line.size() + 1);
-            tmp.append(str.c_str(), str.size());
+            if(str.substr(str.size() - 5, str.size()) == "0\r\n\r\n")
+            {
+                std::cout << "the body is finish\n";
+                decimal = 0;
+                str.erase(0,line.size() + 1);
+                out.write(str.c_str(), str.size() - 7);
+            }
+            else
+            {
+                decimal = convertHexToDec(line);
+                str.erase(0,line.size() + 1);
+                tmp.append(str.c_str(), str.size());
+            }
             req.firstTime = false;
+            req.chun++;
         }
-         else 
+        else 
         {
             size_t a;
             char buffer[1024];

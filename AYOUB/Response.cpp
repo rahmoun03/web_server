@@ -232,9 +232,13 @@ void Response::checkHeaders(Request &req, Conf &server)
         std::cout << "Transfer-Encoding Not chanked" << std::endl;
         throw(notImplement());
     }
+    if((req.get_method() != "GET") && (req.get_method() != "POST") && (req.get_method() != "DELETE"))
+    {
+        std::cout << "requist line not correct "<< (req.startLineForma ? "yes" : "no") << std::endl;
+        throw (badRequest());
+    }
     if(req.get_method().empty() || req.get_path().empty())
     {
-
         std::cout << "requist line not correct "<< (req.startLineForma ? "yes" : "no") << std::endl;
         throw(badRequest());
     }
@@ -247,7 +251,7 @@ void Response::checkHeaders(Request &req, Conf &server)
     if (req.get_method() == "POST" && !head.count("Transfer-Encoding:") && !head.count("Content-Length:"))
     {
         std::cout << "TE and CL Not exist" << std::endl;
-        throw(badRequest());
+        throw(lengthRequired(server.confCherch("411")));
     }
     if ((req.get_method() == "GET") && (!req.get_body().empty() || head.count("Content-Length:")))
     {
@@ -271,7 +275,7 @@ void Response::checkHeaders(Request &req, Conf &server)
     }
     if (req.get_path().size() > 2048)
     {
-        std::cout << "" << std::endl;
+        std::cout << "long URI" << std::endl;
         throw(longRequest());
     }
 }
@@ -514,3 +518,55 @@ size_t hexadecimal(const std::string &chunkHeader)
     iss >> std::hex >> chunkSize;
     return chunkSize;
 }
+
+void Response::serveCgi(std::string &path)
+{
+    // Set up environment variables
+
+    const char* temp_file = "./cgi_output.txt"; // Adjust the path as needed
+    FILE* output_file = fopen(temp_file, "w");
+    if (!output_file) {
+        std::cerr << "Failed to open temporary file for writing." << std::endl;
+        return ;
+    }
+
+    setenv("QUERY_STRING", "name=John&age=30", 1); // Example query string
+    setenv("REQUEST_METHOD", "GET", 1); // Example request method
+
+    // Execute the CGI script
+    pid_t pid = fork();
+
+    if (pid == 0) {
+        if (freopen(temp_file, "w", stdout) == NULL) 
+        {
+            std::cerr << "Failed to freopen stdout." << std::endl;
+            return ;
+        }
+        // Child process
+        const char* script_path = "/usr/bin/php-cgi"; // Path to your CGI script
+        // Prepare the argument list
+        const char* args[] = {script_path, path.c_str(), NULL};
+        // Prepare the environment variables
+        char* const env[] = {NULL}; // You can specify environment variables here if needed
+        
+        // Execute the CGI script
+        if (execve(script_path, (char* const*)args, env) == -1) 
+        {
+            std::cerr << "Failed to execute CGI script." << std::endl;
+            return ;
+        }
+    } else if (pid > 0) 
+    {
+        // Parent process
+        // Wait for the child to finish
+        waitpid(pid, NULL, 0);
+    } else 
+    {
+        // Fork failed
+        std::cerr << "Fork failed." << std::endl;
+        return ;
+    }
+
+    return ;
+}
+

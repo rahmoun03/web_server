@@ -225,7 +225,7 @@ void Response::serv_dir(int &fd, Request &req, Conf &server)
 void Response::checkHeaders(Request &req, Conf &server)
 {
     std::map<std::string, std::string> head;
-
+    std::cout << "firts time  : " << req.firstTime << std::endl;
     head = req.get_headers();
     if (head.count("Transfer-Encoding:") && req.get_header("Transfer-Encoding:") != "chunked")
     {
@@ -234,7 +234,8 @@ void Response::checkHeaders(Request &req, Conf &server)
     }
     if(req.get_method().empty() || req.get_path().empty())
     {
-        std::cout << "requist line not correct" << std::endl;
+
+        std::cout << "requist line not correct "<< (req.startLineForma ? "yes" : "no") << std::endl;
         throw(badRequest());
     }
     if((req.get_method() == "GET" && !(server.locat.find(req.locationPath)->second.get))

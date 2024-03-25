@@ -15,6 +15,7 @@ class Client
         Request req;
         Response res;
         
+        
         Client(/* args */);
         void clear();
         ~Client();

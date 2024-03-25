@@ -57,11 +57,12 @@ class Request
 	public:
 		int chun;
 		size_t ra;
-		bool startLineForma;
 		long int body_limit;
 		bool firstTime;
 		bool connexion;
 		bool CGI;
+		bool startLineForma;
+		std::string test;
 		size_t root_end;
 		std::string red_path;
 		std::string locationPath;

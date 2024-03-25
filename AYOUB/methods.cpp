@@ -87,6 +87,8 @@ void	Response::POST(int &fd, Request &req, Conf &server)
             out.write(str.c_str(), str.size());
             out.flush();
             req.firstTime = false;
+            std::cout << "++++++++++++++ HERE  +++++++++++++++" << std::endl;
+            
         }
         else 
         {

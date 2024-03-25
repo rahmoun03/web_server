@@ -59,7 +59,8 @@
   "files.associations": {
     "ostream": "cpp",
     "iostream": "cpp",
-    "sstream": "cpp"
+    "sstream": "cpp",
+    "*.tcc": "cpp"
   },
   "C_Cpp.errorSquiggles": "disabled"
 }

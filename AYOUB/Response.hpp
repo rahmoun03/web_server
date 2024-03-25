@@ -40,14 +40,15 @@ class Response
 		
 		/*   -       ERRORs        -      */
 		
-			std::string badRequest();//      		400
-			std::string forbidden();//       		403
-			std::string notFound(); //      	 	404
+			std::string badRequest();//      				400
+			std::string forbidden();//       				403
+			std::string notFound(); //      	 			404
 			std::string notAllow(std::string method); // 	405
-			std::string EntityTooLarge(); // 		413
-			std::string longRequest();//     		414
-			std::string notImplement(); //  		501
-			std::string httpVersion();//    	 	505
+			std::string timeOut(std::string path);//		408
+			std::string EntityTooLarge(); // 				413
+			std::string longRequest();//     				414
+			std::string notImplement(); //  				501
+			std::string httpVersion();//    	 			505
 		
 			// std::string homepage(); // 200 home
 		/***********************/

@@ -182,9 +182,13 @@ void	Response::POST(int &fd, Request &req, Conf &server)
     }
 }
 
-bool isOutside(const std::string& root, const std::string& dpath) 
+bool isPathInside(const std::string& pathA, const std::string& pathB) 
 {
-    return dpath.find(root) != 0;
+    std::string normalizedPathB = pathB;
+    if (!normalizedPathB.empty() && normalizedPathB[normalizedPathB.size() - 1] != '/')
+        normalizedPathB += '/';
+
+    return pathA.compare(0, normalizedPathB.length(), normalizedPathB) == 0;
 }
 
 
@@ -192,7 +196,7 @@ bool isOutside(const std::string& root, const std::string& dpath)
 int	Response::DELETE(int &fd, Request &req, Conf &server, std::string dpath)
 {
     std::string root = server.locat.find(req.locationPath)->second.root;
-    if (isOutside(root, dpath))
+    if (!isPathInside(root, dpath))
         forbidden();
     if(directoryExists(dpath.c_str()))
     {

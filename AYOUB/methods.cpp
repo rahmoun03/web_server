@@ -198,7 +198,7 @@ std::string normalizePath(const std::string& path)
     std::string result;
     const char* delim = "/";
     char* token = std::strtok(const_cast<char*>(path.c_str()), delim);
-    while (token != NULL) 
+    while (!token) 
     {
         if (strcmp(token, "..") == 0) 
         {
@@ -229,12 +229,12 @@ bool isPathOutside(const std::string& pathA, const std::string& pathB)
 
 int	Response::DELETE(int &fd, Request &req, Conf &server, std::string dpath)
 {
-    std::string root = server.locat.find(req.locationPath)->second.root;
-    if (isPathOutside(root, dpath))
-    {
-        // std::cout << "here\n";
-        throw (forbidden());
-    }
+    // std::string root = server.locat.find(req.locationPath)->second.root;
+    // if (isPathOutside(root, dpath))
+    // {
+    //     // std::cout << "here\n";
+    //     throw (forbidden());
+    // }
     if(directoryExists(dpath.c_str()))
     {
         DIR* dir = opendir(dpath.c_str());

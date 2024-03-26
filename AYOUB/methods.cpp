@@ -1,30 +1,57 @@
 #include "Response.hpp"
+#include <filesystem>
+#include<stdio.h>
+#include<sys/stat.h>
+#include<iostream>
+#include<string.h>
+#include<string>
+#include<dirent.h>
+#include <iostream>
+#include <cstdlib> // For system function
+#include <unistd.h>
 
-void	Response::GET(int &fd, Request &req)
+void	Response::GET(int &fd, Request &req, Conf &server)
 {
-    std::map<std::string, std::string> map = ErrorAssets();
-    map_iterator it = map.find(req.get_path());
-
-    std::cout << "old URL : " << req.get_path() << std::endl;
-    if(it != map.end())
-        req.get_path() = it->second;
-    else
-        req.get_path() = (SERVER_ROOT + req.get_path());
-    std::cout << "new URL : " << req.get_path() << std::endl;
-    if(directoryExists(req.get_path()))
+    if(!req.red_path.empty())
+            Redirect(req.red_path, req, fd);
+    else if(directoryExists(req.get_path()))
     {
-        std::cout << "http://{" <<req.get_path() << "} \n";
-        std::cout << "the URL is a directory \n";
-        serv_dir(fd, req);
+        // std::cout << "http://{" << req.get_path() << "} \n";
+        // std::cout << "the URL is a directory \n";
+        serv_dir(fd, req, server);
     }
     else if (fileExists(req.get_path()))
     {
         std::map<std::string , std::string> mime_map = mimeTypes();
-        it = mime_map.find(extension(req.get_path()));
-        if(it != mime_map.end())
+        map_iterator it = mime_map.find(extension(req.get_path()));
+        if(it != mime_map.end()) 
         {
-            std::cout << "the URL is a file : " << it->second << std::endl;
+            // std::cout << "http://{" << req.get_path() << "} \n";
+            // std::cout << "the URL is a file : " << it->second << std::endl;
             serv_file(it, fd, req);
+        }
+        else if (extension(req.get_path()) == "php" && server.locat.find(req.locationPath)->second.cgi)
+        {
+            if(!serveCgi(req))
+            {
+                std::ifstream ff("./cgi_output.txt");
+                std::stringstream response;
+                response << "HTTP/1.1 200 Length Required\r\n"
+                        << "Connection: close\r\n"
+                        << "Server: chabchoub\r\n"
+                        << "Date: " << getCurrentDateTime() << "\r\n";
+                std::string res = std::string(std::istreambuf_iterator<char>(ff), std::istreambuf_iterator<char>()); 
+                response << "Content-Length: " << res.size() << "\r\n"
+                    << res;
+                std::cout << "response : \n" << response.str() << std::endl;
+                send(fd, response.str().c_str() , response.str().size(), 0);
+                req.connexion = true;
+            }
+            else
+            {
+                std::cout << "CGI ERROR\n";
+                throw (notFound());
+            }
         }
         else
         {
@@ -39,9 +66,9 @@ void	Response::GET(int &fd, Request &req)
     }
 }
 
-long long convertHexToDec(std::string hex)
+unsigned long convertHexToDec(std::string hex)
 {
-    long long decimal;
+    unsigned long decimal;
     std::stringstream ss;
 
     ss << hex;
@@ -49,20 +76,35 @@ long long convertHexToDec(std::string hex)
     return (decimal);
 }
 
-void	Response::POST(int &fd, Request &req)
-{
 
-    (void) fd;
-    (void) req;
+void	Response::POST(int &fd, Request &req, Conf &server)
+{
+    static int i;
     if(req.get_header("Transfer-Encoding:").empty())
     {
         if (req.firstTime)
         {
+            std::string up_ptah = server.locat.find(req.locationPath)->second.upload;
+            std::string type = static_cast<std::string>(req.get_header("Content-Type:"));
+            std::string tmp_ = type.substr(type.find("/") + 1);
+            std::cout << tmp_ << std::endl;
+            type.erase(type.find("/"));
+            type.push_back('.');
+            path = up_ptah + ("upload." + tmp_);
+            while (fileExists(path))
+            {
+                i++;
+                std::stringstream ss;
+                ss << i;
+                std::string s;
+                ss >> s;
+                path = up_ptah + ("upload" + s + (".") + tmp_);
+            }
             std::string str = req.get_body();
-            out.open("test.mp4", std::ios::binary);
+            out.open(path.c_str(), std::ios::binary);
             out.write(str.c_str(), str.size());
             out.flush();
-            req.firstTime = false;
+            req.firstTime = false;            
         }
         else 
         {
@@ -73,87 +115,136 @@ void	Response::POST(int &fd, Request &req)
             buffer[a] = '\0';
             out.write(buffer, a);
             out.flush();
-            std::cout << "read size : " <<req.ra << "\n content length : "<< req.get_header("Content-Length:") <<  std::endl;
-            if(req.ra >= (size_t )atoi(req.get_header("Content-Length:").c_str()))
-                req.connexion = true;
-            // exit(1);
+        }
+        if(req.ra >= (size_t )atof(req.get_header("Content-Length:").c_str()))
+        {
+            req.connexion = true;
+             std::ifstream fi("www/server1/suc.html");
+            std::stringstream response;
+            response << "HTTP/1.1 201 Created\r\n"
+                    << "\r\n"
+                    << fi.rdbuf();
+            fi.close();
+            send(fd, response.str().c_str(), response.str().size(),0);
         }
     }
     else if(req.get_header("Transfer-Encoding:") == "chunked")
     {
-        // size_t decimal = 0;
-        
         std::string line; 
+        // std::cout << "------------BEFRO POST ------------------------------------\n";
         if (req.firstTime)
         {
+            std::cout << "request path : " << req.get_path() << std::endl;
+            std::string up_ptah = server.locat.find(req.locationPath)->second.upload;
+            std::string type = static_cast<std::string>(req.get_header("Content-Type:"));
+            std::string tmp_ = type.substr(type.find("/") + 1);
+            std::cout << tmp_ << std::endl;
+            type.erase(type.find("/"));
+            type.push_back('.');
+            std::string path = up_ptah + ("upload." + tmp_);
+            std::cout << "path : "<< path << std::endl;
+
+            while (fileExists(path))
+            {
+                i++;
+                std::stringstream ss;
+                ss << i;
+                std::string s;
+                ss >> s;
+                path = up_ptah + ("upload" + s + (".") + tmp_);
+            }
+            out.open(path.c_str(), std::ios::binary);
             str = req.get_body();
             std::istringstream f(str);
             std::getline(f, line);
-            std::cout << line <<std::endl;
-            decimal = convertHexToDec(line);
-            req.chun++;
-            // std::cout << "chunked : " << decimal << std::endl;
-            out.open("test.mp4", std::ios::binary);
-            str.erase(0,line.size() + 1);
-            tmp.append(str.c_str(), str.size());
-
-            // out.write(str.c_str(), str.size());
-            // out.flush();
+            if(str.substr(str.size() - 5, str.size()) == "0\r\n\r\n")
+            {
+                std::cout << "the body is finish\n";
+                decimal = 0;
+                str.erase(0,line.size() + 1);
+                out.write(str.c_str(), str.size() - 7);
+            }
+            else
+            {
+                decimal = convertHexToDec(line);
+                str.erase(0,line.size() + 1);
+                tmp.append(str.c_str(), str.size());
+            }
             req.firstTime = false;
+            req.chun++;
         }
         else 
         {
             size_t a;
             char buffer[1024];
             a = recv(fd, buffer, 1023, 0);
-            // std::cout <<  "recv read :" <<a << std::endl;
             buffer[a] = '\0';
             tmp.append(buffer, a);
-            std::cout << buffer << std::endl;
-            if(tmp.size() >= decimal)
+            if((tmp.size() > (decimal + 10))
+                || ((tmp.size() >= decimal + 5 ) && (*(tmp.end() - 1) == '\n') && (*(tmp.end() - 2) == '\r')))
             {
-                size_t distance = tmp.size() - decimal;
+                size_t distance = tmp.size() - (decimal + 2);
                 out.write(tmp.c_str(), decimal);
                 out.flush();
-                // exit(0);
-                // std::cout << "========1========HOW MYCH==========>" << std::endl;
-                // exit(1);
-                // std::cout << tmp.rfind("\r\n") << " ++ " << decimal + 2 << std::endl;
-
                 tmp = tmp.substr(decimal + 2, distance);
-                // std::cout << "|" << tmp << "|"<<  std::endl;
-                // exit(1);
                 std::istringstream f(tmp);
                 std::getline(f, line);
-                std::cout << RED<< line << DEF<<std::endl;
                 decimal = convertHexToDec(line);
                 req.chun++;
-
-                // std::cout << "chunked : " << decimal << std::endl;
-                // out.open("test.png", std::ios::binary);
-                tmp.erase(0,line.size()+1);
-                // std::cout << "tmp size :" << tmp.size() << "\ndecimal : " << decimal <<std::endl;
-                // exit(1); 
+                tmp.erase(0,line.size() + 1);
+                std::cout << "now decimal = " << decimal << std::endl;
             }
-            if (decimal == 0){
-                req.connexion = true;
-                std::cout<< "number : " << req.chun << std::endl;
-                // out.close();
-            }
-            // out.write(buffer, a);
-        //     if(a < 1023)
-        //         out
-        //     // exit(1);
-        // }
+        }
+        if (decimal == 0){
+            std::cout << "------------------ LAST CHUNKED --------------------------\n";
+            req.connexion = true;
+            std::ifstream fi("www/server1/suc.html");
+            std::stringstream response;
+            response << "HTTP/1.1 201 Created\r\n"
+                    << "\r\n"
+                    << fi.rdbuf();
+            fi.close();
+            send(fd, response.str().c_str(), response.str().size(),0);
         }
     }
-    // std::string str = req.get_body();
-    // std::cout << decimal << std::endl;
-    // std::cout <<"|" << req.get_body() << "|"  << "lenght: " << str.length() << std::endl;
 }
 
-void	Response::DELETE(int &fd, Request &req){
-    (void) fd;
-    (void) req;
-    return;
-};
+int	Response::DELETE(int &fd, Request &req, Conf &server, std::string dpath)
+{
+    (void) server;
+
+    std::cout << "you want to delete : " << dpath.c_str() << std::endl;
+    if(directoryExists(dpath.c_str()))
+    {
+        DIR* dir = opendir(dpath.c_str());
+        if (dir != NULL) 
+        {
+            struct dirent* entry;
+            while ((entry = readdir(dir)) != NULL) 
+            {
+                std::cout << " ----------   is dir  -----------\n" << entry->d_name <<std::endl;
+                if (strcmp(entry->d_name, ".") != 0 && strcmp(entry->d_name, "..") != 0) 
+                {
+                    std::string filePath = dpath + entry->d_name;
+                    if(directoryExists(filePath.c_str()))
+                        filePath += "/";
+                    std::cout << "DELETE : " << filePath <<std::endl;
+                    DELETE(fd, req, server, filePath);
+                }
+            }
+            if(req.get_path() != dpath)
+                rmdir(dpath.c_str());
+            req.connexion = true;
+            closedir(dir);
+        }
+    }
+    else if(fileExists(dpath.c_str()))
+    {
+        return remove(dpath.c_str());
+    }
+    else
+    {
+        throw (notFound());
+    }
+    return 0;
+}

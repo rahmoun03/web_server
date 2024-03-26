@@ -6,7 +6,7 @@
 /*   By: himejjad <himejjad@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/17 11:26:36 by arahmoun          #+#    #+#             */
-/*   Updated: 2024/03/12 03:26:13 by himejjad         ###   ########.fr       */
+/*   Updated: 2024/03/17 22:03:40 by himejjad         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -18,40 +18,41 @@ Request::Request(/* args */)
 
 Request::Request(std::stringstream &buf, size_t &endOf)
 {
-		std::string key;
-		std::string dst;
-		std::string value;
+	std::string key;
+	std::string dst;
+	std::string value;
 
-		std::getline(buf, dst);
-		size_t i = dst.size() + 1;
-		
-		startline << dst;
-		startline >> method;
-		startline >> path;
-		startline >> protocol;
-		if(startline.cur)
-		{
-			std::cout << "nice start line request : " << startline.cur << std::endl;
-			startLineForma = true;
-		}
-		// path = SERVER_ROOT + path;
-		
-		while(i < endOf && buf >> key && std::getline(buf, value))
-		{
-			headers[key] = value;
-			i += key.length() + value.length() + 1;
-		}
-		std:: cout << (endOf + 4) << " > " << buf.str().size() << std::endl;
-		if(buf && (endOf + 4) < buf.str().size())
-		{
-			buf >> key;
-			body << key << buf.rdbuf();
-		}
-		chun = 0;
-		// ra = body.str().size();
-		firstTime = true;
-		// buf.str("");
-		// std::cout << "\n--------------------------------------------------------\n" <<std::endl;
+	std::getline(buf, dst);
+	size_t i = dst.size() + 1;
+	std::cout <<"space :" << std::count(dst.begin(), dst.end(), ' ') << std::endl;
+	std::cout <<"tab   :" << std::count(dst.begin(), dst.end(), '\t') << std::endl;
+
+	if(std::count(dst.begin(), dst.end(), ' ') < 3 && std::count(dst.begin(), dst.end(), '\t') < 3)
+	{
+		std::cout << "correct request : "<< std::endl;
+		startLineForma = true;
+	}
+	test = "true";
+	startline << dst;
+	startline >> method;
+	startline >> path;
+	startline >> protocol;
+	
+	while(i < endOf && buf >> key && std::getline(buf, value))
+	{
+		headers[key] = value;
+		i += key.length() + value.length() + 1;
+	}
+	if(buf && (endOf + 4) < buf.str().size())
+	{
+		buf >> key;
+		body << key << buf.rdbuf();
+	}
+	chun = 0;
+	ra = 0;
+	firstTime = true;
+	replacePercent20(path);
+	std::cout << (startLineForma ? "yes" : "no") << std::endl;
 }
 
 size_t findEndOfHeaders(char* buffer, ssize_t bufferSize)
@@ -98,7 +99,7 @@ std::ostream &operator<<(std::ostream &os, Request &other)
 	std::map<std::string, std::string>::const_iterator ite = other.get_headers().end();
 	for (; it != ite; ++it)
 		os << it->first <<BLUE<< "|" <<YOLLOW << it->second << '\n';
-	os << "body :\n" << other.get_body() << RED <<"." << '\n';
+	os << "body :\n" << other.get_body() << RED <<"." << DEF << '\n';
 	return os;
 }
 
@@ -116,6 +117,10 @@ void Request::clear()
 	firstTime = false;
 	connexion = false;
 	ra = 0;
+	chun = 0;
+	red_path.clear();
+	locationPath.clear();
+    // std::cout << RED <<"clear request object" << DEF<< std::endl;
 }
 
 const std::map<std::string, std::string> &Request::get_headers() const
@@ -160,4 +165,15 @@ const std::string Request::get_protocol() const
 
 Request::~Request()
 {
+}
+
+void replacePercent20(std::string& str) {
+    std::string::size_type pos = 0;
+    const std::string pattern = "%20";
+    const std::string space = " ";
+
+    while ((pos = str.find(pattern, pos)) != std::string::npos) {
+        str.replace(pos, pattern.length(), space);
+        pos += space.length();
+    }
 }

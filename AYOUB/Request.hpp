@@ -29,6 +29,7 @@
 #include <algorithm>
 #include <arpa/inet.h>
 #include <sys/stat.h>
+#include <sys/wait.h>
 #include <ctime>
 #include <bits/stdc++.h> 
 // #include "Response.hpp"
@@ -57,11 +58,12 @@ class Request
 	public:
 		int chun;
 		size_t ra;
-		bool startLineForma;
 		long int body_limit;
 		bool firstTime;
 		bool connexion;
 		bool CGI;
+		bool startLineForma;
+		std::string test;
 		size_t root_end;
 		std::string red_path;
 		std::string locationPath;
@@ -85,5 +87,6 @@ class Request
 
 std::ostream &operator<<(std::ostream &os, Request &other);
 size_t findEndOfHeaders(char* buffer, ssize_t bufferSize);
+void replacePercent20(std::string& str);
 
 #endif

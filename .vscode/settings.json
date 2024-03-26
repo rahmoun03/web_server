@@ -60,7 +60,12 @@
     "ostream": "cpp",
     "iostream": "cpp",
     "sstream": "cpp",
+<<<<<<< HEAD
     "*.tcc": "cpp"
+=======
+    "*.tcc": "cpp",
+    "iosfwd": "cpp"
+>>>>>>> origin/ayoub
   },
   "C_Cpp.errorSquiggles": "disabled"
 }

@@ -52,6 +52,7 @@ class Response
 			std::string longRequest(std::string path, Request &req);//     				414
 			std::string mediaType(std::string path, Request &req);//						415
 			std::string headerTooLarge(std::string path, Request &req); // 				431
+			std::string conflict(std::string path, Request &req);
 
 		
 		

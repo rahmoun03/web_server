@@ -213,7 +213,7 @@ void Response::serv_dir(int &fd, Request &req, Conf &server)
                     else
                     {
                         std::cout << "CGI ERROR\n";
-                        throw (notFound(server.confCherch("404"), req));
+                        throw (serverError(server.confCherch("500"), req));
                     }
                 
                 }

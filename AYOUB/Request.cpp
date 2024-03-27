@@ -21,6 +21,7 @@ Request::Request(std::stringstream &buf, size_t &endOf)
 	std::string key;
 	std::string dst;
 	std::string value;
+	std::string tmp;
 
 	std::getline(buf, dst);
 	size_t i = dst.size() + 1;
@@ -34,7 +35,10 @@ Request::Request(std::stringstream &buf, size_t &endOf)
 	}
 	startline << dst;
 	startline >> method;
-	startline >> path;
+	startline >> tmp;
+	tmp.rfind('?') ? path = tmp.substr(0, tmp.rfind('?')) : path = tmp;
+	tmp.rfind('?') ? query = tmp.substr(tmp.rfind('?') + 1) : query = "";
+
 	startline >> protocol;
 	
 	while(i < endOf && buf >> key && std::getline(buf, value))
@@ -150,6 +154,11 @@ const std::string Request::get_body() const
 std::string &Request::get_path()
 {
 	return path;
+}
+
+std::string &Request::get_query()
+{
+	return query;
 }
 
 const std::string Request::get_method() const

@@ -53,16 +53,14 @@ void	Response::GET(int &fd, Request &req, Conf &server)
             else
             {
                 std::cout << "CGI ERROR\n";
-                throw (notFound(server.confCherch("404"), req));
+                throw (serverError(server.confCherch("500"), req));
             }
             req.firstTime = false;
         }
-
-        
         else
         {
             std::cout << "NOT FOUND 404 in MimeTypes and cgi "<< std::endl;
-            throw(notFound(server.confCherch("404"), req));
+            throw(mediaType(server.confCherch("415"), req));
         }
     }
     else

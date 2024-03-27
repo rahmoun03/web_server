@@ -4,7 +4,6 @@
 
 void Response::generateResponse(int &fd, Request &req, Conf &server)
 {
-    // (void)event;
     if(req.firstTime)
     {
         std::string _path = req.get_path();
@@ -515,7 +514,7 @@ size_t hexadecimal(const std::string &chunkHeader)
 
 int Response::serveCgi(Request &req)
 {
-    const char* temp_file = "./cgi_output.txt";
+    const char* temp_file = "/tmp/cgi_output.txt";
     std::string php_path = "/usr/bin/php-cgi";
     std::string py_path = "/usr/bin/php-cgi";
     (void)py_path;

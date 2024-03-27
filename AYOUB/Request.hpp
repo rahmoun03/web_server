@@ -51,6 +51,7 @@ class Request
 		std::stringstream startline;
 		std::string method;
 		std::string path;
+		std::string query;
 		std::string protocol;
 		std::map<std::string, std::string> headers;
 		std::stringstream body;
@@ -77,6 +78,7 @@ class Request
 		void clear();
 		Request(std::stringstream &buf, size_t &endOf);
 		std::string &get_path();
+		std::string &get_query();
 		const std::string get_method() const;
 		const std::string get_body() const;
 		const std::string get_protocol() const;

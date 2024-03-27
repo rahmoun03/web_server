@@ -2,8 +2,8 @@ NAME = webserv
 
 CHAB_SRC = CHEBCHOUB/main.cpp
 
-AYOUB_SRC = AYOUB/Request.cpp AYOUB/Response.cpp AYOUB/mime_types.cpp AYOUB/Errors_assets.cpp \
-			AYOUB/methods.cpp #AYOUB/servClient.cpp
+AYOUB_SRC = AYOUB/Request.cpp AYOUB/Response.cpp AYOUB/mime_types.cpp AYOUB/4xx.cpp \
+			AYOUB/5xx.cpp AYOUB/methods.cpp #AYOUB/servClient.cpp
 
 SWIRI_SRC = 
  

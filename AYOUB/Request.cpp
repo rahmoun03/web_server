@@ -21,21 +21,24 @@ Request::Request(std::stringstream &buf, size_t &endOf)
 	std::string key;
 	std::string dst;
 	std::string value;
+	std::string tmp;
 
 	std::getline(buf, dst);
 	size_t i = dst.size() + 1;
-	std::cout <<"space :" << std::count(dst.begin(), dst.end(), ' ') << std::endl;
-	std::cout <<"tab   :" << std::count(dst.begin(), dst.end(), '\t') << std::endl;
+	// std::cout <<"space :" << std::count(dst.begin(), dst.end(), ' ') << std::endl;
+	// std::cout <<"tab   :" << std::count(dst.begin(), dst.end(), '\t') << std::endl;
 
 	if(std::count(dst.begin(), dst.end(), ' ') < 3 && std::count(dst.begin(), dst.end(), '\t') < 3)
 	{
-		std::cout << "correct request : "<< std::endl;
+		// std::cout << "correct request : "<< std::endl;
 		startLineForma = true;
 	}
-	test = "true";
 	startline << dst;
 	startline >> method;
-	startline >> path;
+	startline >> tmp;
+	tmp.rfind('?') ? path = tmp.substr(0, tmp.rfind('?')) : path = tmp;
+	tmp.rfind('?') ? query = tmp.substr(tmp.rfind('?') + 1) : query = "";
+
 	startline >> protocol;
 	
 	while(i < endOf && buf >> key && std::getline(buf, value))
@@ -52,7 +55,7 @@ Request::Request(std::stringstream &buf, size_t &endOf)
 	ra = 0;
 	firstTime = true;
 	replacePercent20(path);
-	std::cout << (startLineForma ? "yes" : "no") << std::endl;
+	// std::cout << (startLineForma ? "yes" : "no") << std::endl;
 }
 
 size_t findEndOfHeaders(char* buffer, ssize_t bufferSize)
@@ -151,6 +154,11 @@ const std::string Request::get_body() const
 std::string &Request::get_path()
 {
 	return path;
+}
+
+std::string &Request::get_query()
+{
+	return query;
 }
 
 const std::string Request::get_method() const

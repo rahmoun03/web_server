@@ -217,7 +217,7 @@ class Conf {
 						throw "PORT NOT FOUND!";
 				}
 				else{
-					if (atof(mp->second.c_str()) < 0 | atof(mp->second.c_str()) > 65535)
+					if ((atof(mp->second.c_str()) < 0) || (atof(mp->second.c_str()) > 65535))
 						throw "PORT OUT OF RANGE!";
 				}
 				if (map.find("host") == map.end() || (map.find("host") != map.end() && map.find("host")->second.empty())){

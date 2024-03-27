@@ -17,8 +17,8 @@ void	Response::GET(int &fd, Request &req, Conf &server)
             Redirect(req.red_path, req, fd);
     else if(directoryExists(req.get_path()))
     {
-        // std::cout << "http://{" << req.get_path() << "} \n";
-        // std::cout << "the URL is a directory \n";
+        std::cout << "http://" << req.get_path() << "\n";
+        std::cout << "the URL is a directory \n";
         serv_dir(fd, req, server);
     }
     else if (fileExists(req.get_path()))
@@ -27,38 +27,47 @@ void	Response::GET(int &fd, Request &req, Conf &server)
         map_iterator it = mime_map.find(extension(req.get_path()));
         if(it != mime_map.end()) 
         {
-            // std::cout << "http://{" << req.get_path() << "} \n";
-            // std::cout << "the URL is a file : " << it->second << std::endl;
-            serv_file(it, fd, req);
+            std::cout << "http://" << req.get_path() << "\n";
+            std::cout << "the URL is a file : " << it->second << std::endl;
+            serv_file(it, fd, req, server);
         }
         else if (extension(req.get_path()) == "php" && server.locat.find(req.locationPath)->second.cgi)
         {
-            serveCgi(req.get_path());
-            std::ifstream ff("./cgi_output.txt");
-            std::stringstream response;
-            response << "HTTP/1.1 411 Length Required\r\n"
-                    << "Content-Type: text/plain\r\n"
-                    << "Connection: close\r\n"
-                    << "Server: chabchoub\r\n"
-                    << "Date: " << getCurrentDateTime() << "\r\n";
-            std::string res = std::string(std::istreambuf_iterator<char>(ff), std::istreambuf_iterator<char>()); 
-            response << "Content-Length: " << res.size() << "\r\n"
-                << "\r\n"
-                << res;
-            std::cout << "response : \n" << response.str() << std::endl;
-            send(fd, response.str().c_str() , response.str().size(), 0);
-            req.connexion = true;
+            std::cout << "http://" << req.get_path() << "\n";
+            std::cout << "the URL is a file : php" << std::endl;
+
+            if(!serveCgi(req))
+            {
+                std::ifstream ff("/tmp/cgi_output.txt");
+                std::stringstream response;
+                response << "HTTP/1.1 200 OK\r\n"
+                        << "Connection: close\r\n"
+                        << "Server: chabchoub\r\n"
+                        << "Date: " << getCurrentDateTime() << "\r\n";
+                std::string res = std::string(std::istreambuf_iterator<char>(ff), std::istreambuf_iterator<char>()); 
+                response << "Content-Length: " << res.size() << "\r\n"
+                        << res;
+                std::cout << "response : \n" << response.str() << std::endl;
+                send(fd, response.str().c_str() , response.str().size(), 0);
+                req.connexion = true;
+            }
+            else
+            {
+                std::cout << "CGI ERROR\n";
+                throw (serverError(server.confCherch("500"), req));
+            }
+            req.firstTime = false;
         }
         else
         {
-            std::cout << "NOT FOUND 404 in MimeTypes"<< std::endl;
-            throw(notFound());
+            std::cout << "NOT FOUND 404 in MimeTypes and cgi "<< std::endl;
+            throw(mediaType(server.confCherch("415"), req));
         }
     }
     else
     {
         std::cout << "NOT FOUND 404"<< std::endl;
-        throw(notFound());
+        throw(notFound(server.confCherch("404"), req));
     }
 }
 
@@ -75,12 +84,7 @@ unsigned long convertHexToDec(std::string hex)
 
 void	Response::POST(int &fd, Request &req, Conf &server)
 {
-
-    (void) fd;
-    (void) req;
-    // netPlix net;
     static int i;
-    (void) server;
     if(req.get_header("Transfer-Encoding:").empty())
     {
         if (req.firstTime)
@@ -105,9 +109,7 @@ void	Response::POST(int &fd, Request &req, Conf &server)
             out.open(path.c_str(), std::ios::binary);
             out.write(str.c_str(), str.size());
             out.flush();
-            req.firstTime = false;
-            std::cout << "++++++++++++++ HERE  +++++++++++++++" << std::endl;
-            
+            req.firstTime = false;            
         }
         else 
         {
@@ -134,7 +136,7 @@ void	Response::POST(int &fd, Request &req, Conf &server)
     else if(req.get_header("Transfer-Encoding:") == "chunked")
     {
         std::string line; 
-        std::cout << "------------BEFRO POST ------------------------------------\n";
+        // std::cout << "------------BEFRO POST ------------------------------------\n";
         if (req.firstTime)
         {
             std::cout << "request path : " << req.get_path() << std::endl;
@@ -226,7 +228,7 @@ int	Response::DELETE(int &fd, Request &req, Conf &server, std::string dpath)
     // exit(0);
 
     if(directoryExists(dpath.c_str()) && path2[dpath.size() - 1 ] != '/')
-        throw COnflict();
+        throw conflict(server.confCherch("409"),req);
     char resolved_path[PATH_MAX];
     std::stringstream ss;
     std::stringstream ss1;
@@ -246,9 +248,9 @@ int	Response::DELETE(int &fd, Request &req, Conf &server, std::string dpath)
     if(str2.find(str1) != 0)
     {
         if(str2.empty())
-            throw (notFound());
+            throw (notFound(server.confCherch("404"),req));
         else
-        throw forbidden();
+        throw forbidden(server.confCherch("403"),req);
 
     }   
     if(directoryExists(str2.c_str()))
@@ -286,12 +288,12 @@ int	Response::DELETE(int &fd, Request &req, Conf &server, std::string dpath)
     {
 
         if (access(str2.c_str(), W_OK) != 0)
-            throw (forbidden());
+            throw (forbidden(server.confCherch("403"),req));
         return remove(str2.c_str());
     }
     else
     {
-        throw (notFound());
+        throw (notFound(server.confCherch("404"), req));
     }
     return 0;
 }

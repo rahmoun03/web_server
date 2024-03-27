@@ -5,6 +5,7 @@
 #include<iostream>
 #include<string.h>
 #include<string>
+#include <stdlib.h>
 #include<dirent.h>
 #include <iostream>
 #include <cstdlib> // For system function
@@ -211,22 +212,26 @@ void	Response::POST(int &fd, Request &req, Conf &server)
     }
 }
 
-bool isPathInside(const std::string& pathA, const std::string& pathB) 
+
+
+int isInside(const std::string& dpath, const std::string& root) 
 {
-    std::string normalizedPathB = pathB;
-    if (!normalizedPathB.empty() && normalizedPathB[normalizedPathB.size() - 1] != '/')
-        normalizedPathB += '/';
-
-    return pathA.compare(0, normalizedPathB.length(), normalizedPathB) == 0;
+    std::string root_ = root;
+    if (root_[root_.length() - 1] != '/' && root_[root_.length() - 1] != '\\') 
+    {
+        root_ += '/';
+    }
+    std::cout << root_ << std::endl;
+    // exit(1);
+    return dpath.find(root_) == 0;
 }
-
 
 
 
 
 int	Response::DELETE(int &fd, Request &req, Conf &server, std::string dpath)
 {
-   std::string root =  server.locat.find(req.locationPath)->second.root;
+    std::string root =  server.locat.find(req.locationPath)->second.root;
     const char* path = root.c_str();
     const char* path2 = dpath.c_str();
 
@@ -239,7 +244,9 @@ int	Response::DELETE(int &fd, Request &req, Conf &server, std::string dpath)
     std::string str2;
     ss >> str1;
     ss1 >> str2;
-    if(!isPathInside(str1, str2))   
+    std::cout << str2 << std::endl;
+    // exit(1);
+    if(str2.find(str1) == 0)   
         throw forbidden();
     if(directoryExists(dpath.c_str()))
     {

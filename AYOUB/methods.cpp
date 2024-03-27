@@ -227,16 +227,18 @@ int	Response::DELETE(int &fd, Request &req, Conf &server, std::string dpath)
     ss1 << realpath(path2, resolved_path);
     std::string str1;
     std::string str2;
-    ss >> str1;
+    ss >> str1 ;
     ss1 >> str2;
-    std::cout << str1 << std::endl;
-    std::cout << str2 << std::endl;
-
-    if(str2.find(str1) != 0)   
-        throw forbidden();
-    if(directoryExists(dpath.c_str()))
+    if(directoryExists(str2.c_str()))
+    str2 += "/";
+    str1 += "/";
+    std::cout << "here1 : "<< str1  << std::endl;
+    std::cout << "here1 : " << str2  <<  std::endl;
+        if(str2.find(str1) != 0)   
+            throw forbidden();
+    if(directoryExists(str2.c_str()))
     {
-        DIR* dir = opendir(dpath.c_str());
+        DIR* dir = opendir(str2.c_str());
         if (dir != NULL) 
         {
             struct dirent* entry;
@@ -245,24 +247,30 @@ int	Response::DELETE(int &fd, Request &req, Conf &server, std::string dpath)
                 std::cout << " ----------   is dir  -----------\n" << entry->d_name <<std::endl;
                 if (strcmp(entry->d_name, ".") != 0 && strcmp(entry->d_name, "..") != 0) 
                 {
-                    std::string filePath = dpath + entry->d_name;
+                    std::string filePath = str2 + entry->d_name;
                     if(directoryExists(filePath.c_str()))
                         filePath += "/";
                     std::cout << "DELETE : " << filePath <<std::endl;
                     DELETE(fd, req, server, filePath);
                 }
             }
-            if(req.get_path() != dpath)
-                rmdir(dpath.c_str());
+            if(req.get_path() != str2)
+            {
+                std::cout << "here" << str2 <<std::endl;
+                if(str2 != server.locat.find(req.locationPath)->second.root)
+                    rmdir(str2.c_str());
+
+            }
             req.connexion = true;
             closedir(dir);
         }
     }
-    else if(fileExists(dpath.c_str()))
+    else if(fileExists(str2.c_str()))
     {
-        if (access(dpath.c_str(), W_OK) != 0)
+
+        if (access(str2.c_str(), W_OK) != 0)
             throw (forbidden());
-        return remove(dpath.c_str());
+        return remove(str2.c_str());
     }
     else
     {

@@ -216,10 +216,17 @@ void	Response::POST(int &fd, Request &req, Conf &server)
 
 int	Response::DELETE(int &fd, Request &req, Conf &server, std::string dpath)
 {
+    std::string tmp_;
     std::string root =  server.locat.find(req.locationPath)->second.root;
     const char* path = root.c_str();
     const char* path2 = dpath.c_str();
+    std::cout << "here1 : " << dpath  <<  std::endl;
+    std::cout << "here1 : " << req.get_path()  <<  std::endl;
 
+    // exit(0);
+
+    if(directoryExists(dpath.c_str()) && path2[dpath.size() - 1 ] != '/')
+        throw COnflict();
     char resolved_path[PATH_MAX];
     std::stringstream ss;
     std::stringstream ss1;
@@ -232,8 +239,10 @@ int	Response::DELETE(int &fd, Request &req, Conf &server, std::string dpath)
     if(directoryExists(str2.c_str()))
         str2 += "/";
     str1 += "/";
-    std::cout << "here1 : "<< str1  << std::endl;
-    std::cout << "here1 : " << str2  <<  std::endl;
+    if(req.get_path() == dpath)
+        tmp_ = str2;
+    // std::cout << "here1 : "<< str1  << std::endl;
+    // std::cout << "here1 : " << str2  <<  std::endl;
     if(str2.find(str1) != 0)
     {
         if(str2.empty())
@@ -262,8 +271,10 @@ int	Response::DELETE(int &fd, Request &req, Conf &server, std::string dpath)
             }
             if(req.get_path() != str2)
             {
-                // std::cout << "here" << server.locat.find(req.locationPath)->second.root <<std::endl;
-                if(str2 != str1)
+                std::cout << "hehe :" << tmp_ <<std::endl;
+                std::cout << "heze :" << str2 <<std::endl;
+
+                if(str2 != str1 && str2 != tmp_)
                     rmdir(str2.c_str());
 
             }

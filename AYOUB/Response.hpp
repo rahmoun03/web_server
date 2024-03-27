@@ -52,6 +52,8 @@ class Response
 			std::string longRequest();//     				414
 			std::string notImplement(); //  				501
 			std::string httpVersion();//    	 			505
+			std::string COnflict(); //						409
+
 		
 			// std::string homepage(); // 200 home
 		/***********************/

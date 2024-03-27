@@ -230,12 +230,18 @@ int	Response::DELETE(int &fd, Request &req, Conf &server, std::string dpath)
     ss >> str1 ;
     ss1 >> str2;
     if(directoryExists(str2.c_str()))
-    str2 += "/";
+        str2 += "/";
     str1 += "/";
     std::cout << "here1 : "<< str1  << std::endl;
     std::cout << "here1 : " << str2  <<  std::endl;
-        if(str2.find(str1) != 0)   
-            throw forbidden();
+    if(str2.find(str1) != 0)
+    {
+        if(str2.empty())
+            throw (notFound());
+        else
+        throw forbidden();
+
+    }   
     if(directoryExists(str2.c_str()))
     {
         DIR* dir = opendir(str2.c_str());
@@ -256,8 +262,8 @@ int	Response::DELETE(int &fd, Request &req, Conf &server, std::string dpath)
             }
             if(req.get_path() != str2)
             {
-                std::cout << "here" << str2 <<std::endl;
-                if(str2 != server.locat.find(req.locationPath)->second.root)
+                // std::cout << "here" << server.locat.find(req.locationPath)->second.root <<std::endl;
+                if(str2 != str1)
                     rmdir(str2.c_str());
 
             }

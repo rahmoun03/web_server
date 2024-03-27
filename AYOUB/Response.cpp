@@ -515,48 +515,57 @@ size_t hexadecimal(const std::string &chunkHeader)
 
 int Response::serveCgi(Request &req)
 {
-    // Set up environment variables
-
-    const char* temp_file = "/tmp/cgi_output.txt"; // Adjust the path as needed
+    const char* temp_file = "./cgi_output.txt";
+    std::string php_path = "/usr/bin/php-cgi";
+    std::string py_path = "/usr/bin/php-cgi";
+    (void)py_path;
     FILE* output_file = fopen(temp_file, "w");
     if (!output_file) {
         std::cerr << "Failed to open temporary file for writing." << std::endl;
         return 1;
     }
 
-    setenv("QUERY_STRING", "name=John&age=30", 1); // Example query string
-    setenv("REQUEST_METHOD", req.get_method().c_str(), 1); // Example request method
+    // setenv("QUERY_STRING", "name=John&age=30", 1); // Example query string
+    // setenv("REQUEST_METHOD", "GET", 1); // Example request method
 
-    // Execute the CGI script
+    std::cout << "---: " <<  extension(req.get_path()) << std::endl;
+    const char* args[3];
+    const char* env[6];
+                env[0] = ("QUERY_STRI;4NG = " + req.get_query()).c_str();
+                env[1] = ("REQUEST_METHOD = " + req.get_method()).c_str();
+                env[3] = "CONTENT_TYPE = \"text/html\"";
+                env[4] = ("SCRIPT_FILENAME = " + req.get_path()).c_str();
+                env[5] = NULL;
+    if (extension(req.get_path()) == "php"){
+        args[0] = php_path.c_str();
+        env[2] = ("SCRIPT_NAME = " + php_path).c_str();
+    }
+    else if (extension(req.get_path()) == "py"){
+        env[2] = ("SCRIPT_NAME = " + py_path).c_str();
+        args[0] = py_path.c_str();
+    }
+    args[1] = req.get_path().c_str();
+    args[2]  = NULL;
     pid_t pid = fork();
-
+    // exit(0);
     if (pid == 0) {
+
         if (freopen(temp_file, "w", stdout) == NULL) 
         {
             std::cerr << "Failed to freopen stdout." << std::endl;
             return 1 ;
         }
-        // Child process
-        const char* script_path = "/usr/bin/php-cgi"; // Path to your CGI script
-        // Prepare the argument list
-        const char* args[] = {script_path, req.get_path().c_str(), NULL};
-        // Prepare the environment variables
-        char* const env[] = {NULL}; // You can specify environment variables here if needed
-        
-        // Execute the CGI script
-        if (execve(script_path, (char* const*)args, env) == -1) 
+        if (execve(args[0], (char* const*)args, (char* const*)env) == -1) 
         {
             std::cerr << "Failed to execute CGI script." << std::endl;
             return 1 ;
         }
     } else if (pid > 0) 
     {
-        // Parent process
-        // Wait for the child to finish
+
         waitpid(pid, NULL, 0);
     } else 
     {
-        // Fork failed
         std::cerr << "Fork failed." << std::endl;
         return 1;
     }

@@ -246,6 +246,11 @@ void Response::checkHeaders(Request &req, Conf &server)
         std::cout << "Transfer-Encoding Not chanked" << std::endl;
         throw(notImplement(server.confCherch("501"), req));
     }
+    if (req.get_method() == "POST" && !head.count("Content-Type:"))
+    {
+        std::cout << "Content-Type Not exist" << std::endl;
+        throw(notImplement(server.confCherch("501"), req));
+    }
     if((req.get_method() != "GET") && (req.get_method() != "POST") && (req.get_method() != "DELETE"))
     {
         std::cout << "requist line not correct "<< (req.startLineForma ? "yes" : "no") << std::endl;

@@ -214,21 +214,6 @@ void	Response::POST(int &fd, Request &req, Conf &server)
 
 
 
-int isInside(const std::string& dpath, const std::string& root) 
-{
-    std::string root_ = root;
-    if (root_[root_.length() - 1] != '/' && root_[root_.length() - 1] != '\\') 
-    {
-        root_ += '/';
-    }
-    std::cout << root_ << std::endl;
-    // exit(1);
-    return dpath.find(root_) == 0;
-}
-
-
-
-
 int	Response::DELETE(int &fd, Request &req, Conf &server, std::string dpath)
 {
     std::string root =  server.locat.find(req.locationPath)->second.root;
@@ -244,9 +229,10 @@ int	Response::DELETE(int &fd, Request &req, Conf &server, std::string dpath)
     std::string str2;
     ss >> str1;
     ss1 >> str2;
+    std::cout << str1 << std::endl;
     std::cout << str2 << std::endl;
-    // exit(1);
-    if(str2.find(str1) == 0)   
+
+    if(str2.find(str1) != 0)   
         throw forbidden();
     if(directoryExists(dpath.c_str()))
     {

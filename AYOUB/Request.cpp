@@ -24,15 +24,14 @@ Request::Request(std::stringstream &buf, size_t &endOf)
 
 	std::getline(buf, dst);
 	size_t i = dst.size() + 1;
-	std::cout <<"space :" << std::count(dst.begin(), dst.end(), ' ') << std::endl;
-	std::cout <<"tab   :" << std::count(dst.begin(), dst.end(), '\t') << std::endl;
+	// std::cout <<"space :" << std::count(dst.begin(), dst.end(), ' ') << std::endl;
+	// std::cout <<"tab   :" << std::count(dst.begin(), dst.end(), '\t') << std::endl;
 
 	if(std::count(dst.begin(), dst.end(), ' ') < 3 && std::count(dst.begin(), dst.end(), '\t') < 3)
 	{
-		std::cout << "correct request : "<< std::endl;
+		// std::cout << "correct request : "<< std::endl;
 		startLineForma = true;
 	}
-	test = "true";
 	startline << dst;
 	startline >> method;
 	startline >> path;
@@ -52,7 +51,7 @@ Request::Request(std::stringstream &buf, size_t &endOf)
 	ra = 0;
 	firstTime = true;
 	replacePercent20(path);
-	std::cout << (startLineForma ? "yes" : "no") << std::endl;
+	// std::cout << (startLineForma ? "yes" : "no") << std::endl;
 }
 
 size_t findEndOfHeaders(char* buffer, ssize_t bufferSize)

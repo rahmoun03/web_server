@@ -16,8 +16,8 @@ void	Response::GET(int &fd, Request &req, Conf &server)
             Redirect(req.red_path, req, fd);
     else if(directoryExists(req.get_path()))
     {
-        // std::cout << "http://{" << req.get_path() << "} \n";
-        // std::cout << "the URL is a directory \n";
+        std::cout << "http://" << req.get_path() << "\n";
+        std::cout << "the URL is a directory \n";
         serv_dir(fd, req, server);
     }
     else if (fileExists(req.get_path()))
@@ -26,23 +26,26 @@ void	Response::GET(int &fd, Request &req, Conf &server)
         map_iterator it = mime_map.find(extension(req.get_path()));
         if(it != mime_map.end()) 
         {
-            // std::cout << "http://{" << req.get_path() << "} \n";
-            // std::cout << "the URL is a file : " << it->second << std::endl;
-            serv_file(it, fd, req);
+            std::cout << "http://" << req.get_path() << "\n";
+            std::cout << "the URL is a file : " << it->second << std::endl;
+            serv_file(it, fd, req, server);
         }
         else if (extension(req.get_path()) == "php" && server.locat.find(req.locationPath)->second.cgi)
         {
+            std::cout << "http://" << req.get_path() << "\n";
+            std::cout << "the URL is a file : php" << std::endl;
+
             if(!serveCgi(req))
             {
-                std::ifstream ff("./cgi_output.txt");
+                std::ifstream ff("/tmp/cgi_output.txt");
                 std::stringstream response;
-                response << "HTTP/1.1 200 Length Required\r\n"
+                response << "HTTP/1.1 200 OK\r\n"
                         << "Connection: close\r\n"
                         << "Server: chabchoub\r\n"
                         << "Date: " << getCurrentDateTime() << "\r\n";
                 std::string res = std::string(std::istreambuf_iterator<char>(ff), std::istreambuf_iterator<char>()); 
                 response << "Content-Length: " << res.size() << "\r\n"
-                    << res;
+                        << res;
                 std::cout << "response : \n" << response.str() << std::endl;
                 send(fd, response.str().c_str() , response.str().size(), 0);
                 req.connexion = true;
@@ -50,19 +53,22 @@ void	Response::GET(int &fd, Request &req, Conf &server)
             else
             {
                 std::cout << "CGI ERROR\n";
-                throw (notFound());
+                throw (notFound(server.confCherch("404")));
             }
+            req.firstTime = false;
         }
+
+        
         else
         {
-            std::cout << "NOT FOUND 404 in MimeTypes"<< std::endl;
-            throw(notFound());
+            std::cout << "NOT FOUND 404 in MimeTypes and cgi "<< std::endl;
+            throw(notFound(server.confCherch("404")));
         }
     }
     else
     {
         std::cout << "NOT FOUND 404"<< std::endl;
-        throw(notFound());
+        throw(notFound(server.confCherch("404")));
     }
 }
 
@@ -244,7 +250,7 @@ int	Response::DELETE(int &fd, Request &req, Conf &server, std::string dpath)
     }
     else
     {
-        throw (notFound());
+        throw (notFound(server.confCherch("404")));
     }
     return 0;
 }

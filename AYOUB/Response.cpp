@@ -155,7 +155,7 @@ void Response::generateResponse(int &fd, Request &req, Conf &server)
 //     return 0;
 // }
 
-void Response::serv_file(map_iterator &type, int &fd, Request &req)
+void Response::serv_file(map_iterator &type, int &fd, Request &req, Conf &server)
 {
 
     if (req.firstTime)
@@ -166,7 +166,7 @@ void Response::serv_file(map_iterator &type, int &fd, Request &req)
         {
             std::cout << " <  ---------- Error file --------->\n"
                       << std::endl;
-            throw(notFound());
+            throw(notFound(server.confCherch("404")));
         }
         std::ifstream ff(req.get_path().c_str(), std::ios::binary);
 
@@ -186,8 +186,8 @@ void Response::serv_file(map_iterator &type, int &fd, Request &req)
                  << "Date: " << getCurrentDateTime() << "\r\n"
                  << "\r\n";
 
-        // std::cout << BLUE << "respone : \n"
-        //           << YOLLOW << response.str() << std::endl;
+        std::cout << BLUE << "respone : \n"
+                  << YOLLOW << response.str() << std::endl;
         std::cout << YOLLOW << "send response to client" << DEF << std::endl;
         send(fd, response.str().c_str(), response.str().size(), 0);
         req.firstTime = false;
@@ -196,7 +196,7 @@ void Response::serv_file(map_iterator &type, int &fd, Request &req)
     {
         // std::cout << "second time" << std::endl;
         std::string content = getResource(file, req);
-        // std::cout << RAN << content << DEF << std::endl;
+        std::cout << RAN << content << DEF << std::endl;
         std::cout << YOLLOW << "send response to client " << DEF << std::endl;
         send(fd, content.c_str(), content.size(), 0);
         // req.connexion = true;
@@ -207,7 +207,7 @@ void Response::serv_dir(int &fd, Request &req, Conf &server)
 {
     std::string _path = (req.get_path());
     if (_path == SERVER_ROOT)
-        throw(badRequest());
+        throw(badRequest(server.confCherch("400")));
 
     else
     {
@@ -246,12 +246,40 @@ void Response::serv_dir(int &fd, Request &req, Conf &server)
                 if (it != mime_map.end() && fileExists(_path))
                 {
                     req.get_path() = _path;
-                    serv_file(it, fd, req);
+                    serv_file(it, fd, req, server);
+                }
+                else if (extension(_path) == "php" && server.locat.find(req.locationPath)->second.cgi)
+                {
+                    std::cout << "http://" << _path << "\n";
+                    std::cout << "the URL is a file : php" << std::endl;
+
+                    req.get_path() = _path;
+                    if(!serveCgi(req))
+                    {
+                        std::ifstream ff("/tmp/cgi_output.txt");
+                        std::stringstream response;
+                        response << "HTTP/1.1 200 OK\r\n"
+                                << "Connection: close\r\n"
+                                << "Server: chabchoub\r\n"
+                                << "Date: " << getCurrentDateTime() << "\r\n";
+                        std::string res = std::string(std::istreambuf_iterator<char>(ff), std::istreambuf_iterator<char>()); 
+                        response << "Content-Length: " << res.size() << "\r\n"
+                                << res;
+                        std::cout << "response : \n" << response.str() << std::endl;
+                        send(fd, response.str().c_str() , response.str().size(), 0);
+                        req.connexion = true;
+                    }
+                    else
+                    {
+                        std::cout << "CGI ERROR\n";
+                        throw (notFound(server.confCherch("404")));
+                    }
+                
                 }
                 else
                 {
                     std::cout << "this if forbidden folder" << std::endl;
-                    throw(forbidden());
+                    throw(forbidden(server.confCherch("404")));
                 }
             }
         }
@@ -259,9 +287,9 @@ void Response::serv_dir(int &fd, Request &req, Conf &server)
         {
             std::string location = (_path.substr(req.root_end)) + "/";
 
-            // std::cout << "make a redirection URL " << std::endl;
-            // std::cout << "from this : " << _path.substr(req.root_end) << std::endl;
-            // std::cout << "to   this : " << location << std::endl;
+            std::cout << "make a redirection URL " << std::endl;
+            std::cout << "from this : " << _path.substr(req.root_end) << std::endl;
+            std::cout << "to   this : " << location << std::endl;
 
             Redirect(location, req, fd);
         }
@@ -276,23 +304,23 @@ void Response::checkHeaders(Request &req, Conf &server)
     if (head.count("Transfer-Encoding:") && req.get_header("Transfer-Encoding:") != "chunked")
     {
         std::cout << "Transfer-Encoding Not chanked" << std::endl;
-        throw(notImplement());
+        throw(notImplement(server.confCherch("501")));
     }
     if((req.get_method() != "GET") && (req.get_method() != "POST") && (req.get_method() != "DELETE"))
     {
         std::cout << "requist line not correct "<< (req.startLineForma ? "yes" : "no") << std::endl;
-        throw (badRequest());
+        throw (badRequest(server.confCherch("400")));
     }
     if(req.get_method().empty() || req.get_path().empty())
     {
         std::cout << "requist line not correct "<< (req.startLineForma ? "yes" : "no") << std::endl;
-        throw(badRequest());
+        throw(badRequest(server.confCherch("")));
     }
     if((req.get_method() == "GET" && !(server.locat.find(req.locationPath)->second.get))
         || (req.get_method() == "DELETE" && !(server.locat.find(req.locationPath)->second.delet))
          || (req.get_method() == "POST" && !(server.locat.find(req.locationPath)->second.post)))
     {
-        throw (notAllow(req.get_method()));
+        throw (notAllow(req.get_method(), server.confCherch("405")));
     }
     if (req.get_method() == "POST" && !head.count("Transfer-Encoding:") && !head.count("Content-Length:"))
     {
@@ -302,27 +330,27 @@ void Response::checkHeaders(Request &req, Conf &server)
     if ((req.get_method() == "GET") && (!req.get_body().empty() || head.count("Content-Length:")))
     {
         std::cout << "find Content-Lenght or Body" << std::endl;
-        throw(badRequest());
+        throw(badRequest(server.confCherch("400")));
     }
     if (head.count("Transfer-Encoding:") && head.count("Content-Length:"))
     {
         std::cout << "find TE and CL together" << std::endl;
-        throw(badRequest());
+        throw(badRequest(server.confCherch("400")));
     }
     if (req.get_protocol().empty() || req.get_protocol() != "HTTP/1.1")
     {
         std::cout << "protocol is : " << req.get_protocol() << std::endl;
-        throw(httpVersion());
+        throw(httpVersion(server.confCherch("505")));
     }
     if (req.body_limit < std::atol(req.get_header("Content-Length:").c_str()))
     {
         std::cout << "Entity too large : " << req.body_limit << " < " << std::atol(req.get_header("Content-Length:").c_str()) << std::endl;
-        throw(EntityTooLarge());
+        throw(EntityTooLarge(server.confCherch("413")));
     }
     if (req.get_path().size() > 2048)
     {
         std::cout << "long URI" << std::endl;
-        throw(longRequest());
+        throw(longRequest(server.confCherch("414")));
     }
 }
 
@@ -375,30 +403,7 @@ std::string Response::extension(const std::string &path)
 }
 
 // TODO <=====================              Error pages                 ================================>
-// std::string Response::homepage()
-// {
-//     std::ifstream fi((SERVER_ROOT + std::string("/index.html")).c_str());
-//     if (!fi.is_open())
-//     {
-//         std::cerr << RED << "failure in home page" << std::endl;
-//         throw(notFound());
-//     }
-//     std::cout << "the file is excite \n"
-//               << std::endl;
-//     std::string buffer((std::istreambuf_iterator<char>(fi)), std::istreambuf_iterator<char>());
-//     std::stringstream response;
-//     response << "HTTP/1.1 200 OK\r\n"
-//              << "Content-Type: text/html\r\n"
-//              << "Connection: close\rEncoding\n"
-//              << "Server: "
-//              << "chabchoub"
-//              << "\r\n"
-//              << "Date: " << getCurrentDateTime() << "\r\n"
-//              << "Content-Length: " << buffer.size() << "\r\n"
-//              << "\r\n"
-//              << buffer.c_str();
-//     return response.str();
-// }
+
 // TODO /===================================================================================================/
 
 void Response::clear()
@@ -441,9 +446,11 @@ std::string listDirectory(const char *path)
              << "} *{box-sizing : border-box;}"
              << "    body {"
              << "        display: flex;"
+             << "        font-family: Arial, sans-serif;"
              << "        justify-content: center;"
              << "        align-items: center;"
              << "        height: 100vh;"
+             << "        background-color: #f5f5f5;"
              << "    }"
              << "    .main-content {"
              << "        border-radius: 50px;"
@@ -569,7 +576,7 @@ int Response::serveCgi(Request &req)
 {
     // Set up environment variables
 
-    const char* temp_file = "./cgi_output.txt"; // Adjust the path as needed
+    const char* temp_file = "/tmp/cgi_output.txt"; // Adjust the path as needed
     FILE* output_file = fopen(temp_file, "w");
     if (!output_file) {
         std::cerr << "Failed to open temporary file for writing." << std::endl;
@@ -577,7 +584,7 @@ int Response::serveCgi(Request &req)
     }
 
     setenv("QUERY_STRING", "name=John&age=30", 1); // Example query string
-    setenv("REQUEST_METHOD", "GET", 1); // Example request method
+    setenv("REQUEST_METHOD", req.get_method().c_str(), 1); // Example request method
 
     // Execute the CGI script
     pid_t pid = fork();

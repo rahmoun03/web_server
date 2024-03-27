@@ -42,23 +42,23 @@ class Response
 		
 		/*   -       4XX        -      */
 		
-			std::string badRequest(std::string path);//      				400
-			std::string forbidden(std::string path);//       				403
+			std::string badRequest(std::string path, Request &req);//      				400
+			std::string forbidden(std::string path, Request &req);//       				403
 			std::string notFound(std::string path, Request &req); //      	 			404
-			std::string notAllow(std::string method, std::string path); // 	405
-			std::string timeOut(std::string path);//						408
-			std::string lengthRequired(std::string path);// 				411	
-			std::string EntityTooLarge(std::string path); // 				413
-			std::string longRequest(std::string path);//     				414
-			std::string mediaType(std::string path);//						415
-			std::string headerTooLarge(std::string path); // 				431
+			std::string notAllow(std::string method, std::string path, Request &req); // 	405
+			std::string timeOut(std::string path, Request &req);//						408
+			std::string lengthRequired(std::string path, Request &req);// 				411	
+			std::string EntityTooLarge(std::string path, Request &req); // 				413
+			std::string longRequest(std::string path, Request &req);//     				414
+			std::string mediaType(std::string path, Request &req);//						415
+			std::string headerTooLarge(std::string path, Request &req); // 				431
 
 		
 		
 		/*            5XX               */
-			std::string serverError(std::string path);// 					500
-			std::string notImplement(std::string path); //  				501
-			std::string httpVersion(std::string path);//    	 			505
+			std::string serverError(std::string path, Request &req);// 					500
+			std::string notImplement(std::string path, Request &req); //  				501
+			std::string httpVersion(std::string path, Request &req);//    	 			505
 
 			// std::string homepage(); // 200 home
 		/***********************/

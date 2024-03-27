@@ -35,7 +35,7 @@ void Response::generateResponse(int &fd, Request &req, Conf &server)
         if (server.locat.find(req.locationPath) != server.locat.end() && !(server.locat.find(req.locationPath)->second.upload.empty()))
         {
             // std::cout << RED << "POST METHOD, upload path : " << DEF
-                    //   << server.locat.find(req.get_path())->second.upload << std::endl;
+                    //   << server.locat.find(req.get_path())->second.upload << std::endl; 
             POST(fd, req, server);
         }
         else
@@ -47,19 +47,6 @@ void Response::generateResponse(int &fd, Request &req, Conf &server)
 
     else if (req.get_method() == "DELETE")
     {
-        // std::map<std::string, std::string> map = ErrorAssets();
-        // map_iterator it = map.find(req.get_path());
-        // if(req.firstTime)
-        // {
-
-        //     // std::cout << "old URL : " << req.get_path() << std::endl;
-        //     if(it != map.end())
-        //         req.get_path() = it->second;
-        //     else
-        //         req.get_path() = (SERVER_ROOT + req.get_path());
-        //     // std::cout << "new URL : " << req.get_path() << std::endl;
-        // }
-        // std::cout << RED << "DELETE METHOD" << DEF << std::endl;
         int d = DELETE(fd, req, server, req.get_path());
         if(d == 1)
         {
@@ -108,52 +95,6 @@ void Response::generateResponse(int &fd, Request &req, Conf &server)
         std::cout << RED << "UNKOWN METHOD" << DEF << std::endl;
     }
 }
-
-// int serveCgi(Request &req)
-// {
-//     // Set up environment variables
-
-//     const char* temp_file = "./cgi_output.txt"; // Adjust the path as needed
-//     FILE* output_file = fopen(temp_file, "w");
-//     if (!output_file) {
-//         std::cerr << "Failed to open temporary file for writing." << std::endl;
-//         return 1;
-//     }
-//     setenv("QUERY_STRING", "name=John&age=30", 1); // Example query string
-//     setenv("REQUEST_METHOD", "GET", 1); // Example request method
-
-//     // Execute the CGI script
-//     pid_t pid = fork();
-
-//     if (pid == 0) {
-//         if (freopen(temp_file, "w", stdout) == NULL) {
-//             std::cerr << "Failed to freopen stdout." << std::endl;
-//             return 1;
-//         }
-//         // Child process
-//         const char* script_path = "/usr/bin/php-cgi"; // Path to your CGI script
-//         // Prepare the argument list
-//         const char* args[] = {script_path, "index.php", NULL};
-//         // Prepare the environment variables
-//         char* const env[] = {NULL}; // You can specify environment variables here if needed
-        
-//         // Execute the CGI script
-//         if (execve(script_path, (char* const*)args, env) == -1) {
-//             std::cerr << "Failed to execute CGI script." << std::endl;
-//             return 1;
-//         }
-//     } else if (pid > 0) {
-//         // Parent process
-//         // Wait for the child to finish
-//         waitpid(pid, NULL, 0);
-//     } else {
-//         // Fork failed
-//         std::cerr << "Fork failed." << std::endl;
-//         return 1;
-//     }
-
-//     return 0;
-// }
 
 void Response::serv_file(map_iterator &type, int &fd, Request &req, Conf &server)
 {
@@ -207,7 +148,7 @@ void Response::serv_dir(int &fd, Request &req, Conf &server)
 {
     std::string _path = (req.get_path());
     if (_path == SERVER_ROOT)
-        throw(badRequest(server.confCherch("400")));
+        throw(badRequest(server.confCherch("400"), req));
 
     else
     {
@@ -279,7 +220,7 @@ void Response::serv_dir(int &fd, Request &req, Conf &server)
                 else
                 {
                     std::cout << "this if forbidden folder" << std::endl;
-                    throw(forbidden(server.confCherch("404")));
+                    throw(forbidden(server.confCherch("404"), req));
                 }
             }
         }
@@ -304,53 +245,53 @@ void Response::checkHeaders(Request &req, Conf &server)
     if (head.count("Transfer-Encoding:") && req.get_header("Transfer-Encoding:") != "chunked")
     {
         std::cout << "Transfer-Encoding Not chanked" << std::endl;
-        throw(notImplement(server.confCherch("501")));
+        throw(notImplement(server.confCherch("501"), req));
     }
     if((req.get_method() != "GET") && (req.get_method() != "POST") && (req.get_method() != "DELETE"))
     {
         std::cout << "requist line not correct "<< (req.startLineForma ? "yes" : "no") << std::endl;
-        throw (badRequest(server.confCherch("400")));
+        throw (badRequest(server.confCherch("400"), req));
     }
     if(req.get_method().empty() || req.get_path().empty())
     {
         std::cout << "requist line not correct "<< (req.startLineForma ? "yes" : "no") << std::endl;
-        throw(badRequest(server.confCherch("")));
+        throw(badRequest(server.confCherch("400"), req));
     }
     if((req.get_method() == "GET" && !(server.locat.find(req.locationPath)->second.get))
         || (req.get_method() == "DELETE" && !(server.locat.find(req.locationPath)->second.delet))
          || (req.get_method() == "POST" && !(server.locat.find(req.locationPath)->second.post)))
     {
-        throw (notAllow(req.get_method(), server.confCherch("405")));
+        throw (notAllow(req.get_method(), server.confCherch("405"), req));
     }
     if (req.get_method() == "POST" && !head.count("Transfer-Encoding:") && !head.count("Content-Length:"))
     {
         std::cout << "TE and CL Not exist" << std::endl;
-        throw(lengthRequired(server.confCherch("411")));
+        throw(lengthRequired(server.confCherch("411"), req));
     }
     if ((req.get_method() == "GET") && (!req.get_body().empty() || head.count("Content-Length:")))
     {
         std::cout << "find Content-Lenght or Body" << std::endl;
-        throw(badRequest(server.confCherch("400")));
+        throw(badRequest(server.confCherch("400"), req));
     }
     if (head.count("Transfer-Encoding:") && head.count("Content-Length:"))
     {
         std::cout << "find TE and CL together" << std::endl;
-        throw(badRequest(server.confCherch("400")));
+        throw(badRequest(server.confCherch("400"), req));
     }
     if (req.get_protocol().empty() || req.get_protocol() != "HTTP/1.1")
     {
         std::cout << "protocol is : " << req.get_protocol() << std::endl;
-        throw(httpVersion(server.confCherch("505")));
+        throw(httpVersion(server.confCherch("505"), req));
     }
     if (req.body_limit < std::atol(req.get_header("Content-Length:").c_str()))
     {
         std::cout << "Entity too large : " << req.body_limit << " < " << std::atol(req.get_header("Content-Length:").c_str()) << std::endl;
-        throw(EntityTooLarge(server.confCherch("413")));
+        throw(EntityTooLarge(server.confCherch("413"), req));
     }
     if (req.get_path().size() > 2048)
     {
         std::cout << "long URI" << std::endl;
-        throw(longRequest(server.confCherch("414")));
+        throw(longRequest(server.confCherch("414"), req));
     }
 }
 

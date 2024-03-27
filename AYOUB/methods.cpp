@@ -53,7 +53,7 @@ void	Response::GET(int &fd, Request &req, Conf &server)
             else
             {
                 std::cout << "CGI ERROR\n";
-                throw (notFound(server.confCherch("404")));
+                throw (notFound(server.confCherch("404"), req));
             }
             req.firstTime = false;
         }
@@ -62,13 +62,13 @@ void	Response::GET(int &fd, Request &req, Conf &server)
         else
         {
             std::cout << "NOT FOUND 404 in MimeTypes and cgi "<< std::endl;
-            throw(notFound(server.confCherch("404")));
+            throw(notFound(server.confCherch("404"), req));
         }
     }
     else
     {
         std::cout << "NOT FOUND 404"<< std::endl;
-        throw(notFound(server.confCherch("404")));
+        throw(notFound(server.confCherch("404"), req));
     }
 }
 
@@ -250,7 +250,7 @@ int	Response::DELETE(int &fd, Request &req, Conf &server, std::string dpath)
     }
     else
     {
-        throw (notFound(server.confCherch("404")));
+        throw (notFound(server.confCherch("404"), req));
     }
     return 0;
 }

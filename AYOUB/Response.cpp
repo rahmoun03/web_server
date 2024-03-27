@@ -166,7 +166,7 @@ void Response::serv_file(map_iterator &type, int &fd, Request &req, Conf &server
         {
             std::cout << " <  ---------- Error file --------->\n"
                       << std::endl;
-            throw(notFound(server.confCherch("404")));
+            throw(notFound(server.confCherch("404"), req));
         }
         std::ifstream ff(req.get_path().c_str(), std::ios::binary);
 
@@ -272,7 +272,7 @@ void Response::serv_dir(int &fd, Request &req, Conf &server)
                     else
                     {
                         std::cout << "CGI ERROR\n";
-                        throw (notFound(server.confCherch("404")));
+                        throw (notFound(server.confCherch("404"), req));
                     }
                 
                 }

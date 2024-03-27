@@ -226,7 +226,21 @@ bool isPathInside(const std::string& pathA, const std::string& pathB)
 
 int	Response::DELETE(int &fd, Request &req, Conf &server, std::string dpath)
 {
-    std::string root = server.locat.find(req.locationPath)->second.root;
+   std::string root =  server.locat.find(req.locationPath)->second.root;
+    const char* path = root.c_str();
+    const char* path2 = dpath.c_str();
+
+    char resolved_path[PATH_MAX];
+    std::stringstream ss;
+    std::stringstream ss1;
+    ss  << realpath(path, resolved_path);
+    ss1 << realpath(path2, resolved_path);
+    std::string str1;
+    std::string str2;
+    ss >> str1;
+    ss1 >> str2;
+    if(!isPathInside(str1, str2))   
+        throw forbidden();
     if(directoryExists(dpath.c_str()))
     {
         DIR* dir = opendir(dpath.c_str());

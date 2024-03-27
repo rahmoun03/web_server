@@ -30,7 +30,7 @@ void	Response::GET(int &fd, Request &req, Conf &server)
             std::cout << "the URL is a file : " << it->second << std::endl;
             serv_file(it, fd, req, server);
         }
-        else if (extension(req.get_path()) == "php" && server.locat.find(req.locationPath)->second.cgi)
+        else if (server.locat.find(req.locationPath)->second.cgi)
         {
             std::cout << "http://" << req.get_path() << "\n";
             std::cout << "the URL is a file : php" << std::endl;

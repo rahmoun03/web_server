@@ -531,15 +531,16 @@ int Response::serveCgi(Request &req)
 
     // setenv("QUERY_STRING", "name=John&age=30", 1); // Example query string
     // setenv("REQUEST_METHOD", "GET", 1); // Example request method
-
+    std::cout << "query : " << req.get_query().c_str() << std::endl;
     std::cout << "---: " <<  extension(req.get_path()) << std::endl;
     const char* args[3];
     const char* env[6];
-                env[0] = ("QUERY_STRI;4NG = " + req.get_query()).c_str();
-                env[1] = ("REQUEST_METHOD = " + req.get_method()).c_str();
-                env[3] = "CONTENT_TYPE = \"text/html\"";
-                env[4] = ("SCRIPT_FILENAME = " + req.get_path()).c_str();
+                env[0] = "QUERY_STRING=";
+                env[1] = ("REQUEST_METHOD=" + req.get_method()).c_str();
+                env[3] = "CONTENT_TYPE=\"text/html\"";
+                env[4] = ("SCRIPT_FILENAME=" + req.get_path()).c_str();
                 env[5] = NULL;
+                strcpy(env[0], + req.get_query().c_str())
     if (extension(req.get_path()) == "php"){
         args[0] = php_path.c_str();
         env[2] = ("SCRIPT_NAME = " + php_path).c_str();

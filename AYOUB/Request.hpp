@@ -77,6 +77,7 @@ class Request
 
 		void clear();
 		Request(std::stringstream &buf, size_t &endOf);
+		void pars();
 		std::string &get_path();
 		std::string &get_query();
 		const std::string get_method() const;

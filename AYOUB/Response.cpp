@@ -529,9 +529,8 @@ int Response::serveCgi(Request &req,int &fd)
         std::cerr << "Failed to open temporary file for writing." << std::endl;
         return 1;
     }
-    std::cout << "---: " <<  extension(req.get_path()) << std::endl;
     const char* args[3];
-    char** env = new char*[6];
+    char** env = new char*[7];
                 env[0] = new char [("QUERY_STRING=" + req.get_query()).size() + 1];
                 strcpy((char *)env[0],("QUERY_STRING=" + req.get_query()).c_str());
                 env[1] = new char [("REQUEST_METHOD=" + req.get_method()).size() + 1];
@@ -540,7 +539,9 @@ int Response::serveCgi(Request &req,int &fd)
                 strcpy((char *)env[3],("CONTENT_TYPE=\"text/html\""));
                 env[4] = new char [("SCRIPT_FILENAME=" + req.get_path()).size() + 1];
                 strcpy((char *)env[4],("SCRIPT_FILENAME=" + req.get_path()).c_str());
-                env[5] = NULL;
+                env[5] = new char[21];
+                strcpy(env[5], "REDIRECT_STATUS=200");
+                env[6] = NULL;
     if (extension(req.get_path()) == "php"){
         args[0] = new char [php_path.size() + 1];
         args[0] = php_path.c_str();

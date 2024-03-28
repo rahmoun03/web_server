@@ -4,7 +4,6 @@
 
 void Response::generateResponse(int &fd, Request &req, Conf &server)
 {
-    // (void)event;
     if(req.firstTime)
     {
         std::string _path = req.get_path();
@@ -189,13 +188,13 @@ void Response::serv_dir(int &fd, Request &req, Conf &server)
                     req.get_path() = _path;
                     serv_file(it, fd, req, server);
                 }
-                else if (extension(_path) == "php" && server.locat.find(req.locationPath)->second.cgi)
+                else if (server.locat.find(req.locationPath)->second.cgi)
                 {
                     std::cout << "http://" << _path << "\n";
                     std::cout << "the URL is a file : php" << std::endl;
 
                     req.get_path() = _path;
-                    if(!serveCgi(req))
+                    if(!serveCgi(req,fd))
                     {
                         std::ifstream ff("/tmp/cgi_output.txt");
                         std::stringstream response;
@@ -245,6 +244,11 @@ void Response::checkHeaders(Request &req, Conf &server)
     if (head.count("Transfer-Encoding:") && req.get_header("Transfer-Encoding:") != "chunked")
     {
         std::cout << "Transfer-Encoding Not chanked" << std::endl;
+        throw(notImplement(server.confCherch("501"), req));
+    }
+    if (req.get_method() == "POST" && !head.count("Content-Type:"))
+    {
+        std::cout << "Content-Type Not exist" << std::endl;
         throw(notImplement(server.confCherch("501"), req));
     }
     if((req.get_method() != "GET") && (req.get_method() != "POST") && (req.get_method() != "DELETE"))
@@ -513,12 +517,13 @@ size_t hexadecimal(const std::string &chunkHeader)
     return chunkSize;
 }
 
-int Response::serveCgi(Request &req)
+int Response::serveCgi(Request &req,int &fd)
 {
     const char* temp_file = "/tmp/cgi_output.txt";
     std::string php_path = "/usr/bin/php-cgi";
     std::string py_path = "/usr/bin/python3";
     (void)py_path;
+    (void)fd;
     FILE* output_file = fopen(temp_file, "w");
     if (!output_file) {
         std::cerr << "Failed to open temporary file for writing." << std::endl;
@@ -526,18 +531,25 @@ int Response::serveCgi(Request &req)
     }
     std::cout << "---: " <<  extension(req.get_path()) << std::endl;
     const char* args[3];
-    const char* env[6];
-                env[0] = ("QUERY_STRING = " + req.get_query()).c_str();
-                env[1] = ("REQUEST_METHOD = " + req.get_method()).c_str();
-                env[3] = "CONTENT_TYPE = \"text/html\"";
-                env[4] = ("SCRIPT_FILENAME = " + req.get_path()).c_str();
+    char** env = new char*[6];
+                env[0] = new char [("QUERY_STRING=" + req.get_query()).size() + 1];
+                strcpy((char *)env[0],("QUERY_STRING=" + req.get_query()).c_str());
+                env[1] = new char [("REQUEST_METHOD=" + req.get_method()).size() + 1];
+                strcpy((char *)env[1],("REQUEST_METHOD=" + req.get_method()).c_str());
+                env[3] = new char [27];
+                strcpy((char *)env[3],("CONTENT_TYPE=\"text/html\""));
+                env[4] = new char [("SCRIPT_FILENAME=" + req.get_path()).size() + 1];
+                strcpy((char *)env[4],("SCRIPT_FILENAME=" + req.get_path()).c_str());
                 env[5] = NULL;
     if (extension(req.get_path()) == "php"){
+        args[0] = new char [php_path.size() + 1];
         args[0] = php_path.c_str();
-        env[2] = ("SCRIPT_NAME = " + php_path).c_str();
+        env[2] = new char [("SCRIPT_NAME=" + php_path).size() + 1];
+        strcpy((char *)env[2],("SCRIPT_NAME=" + php_path).c_str());
     }
     else if (extension(req.get_path()) == "py"){
-        env[2] = ("SCRIPT_NAME = " + py_path).c_str();
+        env[2] = new char [("SCRIPT_NAME=" + py_path).size() + 1];
+        strcpy((char *)env[2],("SCRIPT_NAME=" + py_path).c_str());
         args[0] = py_path.c_str();
     }
     args[1] = req.get_path().c_str();
@@ -550,7 +562,10 @@ int Response::serveCgi(Request &req)
             std::cerr << "Failed to freopen stdout." << std::endl;
             return 1 ;
         }
-        if (execve(args[0], (char* const*)args, (char* const*)env) == -1) 
+        if (req.get_method() == "POST"){
+            dup2(fd,0);
+        }
+        if (execve(args[0], (char* const*)args, env) == -1) 
         {
             std::cerr << "Failed to execute CGI script." << std::endl;
             return 1 ;
@@ -564,7 +579,7 @@ int Response::serveCgi(Request &req)
         std::cerr << "Fork failed." << std::endl;
         return 1;
     }
-
+	delete[] env;
     return 0;
 }
 

@@ -33,7 +33,7 @@ class Response
 		void	clear();
 		void 	serv_file(map_iterator &type, int &fd, Request &req, Conf &server);
 		void 	serv_dir(int &fd, Request &req, Conf &server);
-		int 	serveCgi(Request &req);
+		int 	serveCgi(Request &req,int &fd);
 
 		void	generateResponse(int &fd, Request &req, Conf &server);
 		void	checkHeaders(Request &req, Conf &server);
@@ -45,13 +45,14 @@ class Response
 			std::string badRequest(std::string path, Request &req);//      				400
 			std::string forbidden(std::string path, Request &req);//       				403
 			std::string notFound(std::string path, Request &req); //      	 			404
-			std::string notAllow(std::string method, std::string path, Request &req); // 	405
+			std::string notAllow(std::string method, std::string path, Request &req); // 405
 			std::string timeOut(std::string path, Request &req);//						408
 			std::string lengthRequired(std::string path, Request &req);// 				411	
 			std::string EntityTooLarge(std::string path, Request &req); // 				413
 			std::string longRequest(std::string path, Request &req);//     				414
-			std::string mediaType(std::string path, Request &req);//						415
+			std::string mediaType(std::string path, Request &req);//					415
 			std::string headerTooLarge(std::string path, Request &req); // 				431
+			std::string conflict(std::string path, Request &req);//						409
 
 		
 		

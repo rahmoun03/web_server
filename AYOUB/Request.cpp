@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Request.cpp                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: himejjad <himejjad@student.42.fr>          +#+  +:+       +#+        */
+/*   By: ahbajaou <ahbajaou@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/17 11:26:36 by arahmoun          #+#    #+#             */
-/*   Updated: 2024/03/17 22:03:40 by himejjad         ###   ########.fr       */
+/*   Updated: 2024/03/28 01:11:09 by ahbajaou         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,6 +14,13 @@
 
 Request::Request(/* args */)
 {
+}
+void 	Request::pars()
+{
+	std::string tmp(path);
+	
+	tmp.rfind('?') != std::string::npos ? path = tmp.substr(0, tmp.rfind('?')) : path = tmp;
+	tmp.rfind('?') != std::string::npos ? query = tmp.substr(tmp.rfind('?') + 1) : query = "";
 }
 
 Request::Request(std::stringstream &buf, size_t &endOf)
@@ -35,9 +42,8 @@ Request::Request(std::stringstream &buf, size_t &endOf)
 	}
 	startline << dst;
 	startline >> method;
-	startline >> tmp;
-	tmp.rfind('?') ? path = tmp.substr(0, tmp.rfind('?')) : path = tmp;
-	tmp.rfind('?') ? query = tmp.substr(tmp.rfind('?') + 1) : query = "";
+	startline >> path;
+
 
 	startline >> protocol;
 	

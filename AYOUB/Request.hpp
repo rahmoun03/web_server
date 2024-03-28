@@ -6,7 +6,7 @@
 /*   By: ahbajaou <ahbajaou@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/17 09:53:30 by arahmoun          #+#    #+#             */
-/*   Updated: 2024/03/21 03:21:54 by ahbajaou         ###   ########.fr       */
+/*   Updated: 2024/03/28 01:09:48 by ahbajaou         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -77,6 +77,7 @@ class Request
 
 		void clear();
 		Request(std::stringstream &buf, size_t &endOf);
+		void pars();
 		std::string &get_path();
 		std::string &get_query();
 		const std::string get_method() const;

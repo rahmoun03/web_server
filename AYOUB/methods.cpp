@@ -123,19 +123,28 @@ void	Response::POST(int &fd, Request &req, Conf &server)
         }
         if(req.ra >= (size_t )atof(req.get_header("Content-Length:").c_str()))
         {
-            if (!serveCgi(req,fd)){
-                std::ifstream ff("/tmp/cgi_output.txt");
-                std::stringstream response;
-                response << "HTTP/1.1 200 OK\r\n"
-                        << "Connection: close\r\n"
-                        << "Server: chabchoub\r\n"
-                        << "Date: " << getCurrentDateTime() << "\r\n";
-                std::string res = std::string(std::istreambuf_iterator<char>(ff), std::istreambuf_iterator<char>()); 
-                response << "Content-Length: " << res.size() << "\r\n"
-                        << res;
-                std::cout << response.str() << std::endl;
-                send(fd, response.str().c_str() , response.str().size(), 0);
-                req.connexion = true;
+            if (server.locat.find(req.locationPath)->second.cgi){
+                std::ifstream ff(path.c_str());
+                req.query = std::string(std::istreambuf_iterator<char>(ff), std::istreambuf_iterator<char>()); 
+                if(!serveCgi(req,fd))
+                {
+                    std::ifstream ff("/tmp/cgi_output.txt");
+                    std::stringstream response;
+                    response << "HTTP/1.1 200 OK\r\n"
+                            << "Date: " << getCurrentDateTime() << "\r\n";
+                    std::string res = std::string(std::istreambuf_iterator<char>(ff), std::istreambuf_iterator<char>()); 
+                    response << "Content-Length: " << res.size() << "\r\n"
+                            << res;
+                    std::cout << "response : \n" << response.str() << std::endl;
+                    send(fd, response.str().c_str() , response.str().size(), 0);
+                    req.connexion = true;
+                    ff.close();
+                }
+                else
+                {
+                    std::cout << "CGI ERROR\n";
+                    throw (serverError(server.confCherch("500"), req));
+                }
             }
             else{
                 req.connexion = true;

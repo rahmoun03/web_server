@@ -517,7 +517,7 @@ size_t hexadecimal(const std::string &chunkHeader)
     return chunkSize;
 }
 
-int Response::serveCgi(Request &req,int &fd)
+int Response::serveCgi(Request &req, int &fd)
 {
     const char* temp_file = "/tmp/cgi_output.txt";
     std::string php_path = "/usr/bin/php-cgi";
@@ -562,6 +562,8 @@ int Response::serveCgi(Request &req,int &fd)
         if (freopen(temp_file, "w", stdout) == NULL) 
         {
             std::cerr << "Failed to freopen stdout." << std::endl;
+            fclose(output_file);
+            
             return 1 ;
         }
         if (req.get_method() == "POST"){
@@ -570,19 +572,22 @@ int Response::serveCgi(Request &req,int &fd)
         if (execve(args[0], (char* const*)args, env) == -1) 
         {
             std::cerr << "Failed to execute CGI script." << std::endl;
+            fclose(output_file);
+        
             return 1;
         }
     } 
     else if (pid > 0)
     {
-
         waitpid(pid, NULL, 0);
     } else 
     {
         std::cerr << "Fork failed." << std::endl;
+        fclose(output_file);
         return 1;
     }
 	delete[] env;
+    fclose(output_file);
     return 0;
 }
 

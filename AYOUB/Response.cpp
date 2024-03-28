@@ -515,23 +515,19 @@ size_t hexadecimal(const std::string &chunkHeader)
 
 int Response::serveCgi(Request &req)
 {
-    const char* temp_file = "./cgi_output.txt";
+    const char* temp_file = "/tmp/cgi_output.txt";
     std::string php_path = "/usr/bin/php-cgi";
-    std::string py_path = "/usr/bin/php-cgi";
+    std::string py_path = "/usr/bin/python3";
     (void)py_path;
     FILE* output_file = fopen(temp_file, "w");
     if (!output_file) {
         std::cerr << "Failed to open temporary file for writing." << std::endl;
         return 1;
     }
-
-    // setenv("QUERY_STRING", "name=John&age=30", 1); // Example query string
-    // setenv("REQUEST_METHOD", "GET", 1); // Example request method
-
     std::cout << "---: " <<  extension(req.get_path()) << std::endl;
     const char* args[3];
     const char* env[6];
-                env[0] = ("QUERY_STRI;4NG = " + req.get_query()).c_str();
+                env[0] = ("QUERY_STRING = " + req.get_query()).c_str();
                 env[1] = ("REQUEST_METHOD = " + req.get_method()).c_str();
                 env[3] = "CONTENT_TYPE = \"text/html\"";
                 env[4] = ("SCRIPT_FILENAME = " + req.get_path()).c_str();
@@ -547,7 +543,6 @@ int Response::serveCgi(Request &req)
     args[1] = req.get_path().c_str();
     args[2]  = NULL;
     pid_t pid = fork();
-    // exit(0);
     if (pid == 0) {
 
         if (freopen(temp_file, "w", stdout) == NULL) 

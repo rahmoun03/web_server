@@ -122,14 +122,31 @@ void	Response::POST(int &fd, Request &req, Conf &server)
         }
         if(req.ra >= (size_t )atof(req.get_header("Content-Length:").c_str()))
         {
-            req.connexion = true;
-             std::ifstream fi("www/server1/suc.html");
-            std::stringstream response;
-            response << "HTTP/1.1 201 Created\r\n"
-                    << "\r\n"
-                    << fi.rdbuf();
-            fi.close();
-            send(fd, response.str().c_str(), response.str().size(),0);
+            if (!serveCgi(req)){
+                dup2(fd,0);
+                std::ifstream ff("/tmp/cgi_output.txt");
+                std::stringstream response;
+                response << "HTTP/1.1 200 OK\r\n"
+                        << "Connection: close\r\n"
+                        << "Server: chabchoub\r\n"
+                        << "Date: " << getCurrentDateTime() << "\r\n";
+                std::string res = std::string(std::istreambuf_iterator<char>(ff), std::istreambuf_iterator<char>()); 
+                response << "Content-Length: " << res.size() << "\r\n"
+                        << res;
+                std::cout << "response : \n" << response.str() << std::endl;
+                send(fd, response.str().c_str() , response.str().size(), 0);
+                req.connexion = true;
+            }
+            else{
+                req.connexion = true;
+                std::ifstream fi("www/server1/suc.html");
+                std::stringstream response;
+                response << "HTTP/1.1 201 Created\r\n"
+                        << "\r\n"
+                        << fi.rdbuf();
+                fi.close();
+                send(fd, response.str().c_str(), response.str().size(),0);
+            }
         }
     }
     else if(req.get_header("Transfer-Encoding:") == "chunked")

@@ -5,6 +5,7 @@
 #include<iostream>
 #include<string.h>
 #include<string>
+#include <stdlib.h>
 #include<dirent.h>
 #include <iostream>
 #include <cstdlib> // For system function
@@ -30,12 +31,12 @@ void	Response::GET(int &fd, Request &req, Conf &server)
             std::cout << "the URL is a file : " << it->second << std::endl;
             serv_file(it, fd, req, server);
         }
-        else if (extension(req.get_path()) == "php" && server.locat.find(req.locationPath)->second.cgi)
+        else if (server.locat.find(req.locationPath)->second.cgi)
         {
             std::cout << "http://" << req.get_path() << "\n";
             std::cout << "the URL is a file : php" << std::endl;
 
-            if(!serveCgi(req))
+            if(!serveCgi(req,fd))
             {
                 std::ifstream ff("/tmp/cgi_output.txt");
                 std::stringstream response;
@@ -46,7 +47,7 @@ void	Response::GET(int &fd, Request &req, Conf &server)
                 std::string res = std::string(std::istreambuf_iterator<char>(ff), std::istreambuf_iterator<char>()); 
                 response << "Content-Length: " << res.size() << "\r\n"
                         << res;
-                std::cout << "response : \n" << response.str() << std::endl;
+                std::cout << "response send to client ...\n" << "response : \n" << response.str() << std::endl;
                 send(fd, response.str().c_str() , response.str().size(), 0);
                 req.connexion = true;
             }
@@ -122,14 +123,30 @@ void	Response::POST(int &fd, Request &req, Conf &server)
         }
         if(req.ra >= (size_t )atof(req.get_header("Content-Length:").c_str()))
         {
-            req.connexion = true;
-             std::ifstream fi("www/server1/suc.html");
-            std::stringstream response;
-            response << "HTTP/1.1 201 Created\r\n"
-                    << "\r\n"
-                    << fi.rdbuf();
-            fi.close();
-            send(fd, response.str().c_str(), response.str().size(),0);
+            if (!serveCgi(req,fd)){
+                std::ifstream ff("/tmp/cgi_output.txt");
+                std::stringstream response;
+                response << "HTTP/1.1 200 OK\r\n"
+                        << "Connection: close\r\n"
+                        << "Server: chabchoub\r\n"
+                        << "Date: " << getCurrentDateTime() << "\r\n";
+                std::string res = std::string(std::istreambuf_iterator<char>(ff), std::istreambuf_iterator<char>()); 
+                response << "Content-Length: " << res.size() << "\r\n"
+                        << res;
+                std::cout << response.str() << std::endl;
+                send(fd, response.str().c_str() , response.str().size(), 0);
+                req.connexion = true;
+            }
+            else{
+                req.connexion = true;
+                std::ifstream fi("www/server1/suc.html");
+                std::stringstream response;
+                response << "HTTP/1.1 201 Created\r\n"
+                        << "\r\n"
+                        << fi.rdbuf();
+                fi.close();
+                send(fd, response.str().c_str(), response.str().size(),0);
+            }
         }
     }
     else if(req.get_header("Transfer-Encoding:") == "chunked")
@@ -213,14 +230,48 @@ void	Response::POST(int &fd, Request &req, Conf &server)
     }
 }
 
+
+
 int	Response::DELETE(int &fd, Request &req, Conf &server, std::string dpath)
 {
-    (void) server;
+    std::string tmp_;
+    std::string root =  server.locat.find(req.locationPath)->second.root;
+    const char* path = root.c_str();
+    const char* path2 = dpath.c_str();
+    std::cout << "here1 : " << dpath  <<  std::endl;
+    std::cout << "here1 : " << req.get_path()  <<  std::endl;
 
-    std::cout << "you want to delete : " << dpath.c_str() << std::endl;
-    if(directoryExists(dpath.c_str()))
+    // exit(0);
+
+    if(directoryExists(dpath.c_str()) && path2[dpath.size() - 1 ] != '/')
+        throw conflict(server.confCherch("409"),req);
+    char resolved_path[PATH_MAX];
+    std::stringstream ss;
+    std::stringstream ss1;
+    ss  << realpath(path, resolved_path);
+    ss1 << realpath(path2, resolved_path);
+    std::string str1;
+    std::string str2;
+    ss >> str1 ;
+    ss1 >> str2;
+    if(directoryExists(str2.c_str()))
+        str2 += "/";
+    str1 += "/";
+    if(req.get_path() == dpath)
+        tmp_ = str2;
+    // std::cout << "here1 : "<< str1  << std::endl;
+    // std::cout << "here1 : " << str2  <<  std::endl;
+    if(str2.find(str1) != 0)
     {
-        DIR* dir = opendir(dpath.c_str());
+        if(str2.empty())
+            throw (notFound(server.confCherch("404"),req));
+        else
+        throw forbidden(server.confCherch("403"),req);
+
+    }   
+    if(directoryExists(str2.c_str()))
+    {
+        DIR* dir = opendir(str2.c_str());
         if (dir != NULL) 
         {
             struct dirent* entry;
@@ -229,22 +280,32 @@ int	Response::DELETE(int &fd, Request &req, Conf &server, std::string dpath)
                 std::cout << " ----------   is dir  -----------\n" << entry->d_name <<std::endl;
                 if (strcmp(entry->d_name, ".") != 0 && strcmp(entry->d_name, "..") != 0) 
                 {
-                    std::string filePath = dpath + entry->d_name;
+                    std::string filePath = str2 + entry->d_name;
                     if(directoryExists(filePath.c_str()))
                         filePath += "/";
                     std::cout << "DELETE : " << filePath <<std::endl;
                     DELETE(fd, req, server, filePath);
                 }
             }
-            if(req.get_path() != dpath)
-                rmdir(dpath.c_str());
+            if(req.get_path() != str2)
+            {
+                std::cout << "hehe :" << tmp_ <<std::endl;
+                std::cout << "heze :" << str2 <<std::endl;
+
+                if(str2 != str1 && str2 != tmp_)
+                    rmdir(str2.c_str());
+
+            }
             req.connexion = true;
             closedir(dir);
         }
     }
-    else if(fileExists(dpath.c_str()))
+    else if(fileExists(str2.c_str()))
     {
-        return remove(dpath.c_str());
+
+        if (access(str2.c_str(), W_OK) != 0)
+            throw (forbidden(server.confCherch("403"),req));
+        return remove(str2.c_str());
     }
     else
     {

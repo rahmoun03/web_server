@@ -33,7 +33,7 @@ class Response
 		void	clear();
 		void 	serv_file(map_iterator &type, int &fd, Request &req, Conf &server);
 		void 	serv_dir(int &fd, Request &req, Conf &server);
-		int 	serveCgi(Request &req);
+		int 	serveCgi(Request &req,int &fd);
 
 		void	generateResponse(int &fd, Request &req, Conf &server);
 		void	checkHeaders(Request &req, Conf &server);

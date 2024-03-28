@@ -448,6 +448,8 @@ std::string Response::EntityTooLarge(std::string path, Request &req)
             response << "Content-Length: " << con.str().size() << "\r\n"
                     << "\r\n"
                     << con.str();  
+            req.connexion = true;
+
         }
         else
         {
@@ -539,6 +541,8 @@ std::string Response::forbidden(std::string path, Request &req)
             response << "Content-Length: " << con.str().size() << "\r\n"
                     << "\r\n"
                     << con.str();
+            req.connexion = true;
+
         }
         else
         {
@@ -632,6 +636,8 @@ std::string Response::badRequest(std::string path, Request &req)
             response << "Content-Length: " << con.str().size() << "\r\n"
                     << "\r\n"
                     << con.str();
+            req.connexion = true;
+
         }
         else
         {
@@ -726,6 +732,8 @@ std::string Response::longRequest(std::string path, Request &req)
             response << "Content-Length: " << con.str().size() << "\r\n"
                     << "\r\n"
                     << con.str();
+            req.connexion = true;
+
         }
         else
         {
@@ -818,6 +826,8 @@ std::string Response::mediaType(std::string path, Request &req)
             response << "Content-Length: " << con.str().size() << "\r\n"
                     << "\r\n"
                     << con.str();
+            req.connexion = true;
+
         }
         else
         {
@@ -910,6 +920,8 @@ std::string Response::headerTooLarge(std::string path, Request &req)
             response << "Content-Length: " << con.str().size() << "\r\n"
                     << "\r\n"
                     << con.str();
+            req.connexion = true;
+
         }
         else
         {
@@ -1001,6 +1013,9 @@ std::string Response::conflict(std::string path, Request &req)
             response << "Content-Length: " << con.str().size() << "\r\n"
                     << "\r\n"
                     << con.str();
+            req.connexion = true;
+
+
         }
         else
         {

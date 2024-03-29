@@ -74,9 +74,9 @@ class Response
 			// std::string homepage(); // 200 home
 		/***********************/
 		
-		void Redirect(std::string &location, Request &req, int &fd);
+		void Redirect(std::string &location, Request &req, int &fd, Conf &server);
 		
-		std::string getResource(int &file, Request &req);
+		std::string getResource(int &file, Request &req, Conf &server);
 		std::string getRedirctionS(std::string &location);
 };
 std::string listDirectory(const char* path);
@@ -85,6 +85,7 @@ bool fileExists(std::string path);
 std::string getCurrentDateTime();
 
 std::map<std::string, std::string> mimeTypes();
+std::map<std::string, std::string> post_type();
 
 
 #endif

@@ -23,8 +23,8 @@ void Request::pars(std::stringstream &buf, size_t &endOf)
 
 	std::getline(buf, dst);
 	size_t i = dst.size() + 1;
-	// std::cout <<"space :" << std::count(dst.begin(), dst.end(), ' ') << std::endl;
-	// std::cout <<"tab   :" << std::count(dst.begin(), dst.end(), '\t') << std::endl;
+	std::cout <<"space :" << std::count(dst.begin(), dst.end(), ' ') << std::endl;
+	std::cout <<"tab   :" << std::count(dst.begin(), dst.end(), '\t') << std::endl;
 
 	if(std::count(dst.begin(), dst.end(), ' ') < 3 && std::count(dst.begin(), dst.end(), '\t') < 3)
 	{
@@ -41,6 +41,7 @@ void Request::pars(std::stringstream &buf, size_t &endOf)
 		headers[key] = value;
 		i += key.length() + value.length() + 1;
 	}
+
 	if(buf && (endOf + 4) < buf.str().size())
 	{
 		std::cout << "there is body : "<< std::endl;
@@ -48,6 +49,7 @@ void Request::pars(std::stringstream &buf, size_t &endOf)
 		buf >> key;
 		body << key << buf.rdbuf();
 	}
+
 	chun = 0;
 	ra = 0;
 	firstTime = true;

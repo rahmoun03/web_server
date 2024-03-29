@@ -140,6 +140,7 @@ class netPlix{
             int lop = 1;
             while (1)
             {
+                signal(SIGPIPE, SIG_IGN);
                 // std::cout << GREEN << "LOOP = " << lop << DEF <<std::endl;
 
                 std::cout << "epoll waiting for events ...\n";
@@ -151,6 +152,7 @@ class netPlix{
                     {
                         if(clientOut[i] != -1)
                         {
+                            client[i].req.firstTime = true;
                             std::string res = client[i].res.timeOut(server[client[i].server_index].confCherch("408"), client[i].req);
                             send(i, res.c_str(), res.size(), 0);
                             std::cout << YOLLOW <<"send response time out ..."<< DEF<< std::endl;
@@ -192,7 +194,7 @@ class netPlix{
 
                         client[new_socketfd].server_index = std::distance(socket_acc.begin(), it_serv);
                         std::string name = server[client[new_socketfd].server_index].confCherch("server_name");
-                        std::cout << BLUE << name << GREEN << " Received connection from ==> " << DEF << inet_ntoa(clientaddr.sin_addr) << ", on fd : "<< new_socketfd << DEF << std::endl;
+                        // std::cout << BLUE << name << GREEN << " Received connection from ==> " << DEF << inet_ntoa(clientaddr.sin_addr) << ", on fd : "<< new_socketfd << DEF << std::endl;
                     }
                     else if ((events[i].events & EPOLLERR) || (events[i].events & EPOLLHUP)) {
                         std::cout << "------{ Error Epoll }-------" << std::endl;
@@ -249,6 +251,7 @@ class netPlix{
                                 std::cout << RAN << "buf :\n" << (client[fd].buf.str().empty() ? "empty" : client[fd].buf.str()) << DEF << std::endl;
                                 client[fd].endOf = findEndOfHeaders(const_cast<char *>(client[fd].buf.str().c_str()) , (ssize_t)client[fd].buf.str().size());
 
+                                
                                 /***********************************************************************/
                                 std::cout << "end of file is :"<< (int)client[fd].endOf << std::endl;
                                 if(client[fd].endOf != (size_t)-1)
@@ -262,7 +265,7 @@ class netPlix{
 
 
                                     /***************************/
-                                    std::cout << YOLLOW << "request :\n" << DEF << client[fd].req << std::endl; 
+                                    // std::cout << YOLLOW << "request :\n" << DEF << client[fd].req << std::endl; 
                                     if((client[fd].req.get_method() == "GET")
                                         || (client[fd].req.get_method() == "POST"
                                             && server[client[fd].server_index].locat.find(client[fd].req.get_path())->second.upload.empty()))
@@ -282,27 +285,27 @@ class netPlix{
                             // Example: echo back to the client
                             if(client[fd].endOf != (size_t)-1)
                             {
-                                if (client[fd].res.firstcgi){
-
-                                }
                                 try
                                 {
+                            		std::cout << " correct request "<< std::endl;
+
                                     client[fd].res.generateResponse(fd, client[fd].req, server[client[fd].server_index]);
                                 }
                                 catch(std::string &content)
                                 {
                                     if(client[fd].req.firstTime)
                                     {
-                                        std::cout<< BLUE<<"respone : \n"<<YOLLOW<< content  << std::endl;
+                                        // std::cout<< BLUE<<"respone : \n"<<YOLLOW<< content  << std::endl;
                                         send(fd, content.c_str(), content.size(), 0);
                                         client[fd].req.firstTime = false;
                                     }
                                     else
                                     {
-                                        std::string cont = client[fd].res.getResource(client[fd].res.file, client[fd].req);
+                                        std::string cont = client[fd].res.getResource(client[fd].res.file, client[fd].req, server[client[fd].server_index]);
                                         std::cout << RAN << cont << DEF << std::endl;
                                         std::cout << YOLLOW << "send response to client " << DEF << std::endl;
                                         send(fd, cont.c_str(), cont.size(), 0);
+                                        
                                     }
                                 }
                             }

@@ -55,3 +55,60 @@ std::map<std::string, std::string> mimeTypes()
 
     return mime_map;
 }
+
+
+std::map<std::string, std::string> post_type()
+{
+    std::map<std::string, std::string> mime_map;
+
+    // Original mapping
+    mime_map["text/plain"] = "txt";
+    mime_map["text/html"] = "html";
+    mime_map["text/css"] = "css";
+    mime_map["text/javascript"] = "js";
+
+    mime_map["application/json"] = "json";
+    mime_map["application/ld+json"] = "jsonld";
+    mime_map["application/xml"] = "xml";
+    mime_map["application/pdf"] = "pdf";
+    mime_map["application/msword"] = "doc";
+    mime_map["application/vnd.openxmlformats-officedocument.wordprocessingml.document"] = "docx";
+    mime_map["application/vnd.ms-powerpoint"] = "ppt";
+    mime_map["application/vnd.openxmlformats-officedocument.presentationml.presentation"] = "pptx";
+    mime_map["application/vnd.oasis.opendocument.text"] = "odt";
+    mime_map["application/vnd.ms-excel"] = "xls";
+    mime_map["application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"] = "xlsx";
+    mime_map["application/vnd.oasis.opendocument.presentation"] = "odp";
+    mime_map["application/vnd.oasis.opendocument.spreadsheet"] = "ods";
+    mime_map["application/x-bzip"] = "bz";
+    mime_map["application/x-bzip2"] = "bz2";
+    mime_map["application/gzip"] = "gz";
+    mime_map["application/zip"] = "zip";
+    mime_map["application/x-7z-compressed"] = "7z";
+    mime_map["application/x-tar"] = "tar";
+
+    mime_map["image/jpeg"] = "jpeg";
+    mime_map["image/png"] = "png";
+    mime_map["image/apng"] = "apng";
+    mime_map["image/avif"] = "avif";
+    mime_map["image/gif"] = "gif";
+    mime_map["image/svg+xml"] = "svg";
+    mime_map["image/webp"] = "webp";
+    mime_map["image/bmp"] = "bmp";
+    mime_map["image/x-icon"] = "ico";
+    mime_map["image/tiff"] = "tif";
+
+    mime_map["audio/mpeg"] = "mp3";
+    mime_map["audio/aac"] = "aac";
+    mime_map["audio/wave"] = "wav";
+    mime_map["audio/flac"] = "flac";
+
+    mime_map["video/webm"] = "webm";
+    mime_map["video/mp4"] = "mp4";
+    mime_map["video/x-msvideo"] = "avi";
+    mime_map["video/3gpp"] = "3gp";
+
+    // Swap keys with values
+
+    return mime_map;
+}

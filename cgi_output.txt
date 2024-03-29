@@ -1,13 +1,21 @@
 Content-type: text/html; charset=UTF-8
 
-<!DOCTYPE html>
-<html>
-<head>
-    <title>Query String Test</title>
-</head>
-<body>
-    <h2>Query String Test</h2>
 
-    <p>Hello, خيام و رحلات!</p>
-</body>
-</html>
+<HTML>
+<BODY BGCOLOR=#FFFFFF>
+<FORM ACTION=/example/dest.php METHOD=POST>
+
+<P>Enter FileName:
+ <INPUT TYPE=TEXT NAME=name VALUE="" SIZE=75>
+<P><BR><P>
+<INPUT TYPE=SUBMIT VALUE="Show Me!">
+
+</FORM>
+
+<P><BR><P>
+<P><BR><P>
+<P><BR><P>
+
+
+</BODY>
+</HTML>

@@ -196,18 +196,15 @@ void Response::serv_dir(int &fd, Request &req, Conf &server)
                     req.get_path() = _path;
                     if(!serveCgi(req,fd))
                     {
-                        std::ifstream ff("/tmp/cgi_output.txt");
+                        std::ifstream ff("./cgi_output.txt");
                         std::stringstream response;
-                        response << "HTTP/1.1 200 OK\r\n"
-                                << "Connection: close\r\n"
-                                << "Server: chabchoub\r\n"
-                                << "Date: " << getCurrentDateTime() << "\r\n";
                         std::string res = std::string(std::istreambuf_iterator<char>(ff), std::istreambuf_iterator<char>()); 
-                        response << "Content-Length: " << res.size() << "\r\n"
+                        response << "HTTP/1.1 200 OK\r\n"
                                 << res;
-                        std::cout << "response : \n" << response.str() << std::endl;
+                        std::cout << "response send to client ...\n" << "response : \n" << response.str() << std::endl;
                         send(fd, response.str().c_str() , response.str().size(), 0);
                         req.connexion = true;
+                        ff.close();
                     }
                     else
                     {
@@ -359,6 +356,7 @@ void Response::clear()
     decimal = 0;
     str.clear();
     tmp.clear();
+    path.clear();
     file = -1;
     // std::cout << RED << "clear response object" << DEF << std::endl;
 }
@@ -519,7 +517,7 @@ size_t hexadecimal(const std::string &chunkHeader)
 
 int Response::serveCgi(Request &req, int &fd)
 {
-    const char* temp_file = "/tmp/cgi_output.txt";
+    const char* temp_file = "./cgi_output.txt";
     std::string php_path = "/usr/bin/php-cgi";
     std::string py_path = "/usr/bin/python3";
 

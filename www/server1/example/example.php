@@ -1,7 +1,5 @@
 #!/usr/bin/php-cgi
-
 <?PHP
-
  if (isset($_POST ["name"]))
  {
    $FileName = $File = $_POST ["name"];
@@ -11,10 +9,8 @@
    $FileName = "";
  }
 ?>
-
 <HTML>
 <BODY BGCOLOR=#FFFFFF>
-
 <FORM ACTION=/example/test.php METHOD=POST>
 
 <P>Enter FileName:

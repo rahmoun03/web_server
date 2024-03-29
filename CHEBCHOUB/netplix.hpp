@@ -195,7 +195,7 @@ class netPlix{
 
                         client[new_socketfd].server_index = std::distance(socket_acc.begin(), it_serv);
                         std::string name = server[client[new_socketfd].server_index].confCherch("server_name");
-                        std::cout << BLUE << name << GREEN << " Received connection from ==> " << DEF << inet_ntoa(clientaddr.sin_addr) << ", on fd : "<< new_socketfd << DEF << std::endl;
+                        // std::cout << BLUE << name << GREEN << " Received connection from ==> " << DEF << inet_ntoa(clientaddr.sin_addr) << ", on fd : "<< new_socketfd << DEF << std::endl;
                     }
                     else if ((events[i].events & EPOLLERR) || (events[i].events & EPOLLHUP)) {
                         std::cout << "------{ Error Epoll }-------" << std::endl;
@@ -266,7 +266,7 @@ class netPlix{
 
 
                                     /***************************/
-                                    std::cout << YOLLOW << "request :\n" << DEF << client[fd].req << std::endl; 
+                                    // std::cout << YOLLOW << "request :\n" << DEF << client[fd].req << std::endl; 
                                     if((client[fd].req.get_method() == "GET")
                                         || (client[fd].req.get_method() == "POST"
                                             && server[client[fd].server_index].locat.find(client[fd].req.get_path())->second.upload.empty()))
@@ -294,16 +294,17 @@ class netPlix{
                                 {
                                     if(client[fd].req.firstTime)
                                     {
-                                        std::cout<< BLUE<<"respone : \n"<<YOLLOW<< content  << std::endl;
+                                        // std::cout<< BLUE<<"respone : \n"<<YOLLOW<< content  << std::endl;
                                         send(fd, content.c_str(), content.size(), 0);
                                         client[fd].req.firstTime = false;
                                     }
                                     else
                                     {
-                                        std::string cont = client[fd].res.getResource(client[fd].res.file, client[fd].req);
+                                        std::string cont = client[fd].res.getResource(client[fd].res.file, client[fd].req, server[client[fd].server_index]);
                                         std::cout << RAN << cont << DEF << std::endl;
                                         std::cout << YOLLOW << "send response to client " << DEF << std::endl;
                                         send(fd, cont.c_str(), cont.size(), 0);
+                                        
                                     }
                                 }
                             }

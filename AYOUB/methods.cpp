@@ -14,7 +14,7 @@
 void	Response::GET(int &fd, Request &req, Conf &server)
 {
     if(!req.red_path.empty())
-            Redirect(req.red_path, req, fd);
+            Redirect(req.red_path, req, fd, server);
     else if(directoryExists(req.get_path()))
     {
         std::cout << "http://" << req.get_path() << "\n";
@@ -91,11 +91,28 @@ void	Response::POST(int &fd, Request &req, Conf &server)
         {
             std::string up_ptah = server.locat.find(req.locationPath)->second.upload;
             std::string type = static_cast<std::string>(req.get_header("Content-Type:"));
-            std::string tmp_ = type.substr(type.find("/") + 1);
-            std::cout << tmp_ << std::endl;
-            type.erase(type.find("/"));
-            type.push_back('.');
-            path = up_ptah + ("upload." + tmp_);
+            // std::map<std::string, std::string> mime = post_type();
+            // map_iterator mmap = mime.find(type);
+            // std::cout << mmap->first << std::endl;
+            // exit(1);
+            // size_t poss = 
+            // std::string tmp_ = type.substr(type.find("/") + 1);
+            // std::cout << tmp_ << std::endl;
+            std::map<std::string, std::string> mime = post_type();
+            map_iterator mmap = mime.find(type);
+            if (mmap == mime.end())
+            {
+                throw (mediaType(server.confCherch("415"), req));
+            }
+            
+            std::cout << "here: " << mmap->second << std::endl;
+            // exit(1);
+            // type.erase(type.find("/"));
+            // type.push_back('.');
+            std::string path = up_ptah + ("upload." + mmap->second);
+            // type.erase(type.find("/"));
+            // type.push_back('.');
+            path = up_ptah + ("upload." + mmap->second);
             while (fileExists(path))
             {
                 i++;
@@ -103,7 +120,7 @@ void	Response::POST(int &fd, Request &req, Conf &server)
                 ss << i;
                 std::string s;
                 ss >> s;
-                path = up_ptah + ("upload" + s + (".") + tmp_);
+                path = up_ptah + ("upload" + s + (".") + mmap->second);
             }
             std::string str = req.get_body();
             out.open(path.c_str(), std::ios::binary);
@@ -116,6 +133,8 @@ void	Response::POST(int &fd, Request &req, Conf &server)
             size_t a;
             char buffer[1024];
             a = recv(fd, buffer, 1023, 0);
+            if(a < 0)
+                throw serverError(server.confCherch("500"), req);
             req.ra += a;
             buffer[a] = '\0';
             out.write(buffer, a);
@@ -150,11 +169,20 @@ void	Response::POST(int &fd, Request &req, Conf &server)
             std::cout << "request path : " << req.get_path() << std::endl;
             std::string up_ptah = server.locat.find(req.locationPath)->second.upload;
             std::string type = static_cast<std::string>(req.get_header("Content-Type:"));
-            std::string tmp_ = type.substr(type.find("/") + 1);
-            std::cout << tmp_ << std::endl;
-            type.erase(type.find("/"));
-            type.push_back('.');
-            std::string path = up_ptah + ("upload." + tmp_);
+            // std::string tmp_ = type.substr(type.find("/") + 1);
+            // std::cout << tmp_ << std::endl;
+            std::map<std::string, std::string> mime = post_type();
+            map_iterator mmap = mime.find(type);
+            if (mmap == mime.end())
+            {
+                throw (mediaType(server.confCherch("415"), req));
+            }
+            
+            std::cout << "here: " << mmap->second << std::endl;
+            // exit(1);
+            // type.erase(type.find("/"));
+            // type.push_back('.');
+            std::string path = up_ptah + ("upload." + mmap->second);
             std::cout << "path : "<< path << std::endl;
 
             while (fileExists(path))
@@ -164,7 +192,7 @@ void	Response::POST(int &fd, Request &req, Conf &server)
                 ss << i;
                 std::string s;
                 ss >> s;
-                path = up_ptah + ("upload" + s + (".") + tmp_);
+                path = up_ptah + ("upload" + s + (".") + mmap->second);
             }
             out.open(path.c_str(), std::ios::binary);
             str = req.get_body();
@@ -191,6 +219,8 @@ void	Response::POST(int &fd, Request &req, Conf &server)
             size_t a;
             char buffer[1024];
             a = recv(fd, buffer, 1023, 0);
+            if(a < 0)
+                throw serverError(server.confCherch("500"), req);
             buffer[a] = '\0';
             tmp.append(buffer, a);
             if((tmp.size() > (decimal + 10))
@@ -240,11 +270,6 @@ int	Response::DELETE(int &fd, Request &req, Conf &server, std::string dpath)
     std::string root =  server.locat.find(req.locationPath)->second.root;
     const char* path = root.c_str();
     const char* path2 = dpath.c_str();
-    std::cout << "here1 : " << dpath  <<  std::endl;
-    std::cout << "here1 : " << req.get_path()  <<  std::endl;
-
-    // exit(0);
-
     if(directoryExists(dpath.c_str()) && path2[dpath.size() - 1 ] != '/')
         throw conflict(server.confCherch("409"),req);
     char resolved_path[PATH_MAX];
@@ -261,8 +286,6 @@ int	Response::DELETE(int &fd, Request &req, Conf &server, std::string dpath)
     str1 += "/";
     if(req.get_path() == dpath)
         tmp_ = str2;
-    // std::cout << "here1 : "<< str1  << std::endl;
-    // std::cout << "here1 : " << str2  <<  std::endl;
     if(str2.find(str1) != 0)
     {
         if(str2.empty())
@@ -279,21 +302,18 @@ int	Response::DELETE(int &fd, Request &req, Conf &server, std::string dpath)
             struct dirent* entry;
             while ((entry = readdir(dir)) != NULL) 
             {
-                std::cout << " ----------   is dir  -----------\n" << entry->d_name <<std::endl;
+                // std::cout << " ----------   is dir  -----------\n" << entry->d_name <<std::endl;
                 if (strcmp(entry->d_name, ".") != 0 && strcmp(entry->d_name, "..") != 0) 
                 {
                     std::string filePath = str2 + entry->d_name;
                     if(directoryExists(filePath.c_str()))
                         filePath += "/";
-                    std::cout << "DELETE : " << filePath <<std::endl;
+                    // std::cout << "DELETE : " << filePath <<std::endl;
                     DELETE(fd, req, server, filePath);
                 }
             }
             if(req.get_path() != str2)
             {
-                std::cout << "hehe :" << tmp_ <<std::endl;
-                std::cout << "heze :" << str2 <<std::endl;
-
                 if(str2 != str1 && str2 != tmp_)
                     rmdir(str2.c_str());
 

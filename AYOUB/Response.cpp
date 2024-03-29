@@ -15,8 +15,8 @@ void Response::generateResponse(int &fd, Request &req, Conf &server)
         if (server.locat.find(_path + "/") != server.locat.end())
         {
             loca _location = server.locat.find(_path + "/")->second;
-            std::cout << "location : " << (_path + "/") << std::endl;
-            std::cout << "Add root : " << (_location.root) << std::endl;
+            // std::cout << "location : " << (_path + "/") << std::endl;
+            // std::cout << "Add root : " << (_location.root) << std::endl;
             req.root_end = strlen((_location.root).c_str());
             req.get_path() = _location.root + req.get_path();
             req.red_path = _location.redirect;
@@ -61,11 +61,11 @@ void Response::generateResponse(int &fd, Request &req, Conf &server)
              << ff.rdbuf();
             
             // std::cout << "response :\n" << YOLLOW << response.str() << DEF <<std::endl;
-            std::cout << YOLLOW << "send response to client ==> " << DEF << std::endl;
+            // std::cout << YOLLOW << "send response to client ==> " << DEF << std::endl;
             if(send(fd, response.str().c_str(), response.str().size(), 0) == -1)
             {
                 perror("send :");
-                exit(1);
+                serverError(server.confCherch("500"),req);
             }
             req.connexion = true;
             ff.close();
@@ -80,10 +80,9 @@ void Response::generateResponse(int &fd, Request &req, Conf &server)
              << "\r\n";
             
             // std::cout << "response :\n" << YOLLOW << response.str() << DEF <<std::endl;
-            std::cout << YOLLOW << "send response to client ==> " << DEF << std::endl;
-            send(fd, response.str().c_str(), response.str().size(), 0);
-
-            
+            // std::cout << YOLLOW << "send response to client ==> " << DEF << std::endl;
+            if (send(fd, response.str().c_str(), response.str().size(), 0) == -1)
+                throw serverError(server.confCherch("500"), req);
             req.connexion = true;
         }
     }
@@ -126,19 +125,21 @@ void Response::serv_file(map_iterator &type, int &fd, Request &req, Conf &server
                  << "Date: " << getCurrentDateTime() << "\r\n"
                  << "\r\n";
 
-        std::cout << BLUE << "respone : \n"
-                  << YOLLOW << response.str() << std::endl;
-        std::cout << YOLLOW << "send response to client" << DEF << std::endl;
-        send(fd, response.str().c_str(), response.str().size(), 0);
+        // std::cout << BLUE << "respone : \n"
+                //   << YOLLOW << response.str() << std::endl;
+        // std::cout << YOLLOW << "send response to client" << DEF << std::endl;
+        if (send(fd, response.str().c_str(), response.str().size(), 0) ==-1)
+            throw serverError(server.confCherch("500"), req);
         req.firstTime = false;
     }
     else
     {
         // std::cout << "second time" << std::endl;
-        std::string content = getResource(file, req);
-        std::cout << RAN << content << DEF << std::endl;
-        std::cout << YOLLOW << "send response to client " << DEF << std::endl;
-        send(fd, content.c_str(), content.size(), 0);
+        std::string content = getResource(file, req, server);
+        // std::cout << RAN << content << DEF << std::endl;
+        // std::cout << YOLLOW << "send response to client " << DEF << std::endl;
+        if (send(fd, content.c_str(), content.size(), 0) == -1)
+            throw serverError(server.confCherch("500"), req);
         // req.connexion = true;
     }
 }
@@ -153,7 +154,7 @@ void Response::serv_dir(int &fd, Request &req, Conf &server)
     {
         if (*(_path.end() - 1) == '/')
         {
-            std::cout << GREEN <<"location : " << req.locationPath <<DEF << std::endl;
+            // std::cout << GREEN <<"location : " << req.locationPath <<DEF << std::endl;
             if (server.locat.find(req.locationPath) != server.locat.end()
                 && server.locat.find(req.locationPath)->second.autoindex)
             {
@@ -171,9 +172,10 @@ void Response::serv_dir(int &fd, Request &req, Conf &server)
                          << "Date: " << getCurrentDateTime() << "\r\n"
                          << "\r\n"
                          << content;
-                std::cout << YOLLOW << "send response to client " << DEF << std::endl;
+                // std::cout << YOLLOW << "send response to client " << DEF << std::endl;
 
-                send(fd, response.str().c_str(), response.str().size(), 0);
+                if (send(fd, response.str().c_str(), response.str().size(), 0) == -1)
+                    throw serverError(server.confCherch("500"), req);
                 req.connexion = true;
                 req.firstTime = false;
             }
@@ -205,8 +207,9 @@ void Response::serv_dir(int &fd, Request &req, Conf &server)
                         std::string res = std::string(std::istreambuf_iterator<char>(ff), std::istreambuf_iterator<char>()); 
                         response << "Content-Length: " << res.size() << "\r\n"
                                 << res;
-                        std::cout << "response : \n" << response.str() << std::endl;
-                        send(fd, response.str().c_str() , response.str().size(), 0);
+                        // std::cout << "response : \n" << response.str() << std::endl;
+                        if (send(fd, response.str().c_str() , response.str().size(), 0) == -1)
+                            throw serverError(server.confCherch("500"), req);
                         req.connexion = true;
                     }
                     else
@@ -231,7 +234,7 @@ void Response::serv_dir(int &fd, Request &req, Conf &server)
             std::cout << "from this : " << _path.substr(req.root_end) << std::endl;
             std::cout << "to   this : " << location << std::endl;
 
-            Redirect(location, req, fd);
+            Redirect(location, req, fd, server);
         }
     }
 }
@@ -307,7 +310,7 @@ Response::~Response()
 {
 }
 
-std::string Response::getResource(int &file, Request &req)
+std::string Response::getResource(int &file, Request &req, Conf &server)
 {
     // std::string buffer((std::istreambuf_iterator<char>(file)), std::istreambuf_iterator<char>());
     std::stringstream content;
@@ -315,8 +318,8 @@ std::string Response::getResource(int &file, Request &req)
     size_t a = read(file, buffer, 1023);
     if (a == (size_t)-1)
     {
-        std::cerr << "l9wada" << std::endl;
-        exit(1);
+        std::cerr << "read " << std::endl;
+        throw serverError(server.confCherch("500"), req);
     }
     if (a < 1023)
         req.connexion = true;
@@ -363,13 +366,14 @@ void Response::clear()
     // std::cout << RED << "clear response object" << DEF << std::endl;
 }
 
-void Response::Redirect(std::string &location, Request &req, int &fd)
+void Response::Redirect(std::string &location, Request &req, int &fd, Conf &server)
 {
     std::string content = getRedirctionS(location);
     // std::cout << BLUE << "respone : \n"
     //           << YOLLOW << content << std::endl;
     std::cout << YOLLOW << "send response to client " << DEF << std::endl;
-    send(fd, content.c_str(), content.size(), 0);
+    if (send(fd, content.c_str(), content.size(), 0) == -1)
+        throw serverError(server.confCherch("500"), req);
     req.connexion = true;
     req.firstTime = false;
 }

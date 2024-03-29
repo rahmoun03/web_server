@@ -3,7 +3,8 @@
   "files.associations": {
     "iosfwd": "cpp",
     "iostream": "cpp",
-    "new": "cpp"
+    "new": "cpp",
+    "*.tcc": "cpp"
   },
   "C_Cpp_Runner.cCompilerPath": "gcc",
   "C_Cpp_Runner.cppCompilerPath": "g++",

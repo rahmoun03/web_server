@@ -2,9 +2,9 @@
 
 <?PHP
 
- if (isset($_POST ["file"]))
+ if (isset($_POST ["name"]))
  {
-   $FileName = $File = $_POST ["file"];
+   $FileName = $File = $_POST ["name"];
  }
  else
  {
@@ -19,7 +19,7 @@
 
 <P>Enter FileName:
 <?PHP
-  echo " <INPUT TYPE=TEXT NAME=file VALUE=\"$FileName\" SIZE=75>\n";
+  echo " <INPUT TYPE=TEXT NAME=name VALUE=\"$FileName\" SIZE=75>\n";
 ?>
 <P><BR><P>
 <INPUT TYPE=SUBMIT VALUE="Show Me!">

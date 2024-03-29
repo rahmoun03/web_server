@@ -51,12 +51,12 @@ class Request
 		std::stringstream startline;
 		std::string method;
 		std::string path;
-		std::string query;
 		std::string protocol;
 		std::map<std::string, std::string> headers;
 		std::stringstream body;
 
 	public:
+		std::string query;
 		int chun;
 		size_t ra;
 		long int body_limit;

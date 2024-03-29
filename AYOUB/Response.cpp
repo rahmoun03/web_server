@@ -191,7 +191,7 @@ void Response::serv_dir(int &fd, Request &req, Conf &server)
                 else if (server.locat.find(req.locationPath)->second.cgi)
                 {
                     std::cout << "http://" << _path << "\n";
-                    std::cout << "the URL is a file : php" << std::endl;
+                    std::cout << "the index is a file : php" << std::endl;
 
                     req.get_path() = _path;
                     if(!serveCgi(req,fd))
@@ -517,12 +517,11 @@ size_t hexadecimal(const std::string &chunkHeader)
     return chunkSize;
 }
 
-int Response::serveCgi(Request &req,int &fd)
+int Response::serveCgi(Request &req, int &fd)
 {
     const char* temp_file = "/tmp/cgi_output.txt";
     std::string php_path = "/usr/bin/php-cgi";
     std::string py_path = "/usr/bin/python3";
-    (void)py_path;
     (void)fd;
     FILE* output_file = fopen(temp_file, "w");
     if (!output_file) {
@@ -535,52 +534,71 @@ int Response::serveCgi(Request &req,int &fd)
                 strcpy((char *)env[0],("QUERY_STRING=" + req.get_query()).c_str());
                 env[1] = new char [("REQUEST_METHOD=" + req.get_method()).size() + 1];
                 strcpy((char *)env[1],("REQUEST_METHOD=" + req.get_method()).c_str());
-                env[3] = new char [27];
-                strcpy((char *)env[3],("CONTENT_TYPE=\"text/html\""));
-                env[4] = new char [("SCRIPT_FILENAME=" + req.get_path()).size() + 1];
-                strcpy((char *)env[4],("SCRIPT_FILENAME=" + req.get_path()).c_str());
-                env[5] = new char[21];
-                strcpy(env[5], "REDIRECT_STATUS=200");
+                env[2] = new char [("SCRIPT_FILENAME=" + req.get_path()).size() + 1];
+                strcpy((char *)env[2],("SCRIPT_FILENAME=" + req.get_path()).c_str());
+                env[3] = new char [21];
+                strcpy(env[3], "REDIRECT_STATUS=200");
+                if (req.get_method() != "POST"){
+                    env[4] = new char [27];
+                    strcpy((char *)env[4],("CONTENT_TYPE=\"text/html\""));
+                }
+                else{
+                    env[4] = new char [("CONTENT_TYPE=" + req.get_header("Content-Type:")).size() + 1];
+                    strcpy((char *)env[4],("CONTENT_TYPE="+ req.get_header("Content-Type:")).c_str());
+                };
                 env[6] = NULL;
     if (extension(req.get_path()) == "php"){
-        args[0] = new char [php_path.size() + 1];
         args[0] = php_path.c_str();
-        env[2] = new char [("SCRIPT_NAME=" + php_path).size() + 1];
-        strcpy((char *)env[2],("SCRIPT_NAME=" + php_path).c_str());
+        args[1] = req.get_path().c_str();
+        args[2]  = NULL;
+        env[5] = new char [("SCRIPT_NAME=" + php_path).size() + 1];
+        strcpy((char *)env[5],("SCRIPT_NAME=" + php_path).c_str());
     }
     else if (extension(req.get_path()) == "py"){
-        env[2] = new char [("SCRIPT_NAME=" + py_path).size() + 1];
-        strcpy((char *)env[2],("SCRIPT_NAME=" + py_path).c_str());
+        env[5] = new char [("SCRIPT_NAME=" + py_path).size() + 1];
+        strcpy((char *)env[5],("SCRIPT_NAME=" + py_path).c_str());
         args[0] = py_path.c_str();
+        args[1] = req.get_path().c_str();
+        args[2]  = NULL;
     }
-    args[1] = req.get_path().c_str();
-    args[2]  = NULL;
     pid_t pid = fork();
-    if (pid == 0) {
-
+    if (pid == 0) 
+    {
         if (freopen(temp_file, "w", stdout) == NULL) 
         {
             std::cerr << "Failed to freopen stdout." << std::endl;
+            fclose(output_file);
+            
             return 1 ;
         }
-        if (req.get_method() == "POST"){
-            dup2(fd,0);
-        }
+        // if (req.get_method() == "POST"){
+        //     dup2(fd,0);
+        // }
         if (execve(args[0], (char* const*)args, env) == -1) 
         {
             std::cerr << "Failed to execute CGI script." << std::endl;
-            return 1 ;
+            fclose(output_file);
+        
+            return 1;
         }
-    } else if (pid > 0) 
+    } 
+    else if (pid > 0)
     {
-
         waitpid(pid, NULL, 0);
-    } else 
+    }
+    else
     {
         std::cerr << "Fork failed." << std::endl;
+        fclose(output_file);
         return 1;
     }
+    int i = 0;
+    while (i < 6){
+        delete[] env[i];
+        i++;
+    }
 	delete[] env;
+    fclose(output_file);
     return 0;
 }
 

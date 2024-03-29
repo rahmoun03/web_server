@@ -38,18 +38,23 @@ void	Response::GET(int &fd, Request &req, Conf &server)
 
             if(!serveCgi(req,fd))
             {
-                std::ifstream ff("/tmp/cgi_output.txt");
-                std::stringstream response;
-                response << "HTTP/1.1 200 OK\r\n"
-                        << "Connection: close\r\n"
-                        << "Server: chabchoub\r\n"
-                        << "Date: " << getCurrentDateTime() << "\r\n";
-                std::string res = std::string(std::istreambuf_iterator<char>(ff), std::istreambuf_iterator<char>()); 
-                // response << "Content-Length: " << res.size() << "\r\n"
-                        response << res;
-                std::cout << "response send to client ...\n" << "response : \n" << response.str() << std::endl;
-                send(fd, response.str().c_str() , response.str().size(), 0);
-                // req.connexion = true;
+                if (cgirespons){
+                    std::ifstream ff(temp_file.c_str());
+                    std::stringstream response;
+                    response << "HTTP/1.1 200 OK\r\n"
+                            << "Connection: close\r\n"
+                            << "Server: chabchoub\r\n"
+                            << "Date: " << getCurrentDateTime() << "\r\n";
+                    std::string res = std::string(std::istreambuf_iterator<char>(ff), std::istreambuf_iterator<char>()); 
+                    // response << "Content-Length: " << res.size() << "\r\n"
+                            response << res;
+                    std::cout << "response send to client ...\n" << "response : \n" << response.str() << std::endl;
+                    send(fd, response.str().c_str() , response.str().size(), 0);
+                    req.connexion = true;
+                }
+                else if (timeout){
+                    throw timeOut(server.confCherch("408"),req);
+                }
             }
             else
             {

@@ -21,9 +21,16 @@ class Response
 		std::string path;
 	public:
 		bool firstcgi;
-	    pid_t pid;	
+	    pid_t pid;
+	    pid_t WAIT_PID;
+		bool cgirespons;
+		bool timeout;
 		int file;
+		int status;
 		FILE* output_file;
+    	clock_t start;
+		double end;
+		std::string temp_file;
 		Response();
 		~Response();
 

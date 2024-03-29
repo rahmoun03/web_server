@@ -4,7 +4,7 @@
 
  if (isset($_POST ["name"]))
  {
-   $FileName = $File = $_POST ["name"];
+   $FileName = $name = $_POST ["name"];
  }
  else
  {

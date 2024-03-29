@@ -1,3 +1,4 @@
 <?php
-    while(true){}
+    // echo "Hello CGI!!"
+    while(1){}
 ?>

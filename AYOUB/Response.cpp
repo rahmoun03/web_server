@@ -362,7 +362,9 @@ void Response::clear()
     file = -1;
     pid = -1;
     firstcgi = false;
+    cgirespons = false;
     output_file = NULL;
+    temp_file.clear();
 
     // std::cout << RED << "clear response object" << DEF << std::endl;
 }
@@ -521,9 +523,20 @@ size_t hexadecimal(const std::string &chunkHeader)
     return chunkSize;
 }
 
+std::string random_name()
+{
+    char letters[] = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz";
+    int len = 5;
+    srand(time(0));
+    std::string name;
+    name.reserve(len);
+    for (int i = 0; i < len; i++)
+        name += letters[rand() % (sizeof(letters) - 1)];
+    return (name + ".txt");
+}
+
 int Response::serveCgi(Request &req, int &fd)
 {
-    const char* temp_file = "/tmp/cgi_output.txt";
     std::string php_path = "/usr/bin/php-cgi";
     std::string py_path = "/usr/bin/python3";
     (void)fd;
@@ -532,9 +545,12 @@ int Response::serveCgi(Request &req, int &fd)
     
         const char* args[3];
         char** env = new char*[7];
-    // start = clock();
     if (!firstcgi){
-        output_file = fopen(temp_file, "w");
+        start = clock();
+        temp_file = "/tmp/cgi_" + random_name();
+        std::cout << "---> : " << temp_file << std::endl;
+        // exit(0);
+        output_file = fopen(temp_file.c_str(), "w");
         if (!output_file) {
             std::cerr << "Failed to open temporary file for writing." << std::endl;
             return 1;
@@ -575,20 +591,13 @@ int Response::serveCgi(Request &req, int &fd)
         pid = fork();
         if (pid == 0) 
         {
-            std::cout << "------------------INSIDE WAIT-------------------\n";
-            // end = ( std::clock() - start ) / (double) CLOCKS_PER_SEC;
-            // end = clock() - start;
-            // std::cout << "time is : " << end<< std::endl;
-            // if (end > 5000){
-            //     std::cout << "time out : ";
-            //     exit(0);
-            // }
+            // std::cout << "------------------INSIDE WAIT-------------------\n";
             // exit(0);
             // if(firstcgi)
             // {
             //     throw timeOut( "" , req);
             // }
-            if (freopen(temp_file, "w", stdout) == NULL) 
+            if (freopen(temp_file.c_str(), "w", stdout) == NULL) 
             {
                 std::cerr << "Failed to freopen stdout." << std::endl;
                 fclose(output_file);
@@ -612,13 +621,41 @@ int Response::serveCgi(Request &req, int &fd)
             i++;
         }
         delete[] env;
+        // delete temp_file;
 
     }
     if (pid > 0)
     {
         // firstcgi = true;
+    // clock_t start;
+
+        end = ( std::clock() - start ) / (double) CLOCKS_PER_SEC;
+        end = clock() - start;
+        std::cout << " --------- time is : " << end << std::endl;
+        if (end > 10.0){
+            timeout = true;
+            kill(pid, SIGTERM);
+            std::cout << "time out : ";
+            // exit(0);
+        }
+        std::cout << "-----------------------------INSIDE WIATPID-------------------------\n";
         std::cout << "------------" << pid << "----------------\n";
-        waitpid(pid, NULL, 1); // WNOGHANG
+        WAIT_PID = waitpid(pid, &status, 1);
+        if (WAIT_PID == -1){
+            perror("waitpid");
+            exit(0);
+        }
+        if (WAIT_PID == 0){
+            std::cout << "PID IS 0\n";
+        }
+
+        else{
+            if (WIFEXITED(status)){
+                cgirespons = true;
+                std::cout << "-------------EXECTUE PROCES---------------\n";
+            }
+        }
+        // std::cout << "pid value is : " <<  << std::endl; // WNOGHANG
     }
     else
     {
@@ -626,7 +663,6 @@ int Response::serveCgi(Request &req, int &fd)
         fclose(output_file);
         return 1;
     }
-        std::cout << "-----------------------------INSIDE WIATPID-------------------------\n";
     
     // fclose(output_file);
     return 0;

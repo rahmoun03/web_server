@@ -6,7 +6,7 @@
 /*   By: ahbajaou <ahbajaou@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/03/17 03:09:09 by himejjad          #+#    #+#             */
-/*   Updated: 2024/03/29 00:38:58 by ahbajaou         ###   ########.fr       */
+/*   Updated: 2024/03/29 00:41:10 by ahbajaou         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -131,7 +131,7 @@ class netPlix{
                 }
             }
             printServer();
-            exit(0);
+            // exit(0);
             for (size_t i = 0; i < MAX_EVENTS; i++)
             {
                 client[i].endOf = -1;
@@ -151,16 +151,16 @@ class netPlix{
                     {
                         if(clientOut[i] != -1)
                         {
-                            std::string res = client[clientOut[i]].res.timeOut(server[client[clientOut[i]].server_index].confCherch("408"), client[clientOut[i]].req);
-                            send(clientOut[i], res.c_str(), res.size(), 0);
+                            std::string res = client[i].res.timeOut(server[client[i].server_index].confCherch("408"), client[i].req);
+                            send(i, res.c_str(), res.size(), 0);
                             std::cout << YOLLOW <<"send response time out ..."<< DEF<< std::endl;
                             std::cout << RED <<"Client disconnected : "<< DEF << clientOut[i] << std::endl;
-                            if (epoll_ctl(epoll_fd, EPOLL_CTL_DEL, clientOut[i], NULL) == -1) {
+                            if (epoll_ctl(epoll_fd, EPOLL_CTL_DEL, i, NULL) == -1) {
                                 perror("epoll_ctl");
                                 exit(EXIT_FAILURE);
                             }
-                            client[clientOut[i]].clear();
-                            close(clientOut[i]);
+                            client[i].clear();
+                            close(i);
                             clientOut[i] = -1;
                         }
                     }
@@ -207,20 +207,21 @@ class netPlix{
                     }
                     else
                     {
-                        // std::cout << BLUE << "serv the client : " << DEF << fd << std::endl;
+                        std::cout << BLUE << "serv the client : " << DEF << fd << std::endl;
                         char buffer[1024];
                         ssize_t bytes_read = -1;
                         if(events[i].events == EPOLLIN && client[fd].endOf == (size_t)-1)
                         {
-                            // std::cout << GREEN << "reading request from : " << DEF << fd <<std::endl;
                             if ((bytes_read = recv(fd, buffer, sizeof(buffer) - 1, 0)) == -1) 
                             {
                                 perror("recv");
                                 exit(EXIT_FAILURE);
                             }
+                            std::cout << GREEN << "reading : "<< bytes_read << " request from : " << DEF << fd <<std::endl;
                         }
 
                         if (bytes_read == 0) {
+                            std::cout << RED << "read 0 "<< DEF << std::endl;
                             std::cout << RED <<"Client disconnected : "<< DEF<< fd<< std::endl;
                             if (epoll_ctl(epoll_fd, EPOLL_CTL_DEL, fd, NULL) == -1) {
                                 perror("epoll_ctl");
@@ -235,21 +236,28 @@ class netPlix{
                             if(client[fd].endOf == (size_t)-1 && bytes_read > -1 && events[i].events == EPOLLIN)
                             {
                                 buffer[bytes_read] = '\0';
-                                // std::cout << RAN << "request :\n" << buffer << DEF << std::endl;
+                                std::cout << RAN << "request :\n" << buffer << DEF << std::endl;
+
+                                std::cout << " good()=" << client[fd].buf.good()<< std::endl;
+                                std::cout << " eof()=" << client[fd].buf.eof()<< std::endl;
+                                std::cout << " fail()=" << client[fd].buf.fail()<< std::endl;
+                                std::cout << " bad()=" << client[fd].buf.bad()<< std::endl;
                                 
                                 /***********************************************************************/
 
                                 client[fd].buf.write(buffer, bytes_read);
+                                std::cout << RAN << "buf :\n" << (client[fd].buf.str().empty() ? "empty" : client[fd].buf.str()) << DEF << std::endl;
                                 client[fd].endOf = findEndOfHeaders(const_cast<char *>(client[fd].buf.str().c_str()) , (ssize_t)client[fd].buf.str().size());
-                                // if(client[fd].endOf != (size_t)-1)
-                                //     client[fd].endOf = client[fd].buf.str().size() -  (bytes_read - client[fd].endOf);
+                                if(client[fd].endOf == (size_t)-1 && bytes_read < 1023)
+                                    client[fd].endOf = bytes_read;
                                 
                                 /***********************************************************************/
+                                std::cout << "end of file is :"<< (int)client[fd].endOf << std::endl;
                                 if(client[fd].endOf != (size_t)-1)
                                 {
-                                    // std::cout << GREEN << "parse the request ... for " << DEF << fd << std::endl;
-                                    client[fd].req = Request(client[fd].buf, client[fd].endOf);
-                                    client[fd].req.pars();
+                                    std::cout << GREEN << "parse the request ... for " << DEF << fd << std::endl;
+                                    // client[fd].req = Request(client[fd].buf, client[fd].endOf);
+                                    client[fd].req.pars(client[fd].buf, client[fd].endOf);
                             		// std::cout << (client[fd].req.startLineForma ? "yes" : "no") << std::endl;
                                     client[fd].req.ra += (client[fd].buf.str().size() - client[fd].endOf);
                                     client[fd].req.body_limit = std::atof(server[0].confCherch("body_size_limit").c_str());

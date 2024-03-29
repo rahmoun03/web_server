@@ -37,11 +37,11 @@
 
 
 #define SERVER_ROOT "./www/server1"
-#define GREEN "\033[0;32m"
 #define RED "\033[0;31m"
+#define GREEN "\033[0;32m"
 #define YOLLOW "\033[0;33m"
 #define BLUE "\033[0;34m"
-#define RAN "\033[0;38m"
+#define RAN "\033[0;35m"
 #define DEF "\033[0m"
 
 class Request
@@ -76,8 +76,8 @@ class Request
 		~Request();
 
 		void clear();
-		Request(std::stringstream &buf, size_t &endOf);
-		void pars();
+		// Request(std::stringstream &buf, size_t &endOf);
+		void pars(std::stringstream &buf, size_t &endOf);
 		std::string &get_path();
 		std::string &get_query();
 		const std::string get_method() const;

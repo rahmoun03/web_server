@@ -125,10 +125,9 @@ void	Response::POST(int &fd, Request &req, Conf &server)
         {
             if (server.locat.find(req.locationPath)->second.cgi){
                 std::ifstream ff(path.c_str());
-                req.query = std::string(std::istreambuf_iterator<char>(ff), std::istreambuf_iterator<char>());
-                std::cout << "----> : " << req.query << std::endl;
+                req.query = std::string(std::istreambuf_iterator<char>(ff), std::istreambuf_iterator<char>()); 
                 ff.close();
-                GET(fd,req,server);
+                GET(fd, req, server);
             }
             else{
                 req.connexion = true;
@@ -209,16 +208,17 @@ void	Response::POST(int &fd, Request &req, Conf &server)
                 std::cout << "now decimal = " << decimal << std::endl;
             }
         }
-        if (decimal == 0){
-            std::cout << "------------------ LAST CHUNKED --------------------------\n";
+        if (decimal == 0)
+        {
             if (server.locat.find(req.locationPath)->second.cgi){
                 std::ifstream ff(path.c_str());
-                req.query = std::string(std::istreambuf_iterator<char>(ff), std::istreambuf_iterator<char>());
+                req.query = std::string(std::istreambuf_iterator<char>(ff), std::istreambuf_iterator<char>()); 
                 ff.close();
-                GET(fd,req,server);
+                GET(fd, req, server);
             }
             else
             {
+                std::cout << "------------------ LAST CHUNKED --------------------------\n";
                 req.connexion = true;
                 std::ifstream fi("www/server1/suc.html");
                 std::stringstream response;

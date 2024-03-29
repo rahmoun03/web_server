@@ -640,15 +640,7 @@ int Response::serveCgi(Request &req, int &fd)
         // firstcgi = true;
     // clock_t start;
 
-        end = ( std::clock() - start ) / (double) CLOCKS_PER_SEC;
-        // end = clock() - start;
-        std::cout << " --------- time is : " << (float)end << std::endl;
-        if ((float)end >= 10){
-            timeout = true;
-            kill(pid, SIGTERM);
-            std::cout << "time out : ";
-            // exit(0);
-        }
+        // end = ( std::clock() - start ) / (double) CLOCKS_PER_SEC;
         std::cout << "-----------------------------INSIDE WIATPID-------------------------\n";
         std::cout << "------------" << pid << "----------------\n";
         WAIT_PID = waitpid(pid, &status, 1);
@@ -657,14 +649,25 @@ int Response::serveCgi(Request &req, int &fd)
             // exit(0);
         }
         if (WAIT_PID == 0){
-            std::cout << "PID IS 0\n";
-        }
-
-        else{
+            end = clock() - start;
+            if (end >= 5000){
+                std::cout << " --------- time is : " << end << std::endl;
+                timeout = true;
+                kill(pid, SIGTERM);
+            //     std::cout << "time out : ";
+                // exit(0);
+                // return 0;/
+            }
             if (WIFEXITED(status)){
-                cgirespons = true;
+                if (timeout){
+                    cgirespons = false;
+                }
+                else
+                    cgirespons = true;
+                
                 std::cout << "-------------EXECTUE PROCES---------------\n";
             }
+            std::cout << "PID IS 0 : " << WAIT_PID << std::endl;
         }
         // std::cout << "pid value is : " <<  << std::endl; // WNOGHANG
     }

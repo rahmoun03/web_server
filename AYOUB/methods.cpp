@@ -126,25 +126,8 @@ void	Response::POST(int &fd, Request &req, Conf &server)
             if (server.locat.find(req.locationPath)->second.cgi){
                 std::ifstream ff(path.c_str());
                 req.query = std::string(std::istreambuf_iterator<char>(ff), std::istreambuf_iterator<char>()); 
-                if(!serveCgi(req,fd))
-                {
-                    std::ifstream ff("/tmp/cgi_output.txt");
-                    std::stringstream response;
-                    response << "HTTP/1.1 200 OK\r\n"
-                            << "Date: " << getCurrentDateTime() << "\r\n";
-                    std::string res = std::string(std::istreambuf_iterator<char>(ff), std::istreambuf_iterator<char>()); 
-                    response << "Content-Length: " << res.size() << "\r\n"
-                            << res;
-                    std::cout << "response : \n" << response.str() << std::endl;
-                    send(fd, response.str().c_str() , response.str().size(), 0);
-                    req.connexion = true;
-                    ff.close();
-                }
-                else
-                {
-                    std::cout << "CGI ERROR\n";
-                    throw (serverError(server.confCherch("500"), req));
-                }
+                ff.close();
+                GET(fd, req, server);
             }
             else{
                 req.connexion = true;
@@ -225,16 +208,26 @@ void	Response::POST(int &fd, Request &req, Conf &server)
                 std::cout << "now decimal = " << decimal << std::endl;
             }
         }
-        if (decimal == 0){
-            std::cout << "------------------ LAST CHUNKED --------------------------\n";
-            req.connexion = true;
-            std::ifstream fi("www/server1/suc.html");
-            std::stringstream response;
-            response << "HTTP/1.1 201 Created\r\n"
-                    << "\r\n"
-                    << fi.rdbuf();
-            fi.close();
-            send(fd, response.str().c_str(), response.str().size(),0);
+        if (decimal == 0)
+        {
+            if (server.locat.find(req.locationPath)->second.cgi){
+                std::ifstream ff(path.c_str());
+                req.query = std::string(std::istreambuf_iterator<char>(ff), std::istreambuf_iterator<char>()); 
+                ff.close();
+                GET(fd, req, server);
+            }
+            else
+            {
+                std::cout << "------------------ LAST CHUNKED --------------------------\n";
+                req.connexion = true;
+                std::ifstream fi("www/server1/suc.html");
+                std::stringstream response;
+                response << "HTTP/1.1 201 Created\r\n"
+                        << "\r\n"
+                        << fi.rdbuf();
+                fi.close();
+                send(fd, response.str().c_str(), response.str().size(),0);
+            }
         }
     }
 }

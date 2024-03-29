@@ -6,7 +6,7 @@
 /*   By: himejjad <himejjad@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/03/17 03:09:09 by himejjad          #+#    #+#             */
-/*   Updated: 2024/03/27 23:42:09 by himejjad         ###   ########.fr       */
+/*   Updated: 2024/03/29 02:38:05 by himejjad         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -154,7 +154,7 @@ class netPlix{
                         if(clientOut[i] != -1)
                         {
                             std::string res = client[clientOut[i]].res.timeOut(server[client[clientOut[i]].server_index].confCherch("408"), client[clientOut[i]].req);
-                            send(clientOut[i], res.c_str(), res.size(), 0);
+                                send(clientOut[i], res.c_str(), res.size(), 0);
                             std::cout << YOLLOW <<"send response time out ..."<< DEF<< std::endl;
                             std::cout << RED <<"Client disconnected : "<< DEF << clientOut[i] << std::endl;
                             if (epoll_ctl(epoll_fd, EPOLL_CTL_DEL, clientOut[i], NULL) == -1) {
@@ -194,7 +194,7 @@ class netPlix{
 
                         client[new_socketfd].server_index = std::distance(socket_acc.begin(), it_serv);
                         std::string name = server[client[new_socketfd].server_index].confCherch("server_name");
-                        std::cout << BLUE << name << GREEN << " Received connection from ==> " << DEF << inet_ntoa(clientaddr.sin_addr) << ", on fd : "<< new_socketfd << DEF << std::endl;
+                        // std::cout << BLUE << name << GREEN << " Received connection from ==> " << DEF << inet_ntoa(clientaddr.sin_addr) << ", on fd : "<< new_socketfd << DEF << std::endl;
                     }
                     else if ((events[i].events & EPOLLERR) || (events[i].events & EPOLLHUP)) {
                         std::cout << "------{ Error Epoll }-------" << std::endl;
@@ -257,7 +257,7 @@ class netPlix{
 
 
                                     /***************************/
-                                    std::cout << YOLLOW << "request :\n" << DEF << client[fd].req << std::endl; 
+                                    // std::cout << YOLLOW << "request :\n" << DEF << client[fd].req << std::endl; 
                                     if((client[fd].req.get_method() == "GET")
                                         || (client[fd].req.get_method() == "POST"
                                             && server[client[fd].server_index].locat.find(client[fd].req.get_path())->second.upload.empty()))
@@ -285,16 +285,17 @@ class netPlix{
                                 {
                                     if(client[fd].req.firstTime)
                                     {
-                                        std::cout<< BLUE<<"respone : \n"<<YOLLOW<< content  << std::endl;
+                                        // std::cout<< BLUE<<"respone : \n"<<YOLLOW<< content  << std::endl;
                                         send(fd, content.c_str(), content.size(), 0);
                                         client[fd].req.firstTime = false;
                                     }
                                     else
                                     {
-                                        std::string cont = client[fd].res.getResource(client[fd].res.file, client[fd].req);
+                                        std::string cont = client[fd].res.getResource(client[fd].res.file, client[fd].req, server[client[fd].server_index]);
                                         std::cout << RAN << cont << DEF << std::endl;
                                         std::cout << YOLLOW << "send response to client " << DEF << std::endl;
                                         send(fd, cont.c_str(), cont.size(), 0);
+                                        
                                     }
                                 }
                             }

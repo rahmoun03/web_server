@@ -1,6 +1,6 @@
 NAME = webserv
 
-CHAB_SRC = CHEBCHOUB/*.cpp
+CHAB_SRC = CHEBCHOUB/main.cpp CHEBCHOUB/conf.cpp
 
 AYOUB_SRC = AYOUB/Request.cpp AYOUB/Response.cpp AYOUB/mime_types.cpp AYOUB/4xx.cpp \
 			AYOUB/5xx.cpp AYOUB/methods.cpp #AYOUB/servClient.cpp

@@ -142,6 +142,7 @@ class netPlix{
             std::cout << "---------------------------------------------\n";
             while (1)
             {
+                signal(SIGPIPE, SIG_IGN);
                 // std::cout << GREEN << "LOOP = " << lop << DEF <<std::endl;
 
                 std::cout << "epoll waiting for events ...\n";
@@ -250,8 +251,7 @@ class netPlix{
                                 client[fd].buf.write(buffer, bytes_read);
                                 std::cout << RAN << "buf :\n" << (client[fd].buf.str().empty() ? "empty" : client[fd].buf.str()) << DEF << std::endl;
                                 client[fd].endOf = findEndOfHeaders(const_cast<char *>(client[fd].buf.str().c_str()) , (ssize_t)client[fd].buf.str().size());
-                                if(client[fd].endOf == (size_t)-1 && bytes_read < 1023)
-                                    client[fd].endOf = bytes_read;
+
                                 
                                 /***********************************************************************/
                                 std::cout << "end of file is :"<< (int)client[fd].endOf << std::endl;

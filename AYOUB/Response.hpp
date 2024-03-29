@@ -20,7 +20,10 @@ class Response
         std::string tmp;
 		std::string path;
 	public:
+		bool firstcgi;
+	    pid_t pid;	
 		int file;
+		FILE* output_file;
 		Response();
 		~Response();
 

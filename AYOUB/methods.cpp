@@ -45,11 +45,11 @@ void	Response::GET(int &fd, Request &req, Conf &server)
                         << "Server: chabchoub\r\n"
                         << "Date: " << getCurrentDateTime() << "\r\n";
                 std::string res = std::string(std::istreambuf_iterator<char>(ff), std::istreambuf_iterator<char>()); 
-                response << "Content-Length: " << res.size() << "\r\n"
-                        << res;
+                // response << "Content-Length: " << res.size() << "\r\n"
+                        response << res;
                 std::cout << "response send to client ...\n" << "response : \n" << response.str() << std::endl;
                 send(fd, response.str().c_str() , response.str().size(), 0);
-                req.connexion = true;
+                // req.connexion = true;
             }
             else
             {

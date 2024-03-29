@@ -6,7 +6,7 @@
 /*   By: ahbajaou <ahbajaou@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/03/17 03:09:09 by himejjad          #+#    #+#             */
-/*   Updated: 2024/03/29 00:41:10 by ahbajaou         ###   ########.fr       */
+/*   Updated: 2024/03/29 03:36:59 by ahbajaou         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -116,7 +116,7 @@ class netPlix{
 				if (bin < 0)
 				{
 					perror("bind");
-					exit(0);
+					// exit(0);
 				}
                 listen(socket_fd[i],SOMAXCONN);
                 if (socket_fd[i] == -1){
@@ -248,9 +248,7 @@ class netPlix{
                                 client[fd].buf.write(buffer, bytes_read);
                                 std::cout << RAN << "buf :\n" << (client[fd].buf.str().empty() ? "empty" : client[fd].buf.str()) << DEF << std::endl;
                                 client[fd].endOf = findEndOfHeaders(const_cast<char *>(client[fd].buf.str().c_str()) , (ssize_t)client[fd].buf.str().size());
-                                if(client[fd].endOf == (size_t)-1 && bytes_read < 1023)
-                                    client[fd].endOf = bytes_read;
-                                
+
                                 /***********************************************************************/
                                 std::cout << "end of file is :"<< (int)client[fd].endOf << std::endl;
                                 if(client[fd].endOf != (size_t)-1)
@@ -284,6 +282,9 @@ class netPlix{
                             // Example: echo back to the client
                             if(client[fd].endOf != (size_t)-1)
                             {
+                                if (client[fd].res.firstcgi){
+
+                                }
                                 try
                                 {
                                     client[fd].res.generateResponse(fd, client[fd].req, server[client[fd].server_index]);

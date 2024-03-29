@@ -363,6 +363,10 @@ void Response::clear()
     str.clear();
     tmp.clear();
     file = -1;
+    pid = -1;
+    firstcgi = false;
+    output_file = NULL;
+
     // std::cout << RED << "clear response object" << DEF << std::endl;
 }
 
@@ -526,72 +530,109 @@ int Response::serveCgi(Request &req, int &fd)
     const char* temp_file = "/tmp/cgi_output.txt";
     std::string php_path = "/usr/bin/php-cgi";
     std::string py_path = "/usr/bin/python3";
-
-    FILE* output_file = fopen(temp_file, "w");
-    if (!output_file) {
-        std::cerr << "Failed to open temporary file for writing." << std::endl;
-        return 1;
-    }
-    std::cout << "---: " <<  req.get_query() << std::endl;
-    const char* args[3];
-    char** env = new char*[7];
-                env[0] = new char [("QUERY_STRING=" + req.get_query()).size() + 1];
-                strcpy((char *)env[0],("QUERY_STRING=" + req.get_query()).c_str());
-                env[1] = new char [("REQUEST_METHOD=" + req.get_method()).size() + 1];
-                strcpy((char *)env[1],("REQUEST_METHOD=" + req.get_method()).c_str());
-                env[3] = new char [27];
-                strcpy((char *)env[3],("CONTENT_TYPE=\"text/html\""));
-                env[4] = new char [("SCRIPT_FILENAME=" + req.get_path()).size() + 1];
-                strcpy((char *)env[4],("SCRIPT_FILENAME=" + req.get_path()).c_str());
-                env[5] = new char [20];
-                strcpy(env[5], "REDIRECT_STATUS=200");
-                env[6] = NULL;
-    if (extension(req.get_path()) == "php"){
-        args[0] = php_path.c_str();
-        args[1] = req.get_path().c_str();
-        args[2]  = NULL;
-        env[2] = new char [("SCRIPT_NAME=" + php_path).size() + 1];
-        strcpy((char *)env[2],("SCRIPT_NAME=" + php_path).c_str());
-    }
-    else if (extension(req.get_path()) == "py"){
-        env[2] = new char [("SCRIPT_NAME=" + py_path).size() + 1];
-        strcpy((char *)env[2],("SCRIPT_NAME=" + py_path).c_str());
-        args[0] = py_path.c_str();
-        args[1] = req.get_path().c_str();
-        args[2]  = NULL;
-    }
-    pid_t pid = fork();
-    if (pid == 0) 
-    {
-        if (freopen(temp_file, "w", stdout) == NULL) 
-        {
-            std::cerr << "Failed to freopen stdout." << std::endl;
-            fclose(output_file);
-            
-            return 1 ;
-        }
-        if (req.get_method() == "POST"){
-            dup2(fd,0);
-        }
-        if (execve(args[0], (char* const*)args, env) == -1) 
-        {
-            std::cerr << "Failed to execute CGI script." << std::endl;
-            fclose(output_file);
-        
+    (void)fd;
+    // clock_t start;
+    // double end;
+    
+        const char* args[3];
+        char** env = new char*[7];
+    // start = clock();
+    if (!firstcgi){
+        output_file = fopen(temp_file, "w");
+        if (!output_file) {
+            std::cerr << "Failed to open temporary file for writing." << std::endl;
             return 1;
         }
-    } 
-    else if (pid > 0)
+        std::cout << "---------------INSIDE CGI HERE-------------\n";
+                    env[0] = new char [("QUERY_STRING=" + req.get_query()).size() + 1];
+                    strcpy((char *)env[0],("QUERY_STRING=" + req.get_query()).c_str());
+                    env[1] = new char [("REQUEST_METHOD=" + req.get_method()).size() + 1];
+                    strcpy((char *)env[1],("REQUEST_METHOD=" + req.get_method()).c_str());
+                    env[2] = new char [("SCRIPT_FILENAME=" + req.get_path()).size() + 1];
+                    strcpy((char *)env[2],("SCRIPT_FILENAME=" + req.get_path()).c_str());
+                    env[3] = new char [21];
+                    strcpy(env[3], "REDIRECT_STATUS=200");
+                    if (req.get_method() != "POST"){
+                        env[4] = new char [27];
+                        strcpy((char *)env[4],("CONTENT_TYPE=\"text/html\""));
+                    }
+                    else{
+                        env[4] = new char [("CONTENT_TYPE=" + req.get_header("Content-Type:")).size() + 1];
+                        strcpy((char *)env[4],("CONTENT_TYPE="+ req.get_header("Content-Type:")).c_str());
+                    };
+                    env[6] = NULL;
+        if (extension(req.get_path()) == "php"){
+            args[0] = php_path.c_str();
+            args[1] = req.get_path().c_str();
+            args[2]  = NULL;
+            env[5] = new char [("SCRIPT_NAME=" + php_path).size() + 1];
+            strcpy((char *)env[5],("SCRIPT_NAME=" + php_path).c_str());
+        }
+        else if (extension(req.get_path()) == "py"){
+            env[5] = new char [("SCRIPT_NAME=" + py_path).size() + 1];
+            strcpy((char *)env[5],("SCRIPT_NAME=" + py_path).c_str());
+            args[0] = py_path.c_str();
+            args[1] = req.get_path().c_str();
+            args[2]  = NULL;
+        }
+        firstcgi = true;
+        pid = fork();
+        if (pid == 0) 
+        {
+            std::cout << "------------------INSIDE WAIT-------------------\n";
+            // end = ( std::clock() - start ) / (double) CLOCKS_PER_SEC;
+            // end = clock() - start;
+            // std::cout << "time is : " << end<< std::endl;
+            // if (end > 5000){
+            //     std::cout << "time out : ";
+            //     exit(0);
+            // }
+            // exit(0);
+            // if(firstcgi)
+            // {
+            //     throw timeOut( "" , req);
+            // }
+            if (freopen(temp_file, "w", stdout) == NULL) 
+            {
+                std::cerr << "Failed to freopen stdout." << std::endl;
+                fclose(output_file);
+                
+                return 1 ;
+            }
+            // if (req.get_method() == "POST"){
+            //     dup2(fd,0);
+            // }
+            if (execve(args[0], (char* const*)args, env) == -1) 
+            {
+                std::cerr << "Failed to execute CGI script." << std::endl;
+                fclose(output_file);
+            
+                return 1;
+            }
+        } 
+        int i = 0;
+        while (i < 6){
+            delete[] env[i];
+            i++;
+        }
+        delete[] env;
+
+    }
+    if (pid > 0)
     {
-        waitpid(pid, NULL, 0);
-    } else 
+        // firstcgi = true;
+        std::cout << "------------" << pid << "----------------\n";
+        waitpid(pid, NULL, 1); // WNOGHANG
+    }
+    else
     {
         std::cerr << "Fork failed." << std::endl;
         fclose(output_file);
         return 1;
     }
-	delete[] env;
-    fclose(output_file);
+        std::cout << "-----------------------------INSIDE WIATPID-------------------------\n";
+    
+    // fclose(output_file);
     return 0;
 }
 

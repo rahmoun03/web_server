@@ -6,7 +6,7 @@
 /*   By: ahbajaou <ahbajaou@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/03/17 03:09:09 by himejjad          #+#    #+#             */
-/*   Updated: 2024/03/28 01:11:37 by ahbajaou         ###   ########.fr       */
+/*   Updated: 2024/03/29 03:36:59 by ahbajaou         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -49,7 +49,6 @@ class netPlix{
         {
             for (int i = 0; i < serverNum; i++)
             {
-                std::cout << "------------------------------------------------------\n";
                 std::map<std::string, std::string>::iterator it = server[i].map.begin();
                 std::map<std::string, std::string>::iterator ite = server[i].map.end();
                 while (it != ite)
@@ -117,7 +116,7 @@ class netPlix{
 				if (bin < 0)
 				{
 					perror("bind");
-					exit(0);
+					// exit(0);
 				}
                 listen(socket_fd[i],SOMAXCONN);
                 if (socket_fd[i] == -1){
@@ -132,14 +131,13 @@ class netPlix{
                 }
             }
             printServer();
-            
+            // exit(0);
             for (size_t i = 0; i < MAX_EVENTS; i++)
             {
                 client[i].endOf = -1;
                 clientOut[i] = -1;
             }
             int lop = 1;
-            std::cout << "---------------------------------------------\n";
             while (1)
             {
                 signal(SIGPIPE, SIG_IGN);
@@ -286,6 +284,9 @@ class netPlix{
                             // Example: echo back to the client
                             if(client[fd].endOf != (size_t)-1)
                             {
+                                if (client[fd].res.firstcgi){
+
+                                }
                                 try
                                 {
                                     client[fd].res.generateResponse(fd, client[fd].req, server[client[fd].server_index]);

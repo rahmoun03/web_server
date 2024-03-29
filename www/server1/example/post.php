@@ -15,7 +15,7 @@
 <HTML>
 <BODY BGCOLOR=#FFFFFF>
 
-<FORM ACTION=/example/test.php METHOD=POST>
+<FORM ACTION=/example/info.php METHOD=POST>
 
 <P>Enter FileName:
 <?PHP

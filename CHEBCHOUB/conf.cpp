@@ -339,13 +339,12 @@ void Conf::parsLocation(std::ifstream & fg)
 						name.erase(std::remove_if(name.begin(),name.end(),isspace),name.end());
 						loc1[name.substr(0,name.find("="))] = (name.substr(name.find("=") + 1));
 						map_iterator loccc = loc1.begin();
-						if(loccc->second == name.substr(name.find("=") + 1))
-						{
-				
-							locc++;
-							if(locc == 2)
-								throw "YOU SHOULD ENTER ONE ROOT!";
-						}
+						// if(loccc->second == name.substr(name.find("=") + 1))
+						// {
+						// 	locc++;
+						// 	if(locc == 2)
+						// 		throw "YOU SHOULD ENTER ONE ROOT!";
+						// }
 						getline(fg,name);
 						if (name.find("[") != std::string::npos)
 						{

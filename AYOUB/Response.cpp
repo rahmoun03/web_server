@@ -6,6 +6,7 @@ void Response::generateResponse(int &fd, Request &req, Conf &server)
 {
     if(req.firstTime)
     {
+        checkHeaders(req, server);
         std::string _path = req.get_path();
         while (server.locat.find(_path + "/") == server.locat.end())
         {
@@ -22,7 +23,12 @@ void Response::generateResponse(int &fd, Request &req, Conf &server)
             req.red_path = _location.redirect;
             req.locationPath = (_path + "/");
         }
-        checkHeaders(req, server);
+        if((req.get_method() == "GET" && !(server.locat.find(req.locationPath)->second.get))
+            || (req.get_method() == "DELETE" && !(server.locat.find(req.locationPath)->second.delet))
+            || (req.get_method() == "POST" && !(server.locat.find(req.locationPath)->second.post)))
+        {
+            throw (notAllow(req.get_method(), server.confCherch("405"), req));
+        }
     }
     if (req.get_method() == "GET")
     {
@@ -190,27 +196,24 @@ void Response::serv_dir(int &fd, Request &req, Conf &server)
                     req.get_path() = _path;
                     serv_file(it, fd, req, server);
                 }
-                else if (extension(_path) == "php" && server.locat.find(req.locationPath)->second.cgi)
+                else if (server.locat.find(req.locationPath)->second.cgi)
                 {
                     std::cout << "http://" << _path << "\n";
-                    std::cout << "the URL is a file : php" << std::endl;
+                    std::cout << "the index is a file : php" << std::endl;
 
                     req.get_path() = _path;
-                    if(!serveCgi(req))
+                    if(!serveCgi(req,fd))
                     {
-                        std::ifstream ff("/tmp/cgi_output.txt");
+                        std::ifstream ff("./cgi_output.txt");
                         std::stringstream response;
-                        response << "HTTP/1.1 200 OK\r\n"
-                                << "Connection: close\r\n"
-                                << "Server: chabchoub\r\n"
-                                << "Date: " << getCurrentDateTime() << "\r\n";
                         std::string res = std::string(std::istreambuf_iterator<char>(ff), std::istreambuf_iterator<char>()); 
-                        response << "Content-Length: " << res.size() << "\r\n"
+                        response << "HTTP/1.1 200 OK\r\n"
                                 << res;
                         // std::cout << "response : \n" << response.str() << std::endl;
                         if (send(fd, response.str().c_str() , response.str().size(), 0) == -1)
                             throw serverError(server.confCherch("500"), req);
                         req.connexion = true;
+                        ff.close();
                     }
                     else
                     {
@@ -256,7 +259,7 @@ void Response::checkHeaders(Request &req, Conf &server)
     }
     if((req.get_method() != "GET") && (req.get_method() != "POST") && (req.get_method() != "DELETE"))
     {
-        std::cout << "requist line not correct "<< (req.startLineForma ? "yes" : "no") << std::endl;
+        std::cout << "requist line not correct Method " << std::endl;
         throw (badRequest(server.confCherch("400"), req));
     }
     if(req.get_method().empty() || req.get_path().empty())
@@ -264,12 +267,15 @@ void Response::checkHeaders(Request &req, Conf &server)
         std::cout << "requist line not correct "<< (req.startLineForma ? "yes" : "no") << std::endl;
         throw(badRequest(server.confCherch("400"), req));
     }
-    if((req.get_method() == "GET" && !(server.locat.find(req.locationPath)->second.get))
-        || (req.get_method() == "DELETE" && !(server.locat.find(req.locationPath)->second.delet))
-         || (req.get_method() == "POST" && !(server.locat.find(req.locationPath)->second.post)))
+    if(req.get_path().empty() || req.get_path()[0] != '/')
     {
-        throw (notAllow(req.get_method(), server.confCherch("405"), req));
+        std::cout << "requist line not correct ohhhh "<< std::endl;
+        throw(badRequest(server.confCherch("400"), req));
     }
+    // {
+    //     std::cout << "requist line not correct "<< (req.startLineForma ? "yes" : "no") << std::endl;
+    //     throw(badRequest(server.confCherch("400"), req));
+    // }
     if (req.get_method() == "POST" && !head.count("Transfer-Encoding:") && !head.count("Content-Length:"))
     {
         std::cout << "TE and CL Not exist" << std::endl;
@@ -362,7 +368,14 @@ void Response::clear()
     decimal = 0;
     str.clear();
     tmp.clear();
+    path.clear();
     file = -1;
+    pid = -1;
+    firstcgi = false;
+    cgirespons = false;
+    output_file = NULL;
+    temp_file.clear();
+
     // std::cout << RED << "clear response object" << DEF << std::endl;
 }
 
@@ -521,63 +534,151 @@ size_t hexadecimal(const std::string &chunkHeader)
     return chunkSize;
 }
 
-int Response::serveCgi(Request &req)
+std::string random_name()
 {
-    const char* temp_file = "/tmp/cgi_output.txt";
+    char letters[] = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz";
+    int len = 5;
+    srand(time(0));
+    std::string name;
+    name.reserve(len);
+    for (int i = 0; i < len; i++)
+        name += letters[rand() % (sizeof(letters) - 1)];
+    return (name + ".txt");
+}
+
+int Response::serveCgi(Request &req, int &fd)
+{
     std::string php_path = "/usr/bin/php-cgi";
-    std::string py_path = "/usr/bin/php-cgi";
-    (void)py_path;
-    FILE* output_file = fopen(temp_file, "w");
-    if (!output_file) {
-        std::cerr << "Failed to open temporary file for writing." << std::endl;
-        return 1;
-    }
-
-    // setenv("QUERY_STRING", "name=John&age=30", 1); // Example query string
-    // setenv("REQUEST_METHOD", "GET", 1); // Example request method
-
-    std::cout << "---: " <<  extension(req.get_path()) << std::endl;
-    const char* args[3];
-    const char* env[6];
-                env[0] = ("QUERY_STRI;4NG = " + req.get_query()).c_str();
-                env[1] = ("REQUEST_METHOD = " + req.get_method()).c_str();
-                env[3] = "CONTENT_TYPE = \"text/html\"";
-                env[4] = ("SCRIPT_FILENAME = " + req.get_path()).c_str();
-                env[5] = NULL;
-    if (extension(req.get_path()) == "php"){
-        args[0] = php_path.c_str();
-        env[2] = ("SCRIPT_NAME = " + php_path).c_str();
-    }
-    else if (extension(req.get_path()) == "py"){
-        env[2] = ("SCRIPT_NAME = " + py_path).c_str();
-        args[0] = py_path.c_str();
-    }
-    args[1] = req.get_path().c_str();
-    args[2]  = NULL;
-    pid_t pid = fork();
-    // exit(0);
-    if (pid == 0) {
-
-        if (freopen(temp_file, "w", stdout) == NULL) 
-        {
-            std::cerr << "Failed to freopen stdout." << std::endl;
-            return 1 ;
+    std::string py_path = "/usr/bin/python3";
+    (void)fd;
+    // clock_t start;
+    // double end;
+    
+        const char* args[3];
+        char** env = new char*[7];
+    if (!firstcgi){
+        start = clock();
+        temp_file = "/tmp/cgi_" + random_name();
+        std::cout << "---> : " << temp_file << std::endl;
+        // exit(0);
+        output_file = fopen(temp_file.c_str(), "w");
+        if (!output_file) {
+            std::cerr << "Failed to open temporary file for writing." << std::endl;
+            return 1;
         }
-        if (execve(args[0], (char* const*)args, (char* const*)env) == -1) 
-        {
-            std::cerr << "Failed to execute CGI script." << std::endl;
-            return 1 ;
+        std::cout << "---------------INSIDE CGI HERE-------------\n";
+                    env[0] = new char [("QUERY_STRING=" + req.get_query()).size() + 1];
+                    strcpy((char *)env[0],("QUERY_STRING=" + req.get_query()).c_str());
+                    env[1] = new char [("REQUEST_METHOD=" + req.get_method()).size() + 1];
+                    strcpy((char *)env[1],("REQUEST_METHOD=" + req.get_method()).c_str());
+                    env[2] = new char [("SCRIPT_FILENAME=" + req.get_path()).size() + 1];
+                    strcpy((char *)env[2],("SCRIPT_FILENAME=" + req.get_path()).c_str());
+                    env[3] = new char [21];
+                    strcpy(env[3], "REDIRECT_STATUS=200");
+                    if (req.get_method() != "POST"){
+                        env[4] = new char [27];
+                        strcpy((char *)env[4],("CONTENT_TYPE=\"text/html\""));
+                    }
+                    else{
+                        env[4] = new char [("CONTENT_TYPE=" + req.get_header("Content-Type:")).size() + 1];
+                        strcpy((char *)env[4],("CONTENT_TYPE="+ req.get_header("Content-Type:")).c_str());
+                    };
+                    env[6] = NULL;
+        if (extension(req.get_path()) == "php"){
+            args[0] = php_path.c_str();
+            args[1] = req.get_path().c_str();
+            args[2]  = NULL;
+            env[5] = new char [("SCRIPT_NAME=" + php_path).size() + 1];
+            strcpy((char *)env[5],("SCRIPT_NAME=" + php_path).c_str());
         }
-    } else if (pid > 0) 
+        else if (extension(req.get_path()) == "py"){
+            env[5] = new char [("SCRIPT_NAME=" + py_path).size() + 1];
+            strcpy((char *)env[5],("SCRIPT_NAME=" + py_path).c_str());
+            args[0] = py_path.c_str();
+            args[1] = req.get_path().c_str();
+            args[2]  = NULL;
+        }
+        firstcgi = true;
+        pid = fork();
+        if (pid == 0) 
+        {
+            // std::cout << "------------------INSIDE WAIT-------------------\n";
+            // exit(0);
+            // if(firstcgi)
+            // {
+            //     throw timeOut( "" , req);
+            // }
+            if (freopen(temp_file.c_str(), "w", stdout) == NULL) 
+            {
+                std::cerr << "Failed to freopen stdout." << std::endl;
+                fclose(output_file);
+                
+                return 1 ;
+            }
+            // if (req.get_method() == "POST"){
+            //     dup2(fd,0);
+            // }
+            if (execve(args[0], (char* const*)args, env) == -1) 
+            {
+                std::cerr << "Failed to execute CGI script." << std::endl;
+                fclose(output_file);
+            
+                return 1;
+            }
+        } 
+        int i = 0;
+        while (i < 6){
+            delete[] env[i];
+            i++;
+        }
+        delete[] env;
+        // delete temp_file;
+
+    }
+    if (pid > 0)
     {
+        // firstcgi = true;
+    // clock_t start;
 
-        waitpid(pid, NULL, 0);
-    } else 
+        // end = ( std::clock() - start ) / (double) CLOCKS_PER_SEC;
+        std::cout << "-----------------------------INSIDE WIATPID-------------------------\n";
+        std::cout << "------------" << pid << "----------------\n";
+        WAIT_PID = waitpid(pid, &status, 1);
+        if (WAIT_PID == -1){
+            perror("waitpid");
+            // exit(0);
+        }
+        if (WAIT_PID == 0){
+            end = clock() - start;
+            if (end >= 5000){
+                std::cout << " --------- time is : " << end << std::endl;
+                timeout = true;
+                kill(pid, SIGTERM);
+            //     std::cout << "time out : ";
+                // exit(0);
+                // return 0;/
+            }
+            if (WIFEXITED(status)){
+                if (timeout){
+                    cgirespons = false;
+                }
+                else
+                    cgirespons = true;
+                
+                std::cout << "-------------EXECTUE PROCES---------------\n";
+            }
+            std::cout << "PID IS 0 : " << WAIT_PID << std::endl;
+        }
+        // std::cout << "pid value is : " <<  << std::endl; // WNOGHANG
+    }
+    else
     {
         std::cerr << "Fork failed." << std::endl;
+        fclose(output_file);
         return 1;
     }
-
+    
+    // fclose(output_file);
     return 0;
 }
 

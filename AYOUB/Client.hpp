@@ -25,6 +25,7 @@ class Client
 void Client::clear()
 {
     buf.str("");
+    buf.clear();
     toRespons = false;
     endOf = -1;
     server_index = 0;

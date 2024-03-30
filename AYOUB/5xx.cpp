@@ -13,7 +13,7 @@ std::string Response::notImplement(std::string path, Request &req)
                 << "Connection: close\r\n"
                 << "Server: chabchoub\r\n"
                 << "Date: " << getCurrentDateTime() << "\r\n";
-        if (file == -1 || extension(path) != "html")
+        if (file == -1 )
         {
             std::cerr << RED << "failure in 501 page" << std::endl;
             std::stringstream con ; 
@@ -74,6 +74,8 @@ std::string Response::notImplement(std::string path, Request &req)
             response << "Content-Length: " << con.str().size() << "\r\n"
                     << "\r\n"
                     << con.str();
+            req.connexion = true;
+            // req.connexion = true;
         }
         else
         {
@@ -95,7 +97,6 @@ std::string Response::httpVersion(std::string path, Request &req)
 {
     if(req.firstTime)
     {
-
         file = open(path.c_str(), O_RDONLY);
         std::stringstream response;
         response << "HTTP/1.1 505 HTTP Version Not Supported\r\n"
@@ -103,7 +104,7 @@ std::string Response::httpVersion(std::string path, Request &req)
                 << "Connection: close\r\n"
                 << "Server: chabchoub\r\n"
                 << "Date: " << getCurrentDateTime() << "\r\n";
-        if (file == -1 || extension(path) != "html")
+        if (file == -1)
         {
             std::cerr << RED << "failure in 505 page" << std::endl;
             std::stringstream con ; 
@@ -161,9 +162,12 @@ std::string Response::httpVersion(std::string path, Request &req)
                 << "     </div>"
                 << " </body>"
                 << " </html>";
+
             response << "Content-Length: " << con.str().size() << "\r\n"
                     << "\r\n"
                     << con.str();
+            req.connexion = true;
+            // req.connexion = true;
         }
         else
         {
@@ -193,7 +197,7 @@ std::string Response::serverError(std::string path, Request &req)
                 << "Connection: close\r\n"
                 << "Server: chabchoub\r\n"
                 << "Date: " << getCurrentDateTime() << "\r\n";
-        if (file == -1 || extension(path) != "html")
+        if (file == -1 )
         {
             std::cerr << RED << "failure in 501 page" << std::endl;
             std::stringstream con ; 
@@ -254,6 +258,7 @@ std::string Response::serverError(std::string path, Request &req)
             response << "Content-Length: " << con.str().size() << "\r\n"
                     << "\r\n"
                     << con.str();
+            req.connexion = true;
         }
         else
         {

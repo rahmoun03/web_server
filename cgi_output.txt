@@ -1,0 +1,21 @@
+Content-type: text/html; charset=UTF-8
+
+
+<HTML>
+<BODY BGCOLOR=#FFFFFF>
+<FORM ACTION=/example/dest.php METHOD=POST>
+
+<P>Enter FileName:
+ <INPUT TYPE=TEXT NAME=name VALUE="" SIZE=75>
+<P><BR><P>
+<INPUT TYPE=SUBMIT VALUE="Show Me!">
+
+</FORM>
+
+<P><BR><P>
+<P><BR><P>
+<P><BR><P>
+
+
+</BODY>
+</HTML>

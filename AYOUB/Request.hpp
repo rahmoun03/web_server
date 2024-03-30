@@ -6,7 +6,7 @@
 /*   By: ahbajaou <ahbajaou@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/17 09:53:30 by arahmoun          #+#    #+#             */
-/*   Updated: 2024/03/21 03:21:54 by ahbajaou         ###   ########.fr       */
+/*   Updated: 2024/03/28 01:09:48 by ahbajaou         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -37,11 +37,11 @@
 
 
 #define SERVER_ROOT "./www/server1"
-#define GREEN "\033[0;32m"
 #define RED "\033[0;31m"
+#define GREEN "\033[0;32m"
 #define YOLLOW "\033[0;33m"
 #define BLUE "\033[0;34m"
-#define RAN "\033[0;38m"
+#define RAN "\033[0;35m"
 #define DEF "\033[0m"
 
 class Request
@@ -51,12 +51,12 @@ class Request
 		std::stringstream startline;
 		std::string method;
 		std::string path;
-		std::string query;
 		std::string protocol;
 		std::map<std::string, std::string> headers;
 		std::stringstream body;
 
 	public:
+		std::string query;
 		int chun;
 		size_t ra;
 		long int body_limit;
@@ -76,7 +76,8 @@ class Request
 		~Request();
 
 		void clear();
-		Request(std::stringstream &buf, size_t &endOf);
+		// Request(std::stringstream &buf, size_t &endOf);
+		void pars(std::stringstream &buf, size_t &endOf);
 		std::string &get_path();
 		std::string &get_query();
 		const std::string get_method() const;

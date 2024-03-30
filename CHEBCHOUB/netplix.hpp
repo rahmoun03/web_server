@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   netplix.hpp                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: ahbajaou <ahbajaou@student.42.fr>          +#+  +:+       +#+        */
+/*   By: himejjad <himejjad@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/03/17 03:09:09 by himejjad          #+#    #+#             */
-/*   Updated: 2024/03/29 03:36:59 by ahbajaou         ###   ########.fr       */
+/*   Updated: 2024/03/30 06:17:46 by himejjad         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -131,7 +131,7 @@ class netPlix{
                 }
             }
             printServer();
-            // exit(0);
+            exit(0);
             for (size_t i = 0; i < MAX_EVENTS; i++)
             {
                 client[i].endOf = -1;

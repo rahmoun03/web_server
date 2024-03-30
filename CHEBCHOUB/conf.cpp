@@ -109,7 +109,7 @@ void Conf::parseFrom(std::string name)
         exit(0);
     }
 }
-/
+
 std::map<std::string, loca> Conf::getLocal(){
     return locat;
 }

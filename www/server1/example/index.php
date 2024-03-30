@@ -1,4 +1,4 @@
 <?php
-    // echo "Hello CGI!!"
-    while(1){}
+    echo "Hello CGI!!"
+    // while(1){}
 ?>

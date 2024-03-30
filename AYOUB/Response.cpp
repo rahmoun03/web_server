@@ -602,12 +602,6 @@ int Response::serveCgi(Request &req, int &fd)
         pid = fork();
         if (pid == 0) 
         {
-            // std::cout << "------------------INSIDE WAIT-------------------\n";
-            // exit(0);
-            // if(firstcgi)
-            // {
-            //     throw timeOut( "" , req);
-            // }
             if (freopen(temp_file.c_str(), "w", stdout) == NULL) 
             {
                 std::cerr << "Failed to freopen stdout." << std::endl;
@@ -615,9 +609,6 @@ int Response::serveCgi(Request &req, int &fd)
                 
                 return 1 ;
             }
-            // if (req.get_method() == "POST"){
-            //     dup2(fd,0);
-            // }
             if (execve(args[0], (char* const*)args, env) == -1) 
             {
                 std::cerr << "Failed to execute CGI script." << std::endl;
@@ -637,39 +628,21 @@ int Response::serveCgi(Request &req, int &fd)
     }
     if (pid > 0)
     {
-        // firstcgi = true;
-    // clock_t start;
-
-        // end = ( std::clock() - start ) / (double) CLOCKS_PER_SEC;
         std::cout << "-----------------------------INSIDE WIATPID-------------------------\n";
-        std::cout << "------------" << pid << "----------------\n";
         WAIT_PID = waitpid(pid, &status, 1);
         if (WAIT_PID == -1){
             perror("waitpid");
-            // exit(0);
+            exit(0);
+            std::cout << "waitpid is : " << WAIT_PID << std::endl;
         }
-        if (WAIT_PID == 0){
-            end = clock() - start;
-            if (end >= 5000){
-                std::cout << " --------- time is : " << end << std::endl;
-                timeout = true;
-                kill(pid, SIGTERM);
-            //     std::cout << "time out : ";
-                // exit(0);
-                // return 0;/
-            }
-            if (WIFEXITED(status)){
-                if (timeout){
-                    cgirespons = false;
-                }
-                else
-                    cgirespons = true;
-                
-                std::cout << "-------------EXECTUE PROCES---------------\n";
-            }
-            std::cout << "PID IS 0 : " << WAIT_PID << std::endl;
+        else if (WIFEXITED(status)){
+
+            std::cout << "status is : " << status << std::endl;
+            cgirespons = true;
         }
-        // std::cout << "pid value is : " <<  << std::endl; // WNOGHANG
+        // else{
+        //     std::cout << "ANOTHER ORTION\n";
+        // }
     }
     else
     {

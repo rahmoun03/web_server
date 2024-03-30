@@ -624,21 +624,24 @@ int Response::serveCgi(Request &req, int &fd)
         }
         delete[] env;
         // delete temp_file;
-
+        WAIT_PID = waitpid(pid, &status, 1);
     }
     if (pid > 0)
     {
         std::cout << "-----------------------------INSIDE WIATPID-------------------------\n";
-        WAIT_PID = waitpid(pid, &status, 1);
         if (WAIT_PID == -1){
             perror("waitpid");
             exit(0);
             std::cout << "waitpid is : " << WAIT_PID << std::endl;
         }
-        else if (WIFEXITED(status)){
+        // else if (WIFEXITED(status)){
 
-            std::cout << "status is : " << status << std::endl;
-            cgirespons = true;
+        //     std::cout << "status is : " << status << std::endl;
+        //     cgirespons = true;
+        // }
+        else if (WAIT_PID == 0){
+            std::cout << "WAIT PID IS HERE IN ZERO :";
+            // cgirespons = false;
         }
         // else{
         //     std::cout << "ANOTHER ORTION\n";

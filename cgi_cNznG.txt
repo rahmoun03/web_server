@@ -1,0 +1,13 @@
+Content-type: text/html; charset=UTF-8
+
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Query String Test</title>
+</head>
+<body>
+    <h2>Query String Test</h2>
+
+    <p>Hello, ahmed !</p>
+</body>
+</html>

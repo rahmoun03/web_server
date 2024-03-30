@@ -21,15 +21,24 @@ class Response
 		std::string path;
 	public:
 		bool firstcgi;
-	    pid_t pid;	
+		bool firstExcep;
+		std::string tmp_path;
+	    pid_t pid;
+	    // pid_t WAIT_PID;
+		bool cgirespons;
+		bool timeout;
 		int file;
+		// int status;
 		FILE* output_file;
+    	clock_t start;
+		double end;
+		std::string temp_file;
 		Response();
 		~Response();
 
 		/*             METHODs              */
 		void	GET(int &fd, Request &req, Conf &server);
-		void	POST(int &fd, Request &req, Conf &server);
+		void	POST(int &fd, Request &req, Conf &server, uint32_t &event);
 		int	DELETE(int &fd, Request &req, Conf &server, std::string dpath);
 		/**************************************/
 
@@ -38,7 +47,7 @@ class Response
 		void 	serv_dir(int &fd, Request &req, Conf &server);
 		int 	serveCgi(Request &req,int &fd);
 
-		void	generateResponse(int &fd, Request &req, Conf &server);
+		void	generateResponse(int &fd, Request &req, Conf &server, uint32_t &event);
 		void	checkHeaders(Request &req, Conf &server);
 		std::string extension(const std::string &path);
 		

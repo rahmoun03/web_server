@@ -266,9 +266,7 @@ class netPlix{
 
                                     /***************************/
                                     // std::cout << YOLLOW << "request :\n" << DEF << client[fd].req << std::endl; 
-                                    if((client[fd].req.get_method() == "GET")
-                                        || (client[fd].req.get_method() == "POST"
-                                            && server[client[fd].server_index].locat.find(client[fd].req.get_path())->second.upload.empty()))
+                                    if(client[fd].req.get_method() == "GET")
                                     {
                                         events[i].events = EPOLLOUT;
                                         if (epoll_ctl(epoll_fd, EPOLL_CTL_MOD, fd, &events[i]) == -1) {
@@ -289,15 +287,25 @@ class netPlix{
                                 {
                             		std::cout << " correct request "<< std::endl;
 
-                                    client[fd].res.generateResponse(fd, client[fd].req, server[client[fd].server_index]);
+                                    client[fd].res.generateResponse(fd, client[fd].req, server[client[fd].server_index], events[i].events);
+                                    
+                                    
+                                    
+                                    if (epoll_ctl(epoll_fd, EPOLL_CTL_MOD, fd, &events[i]) == -1) {
+                                        perror("epoll_ctl");
+                                        throw (client[fd].res.serverError(server[client[fd].server_index].confCherch("500"), client[fd].req));
+                                    }
+                                    std::cout << "change event to " << (events[i].events == EPOLLOUT ? "EPOLLOUT" : "EPOLLIN") << std::endl;
+
                                 }
                                 catch(std::string &content)
                                 {
-                                    if(client[fd].req.firstTime)
+                                    if(!client[fd].res.firstExcep)
                                     {
-                                        // std::cout<< BLUE<<"respone : \n"<<YOLLOW<< content  << std::endl;
+                                        std::cout<< BLUE<<"respone : \n"<<YOLLOW<< content  << std::endl;
                                         send(fd, content.c_str(), content.size(), 0);
                                         client[fd].req.firstTime = false;
+                                        client[fd].res.firstExcep = true;
                                     }
                                     else
                                     {

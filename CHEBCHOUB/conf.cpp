@@ -15,6 +15,8 @@ Conf::Conf(std::ifstream & fg)
             {
                 numOfserver++;
                 getline(fg,name);
+
+				map_iterator tmp_tmp;
                 if (name.find("{") != std::string::npos)
                 {	
                     while (getline(fg,name))
@@ -31,7 +33,7 @@ Conf::Conf(std::ifstream & fg)
                             if (name.find("]") != std::string::npos){
                                 displayLocation();
                                 continue;
-                            }
+                            }							
                             if (isspaceRemove(name.substr(0,name.find("="))) == "error_page"){
                                 std::stringstream ss(name.substr(name.find("=") + 1));
                                 std::string key;
@@ -39,21 +41,53 @@ Conf::Conf(std::ifstream & fg)
                                 std::string err;
                                 ss >> key;
                                 ss >> value;
+								if (map.count(key))
+									throw "Error duplicate";
                                 if (ss >> err || !fileExists(value.c_str()))
-                                        throw "Ops error config file";
+                                        throw "ERORR: Erorr Configfile";
                                 map[key] = value;
-                            }
+							 }
                             else
                             {
                                 name.erase(std::remove_if(name.begin(),name.end(),isspace),name.end());
                                 map[name.substr(0,name.find("="))] = name.substr(name.find("=") + 1);
+								if (name.substr(0,name.find("=")) == "port")
+								{
+									portt++;
+									if(portt == 2)
+										throw "port duplicate";
+								}
+								if (name.substr(0,name.find("=")) == "host")
+								{
+									hostt++;
+									if(hostt == 2)
+										throw "host duplicate";
+								}
+								if (name.substr(0,name.find("=")) == "body_size_limit")
+								{
+									boody++;
+									if(boody == 2)
+										throw "body duplicate";
+								}
+								if (name.substr(0,name.find("=")) == "server_name")
+								{
+									serv_n++;
+									if(serv_n == 2)
+										throw "server_name duplicate";
+								}
+								if(map[name.substr(0,name.find("="))] == name.substr(0,name.find("=")))
+								{
+									mappp++;
+									if(mappp == 2)
+										throw "YOU SHOULD ENTER ONE var!";
+								}
                             }
                             if (name.find("}") != std::string::npos){
                                 break; 
                             }
                             if (name.find("server") != std::string::npos && name.size() == 6)
                             {
-                                throw "Ops error config file";
+                                throw "ERORR: Erorr Configfile";
                             }
                         }
                         else if (name.find("}") != std::string::npos)
@@ -66,18 +100,20 @@ Conf::Conf(std::ifstream & fg)
                         else
                         {
                             if (!name.empty())
-                                throw "Ops error config file";
+                                throw "ERORR: Erorr Configfile";
+                            throw "ERORR: Erorr Configfile";
+							
                         }
                     }
                 }
                 else
                 {
-                    throw "Ops error config file";
+                    throw "ERORR: Erorr Configfile";
                 }
             }
             else
             {
-                throw "Ops error config file";
+                throw "ERORR: Erorr Configfile";
             }
 
     }
@@ -280,53 +316,16 @@ std::string Conf::confCherch(std::string name)
     return "not found";
 }
 
-void parse_var(std::string name)
+
+void Conf::parsLocation(std::ifstream & fg)
 {
-	// int autoi = 0;
-	// int meth = 0;
-	try
-	{
 		int roott = 0;
-		int cgi = 0;
+		int cggi = 0;
 		int autoi = 0;
 		int uplo = 0;
 		int def = 0;
 		int meth = 0;
-		int locc = 0;
-		int boody = 0;
-		int serv_n = 0;
-		int portt = 0;
-		int host = 0; 
-		if (name.find("root") != std::string::npos)
-		{
-			roott++;
-			if (root == 2)
-				throw "YOU SHOULD ENTER ONE ROOT!";
-		}
-		if (name.find("port") != std::string::npos)
-		{
-			portt++;
-			if ( == 2)
-				throw "YOU SHOULD ENTER ONE ROOT!";
-		}
-		if (name.find("cgi") != std::string::npos)
-		{
-			cgi++;
-			if (cgi == 2)
-				throw "YOU SHOULD ENTER ONEcgi!";
-		}
 		
-	}
-	catch(const char *e)
-	{
-		std::cerr << e << '\n';
-		exit(0);
-	}
-}
-
-
-void Conf::parsLocation(std::ifstream & fg)
-{
 			(void)fg;
 			if (isspaceRemove(name.substr(0,name.find("="))) == "port" || isspaceRemove(name.substr(0,name.find("="))) == "host"
 				|| isspaceRemove(name.substr(0,name.find("="))) == "server_name" || isspaceRemove(name.substr(0,name.find("="))) == "body_size_limit"
@@ -335,9 +334,18 @@ void Conf::parsLocation(std::ifstream & fg)
 			if (isspaceRemove(name.substr(0,name.find("="))) == "location")
 				{
 					loc1.clear();
-					if (name.find("=") != std::string::npos){
+					if (name.find("=") != std::string::npos)
+					{
 						name.erase(std::remove_if(name.begin(),name.end(),isspace),name.end());
 						loc1[name.substr(0,name.find("="))] = (name.substr(name.find("=") + 1));
+						map_iterator loccc = loc1.begin();
+						if(loccc->second == name.substr(name.find("=") + 1))
+						{
+				
+							locc++;
+							if(locc == 2)
+								throw "YOU SHOULD ENTER ONE ROOT!";
+						}
 						getline(fg,name);
 						if (name.find("[") != std::string::npos)
 						{
@@ -351,31 +359,65 @@ void Conf::parsLocation(std::ifstream & fg)
 								}
 								parseFrom(name);
 								if (name.find("=") != std::string::npos){
-									parse_var(name);
+									if (name.find("root") != std::string::npos)
+									{
+										roott++;
+										if (roott == 2)
+											throw "YOU SHOULD ENTER ONE ROOT!";
+									}
+									if (name.find("cgi") != std::string::npos)
+									{
+										cggi++;
+										if (cggi == 2)
+											throw "YOU SHOULD ENTER ONE cgi!";
+									}
+									if (name.find("method") != std::string::npos)
+									{
+										meth++;
+										if (meth == 2)
+											throw "YOU SHOULD ENTER ONE method!";
+									}
+									if (name.find("autoindex") != std::string::npos)
+									{
+										autoi++;
+										if (autoi == 2)
+											throw "YOU SHOULD ENTER ONE autoindex!";
+									}
+									if (name.find("upload") != std::string::npos)
+									{
+										uplo++;
+										if (uplo == 2)
+											throw "YOU SHOULD ENTER ONE upload!";
+									}
+									if (name.find("default") != std::string::npos)
+									{
+										def++;
+										if (def == 2)
+											throw "YOU SHOULD ENTER ONE default!";
+									}
 									loc1[isspaceRemove(name.substr(0,name.find("=")))] = (name.substr(name.find("=") + 1));
 									if (name.find("]") != std::string::npos){
 										break;
 									}
 									if (name.find("location") != std::string::npos){
-											throw "Ops error config file";
+											throw "ERORR: Erorr Configfile";
 									}
 								}
 								else if (name.find("]") != std::string::npos){
 									parseAndCheckLocation();
-									// exit(0);
 									break;
 								}
 								else{
-									throw "Ops error config file";
+									throw "ERORR: Erorr Configfile";
 								}
 
 							}
 						}
 						else
-							throw "Ops error config file";
+							throw "ERORR: Erorr Configfile";
 					}
 					else
-						throw "Ops error config file";
+						throw "ERORR: Erorr Configfile";
 				}
 				else
 				{

@@ -100,6 +100,7 @@ std::string Response::timeOut(std::string path, Request &req)
         std::cout << "here \n";
     if(!firstExcep)
     {
+
         file = open(path.c_str(), O_RDONLY);
         std::stringstream response;
         response << "HTTP/1.1 408 Request Timeout\r\n"

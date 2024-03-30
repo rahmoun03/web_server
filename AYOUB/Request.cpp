@@ -156,11 +156,13 @@ void Request::clear()
 	headers.clear();
 	body.str("");
 	body.clear();
-
+	query.clear();
+	root_end = 0;
 	startLineForma = false;
 	body_limit = 0;
 	firstTime = false;
 	connexion = false;
+	CGI = false;
 	ra = 0;
 	chun = 0;
 	red_path.clear();

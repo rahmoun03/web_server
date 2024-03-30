@@ -54,6 +54,7 @@ void	Response::GET(int &fd, Request &req, Conf &server)
                 else if (timeout)
                 {
                     std::cout << "in time out " << std::endl;
+                    // sleep(5);
                     throw timeOut(server.confCherch("408"),req);
                 }
             }

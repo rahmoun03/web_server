@@ -194,7 +194,7 @@ class netPlix{
 
                         client[new_socketfd].server_index = std::distance(socket_acc.begin(), it_serv);
                         std::string name = server[client[new_socketfd].server_index].confCherch("server_name");
-                        // std::cout << BLUE << name << GREEN << " Received connection from ==> " << DEF << inet_ntoa(clientaddr.sin_addr) << ", on fd : "<< new_socketfd << DEF << std::endl;
+                        std::cout << BLUE << name << GREEN << " Received connection from ==> " << DEF << inet_ntoa(clientaddr.sin_addr) << ", on fd : "<< new_socketfd << DEF << std::endl;
                     }
                     else if ((events[i].events & EPOLLERR) || (events[i].events & EPOLLHUP)) {
                         std::cout << "------{ Error Epoll }-------" << std::endl;
@@ -290,9 +290,9 @@ class netPlix{
                                     client[fd].res.generateResponse(fd, client[fd].req, server[client[fd].server_index], events[i].events);
                                     
                                     
-                                    
                                     if (epoll_ctl(epoll_fd, EPOLL_CTL_MOD, fd, &events[i]) == -1) {
                                         perror("epoll_ctl");
+                                        std::cout << fd << std::endl;
                                         throw (client[fd].res.serverError(server[client[fd].server_index].confCherch("500"), client[fd].req));
                                     }
                                     std::cout << "change event to " << (events[i].events == EPOLLOUT ? "EPOLLOUT" : "EPOLLIN") << std::endl;
@@ -303,9 +303,11 @@ class netPlix{
                                     if(!client[fd].res.firstExcep)
                                     {
                                         std::cout<< BLUE<<"respone : \n"<<YOLLOW<< content  << std::endl;
+
                                         send(fd, content.c_str(), content.size(), 0);
                                         client[fd].req.firstTime = false;
                                         client[fd].res.firstExcep = true;
+
                                     }
                                     else
                                     {
@@ -320,14 +322,14 @@ class netPlix{
                         }
                         if(client[fd].req.connexion)
                         {
-                            std::cout << RED <<"Client disconnected : "<< DEF<< fd<< std::endl;
+                            std::cout << RED <<"Client disconnected : "<< DEF<< fd << std::endl;
                             if (epoll_ctl(epoll_fd, EPOLL_CTL_DEL, fd, NULL) == -1) {
                                 perror("epoll_ctl");
                                 exit(EXIT_FAILURE);
                             }
                             client[fd].clear();
-                            close(fd);
                             clientOut[fd] = -1;
+                            close(fd);
                         }
                         // servClient(i, fd);
                     }

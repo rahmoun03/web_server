@@ -20,6 +20,13 @@ void	Response::GET(int &fd, Request &req, Conf &server)
     {
         std::cout << "http://" << req.get_path() << "\n";
         std::cout << "the URL is a directory \n";
+        std::string root =  server.locat.find(req.locationPath)->second.root;
+        const char* r_path = root.c_str();
+        const char* path2 = req.get_path().c_str();
+        char resolved_path[PATH_MAX];
+        if(strlen(realpath(r_path, resolved_path)) > strlen(realpath(path2, resolved_path)))
+            throw forbidden(server.confCherch("403"), req);
+        
         serv_dir(fd, req, server);
     }
     else if (fileExists(req.get_path()))

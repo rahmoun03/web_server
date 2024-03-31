@@ -64,7 +64,7 @@ class Request
 		bool connexion;
 		bool CGI;
 		bool startLineForma;
-		std::string test;
+		// std::string test;
 		size_t root_end;
 		std::string red_path;
 		std::string locationPath;

@@ -19,8 +19,10 @@ Conf::Conf(std::ifstream & fg)
 				map_iterator tmp_tmp;
                 if (name.find("{") != std::string::npos)
                 {	
+					serv_n++;
                     while (getline(fg,name))
                     {
+
                         size_t tab = static_cast<size_t>(std::count(name.begin(),name.end(),'\t'));
                         size_t spac = static_cast<size_t>(std::count(name.begin(),name.end(),' '));
                         if ((name.empty()) || (spac == name.size())
@@ -51,38 +53,36 @@ Conf::Conf(std::ifstream & fg)
                             {
                                 name.erase(std::remove_if(name.begin(),name.end(),isspace),name.end());
                                 map[name.substr(0,name.find("="))] = name.substr(name.find("=") + 1);
-								if (name.substr(0,name.find("=")) == "port")
+								vecc.push_back(name.substr(0,name.find("=")));
+								if(vecc[cn] == "port")
 								{
 									portt++;
 									if(portt == 2)
-										throw "port duplicate";
+										throw "Error dduplicate";
 								}
-								if (name.substr(0,name.find("=")) == "host")
+								if(vecc[cn] == "host")
 								{
 									hostt++;
 									if(hostt == 2)
-										throw "host duplicate";
+										throw "Error dduplicate";
 								}
-								if (name.substr(0,name.find("=")) == "body_size_limit")
+								if(vecc[cn] == "body_size_limit")
 								{
 									boody++;
 									if(boody == 2)
-										throw "body duplicate";
+										throw "Error dduplicate";
 								}
-								if (name.substr(0,name.find("=")) == "server_name")
+								if(vecc[cn] == "server_name")
 								{
-									serv_n++;
-									if(serv_n == 2)
-										throw "server_name duplicate";
+									server_n++;
+									if(server_n == 2)
+										throw "Error dduplicate";
 								}
-								if(map[name.substr(0,name.find("="))] == name.substr(0,name.find("=")))
-								{
-									mappp++;
-									if(mappp == 2)
-										throw "YOU SHOULD ENTER ONE var!";
-								}
+								cn++;
+						
                             }
                             if (name.find("}") != std::string::npos){
+								serv_v++;
                                 break; 
                             }
                             if (name.find("server") != std::string::npos && name.size() == 6)
@@ -92,6 +92,13 @@ Conf::Conf(std::ifstream & fg)
                         }
                         else if (name.find("}") != std::string::npos)
                         {
+							vecc.clear();
+							cn = 0;
+							portt = 0;
+							hostt = 0;
+							boody = 0;
+							server_n = 0;
+								serv_v++;
                             parsAndCheckServer();
                             if (loc1.empty())
                                 throw "LOCATION NOT FOUND!";
@@ -101,10 +108,14 @@ Conf::Conf(std::ifstream & fg)
                         {
                             if (!name.empty())
                                 throw "ERORR: Erorr Configfile";
-                            throw "ERORR: Erorr Configfile";
 							
                         }
                     }
+					if (serv_n != serv_v){
+                            throw "ERORR: Erorr Configfile";
+						std::cout << "-- END OF LOOP -- \n";
+					}
+ 
                 }
                 else
                 {
@@ -158,6 +169,8 @@ void Conf::displayLocation()
 				for(;it != loc1.end(); it++){
 					if (it->first.find("location") != std::string::npos){
 						loc.location = it->second;
+						if (locat.count(it->second))
+							throw "Error duplicate";
 					}
 		
 					else if (it->first == "method"){
@@ -300,6 +313,8 @@ void    Conf::parsAndCheckServer()
 				if (map.find("root") != map.end()){
 						throw "YOU SHOULD GIVES ROOT IN LOCATION!";
 				}
+				if (map.count(name.substr(0,name.find("="))))
+					throw "Error duplicate";
 
 			}
 			catch (const char * err){
@@ -338,13 +353,6 @@ void Conf::parsLocation(std::ifstream & fg)
 					{
 						name.erase(std::remove_if(name.begin(),name.end(),isspace),name.end());
 						loc1[name.substr(0,name.find("="))] = (name.substr(name.find("=") + 1));
-						map_iterator loccc = loc1.begin();
-						// if(loccc->second == name.substr(name.find("=") + 1))
-						// {
-						// 	locc++;
-						// 	if(locc == 2)
-						// 		throw "YOU SHOULD ENTER ONE ROOT!";
-						// }
 						getline(fg,name);
 						if (name.find("[") != std::string::npos)
 						{

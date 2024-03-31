@@ -6,7 +6,7 @@
 /*   By: ahbajaou <ahbajaou@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/03/17 03:09:09 by himejjad          #+#    #+#             */
-/*   Updated: 2024/03/31 02:55:40 by ahbajaou         ###   ########.fr       */
+/*   Updated: 2024/03/31 05:46:06 by ahbajaou         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -116,7 +116,8 @@ class netPlix{
 				if (bin < 0)
 				{
 					perror("bind");
-					// exit(0);
+                    if(serverNum == 1)
+					    exit(0);
 				}
                 listen(socket_fd[i],SOMAXCONN);
                 if (socket_fd[i] == -1){
@@ -294,15 +295,16 @@ class netPlix{
 
                                     client[fd].res.generateResponse(fd, client[fd].req, server[client[fd].server_index], events[i].events);
                                     
-                    
-                                    //     std::cout << "-----> "<< client[fd].req.get_method() << std::endl;
-                                    //     if (epoll_ctl(epoll_fd, EPOLL_CTL_MOD, fd, &events[i]) == -1) {
-                                    //         perror("epoll_ctl");
-                                    //         std::cout << fd << std::endl;
-                                    //         throw (client[fd].res.serverError(server[client[fd].server_index].confCherch("500"), client[fd].req));
-                                     
+                                    // if(!client[fd].res.postToGet)
+                                    // {
+                                        if (epoll_ctl(epoll_fd, EPOLL_CTL_MOD, fd, &events[i]) == -1) {
+                                            perror("epoll_ctl");
+                                            std::cout << "bnt L7ram :" << fd << std::endl;
+                                            throw (client[fd].res.serverError(server[client[fd].server_index].confCherch("500"), client[fd].req));
+                                        }
+                                        // client[fd].res.postToGet = true;
+                                        std::cout << "change event to " << (events[i].events == EPOLLOUT ? "EPOLLOUT" : "EPOLLIN") << std::endl;
                                     // }
-                                    std::cout << "change event to " << (events[i].events == EPOLLOUT ? "EPOLLOUT" : "EPOLLIN") << std::endl;
 
                                 }
                                 catch(std::string &content)

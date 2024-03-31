@@ -1,6 +1,8 @@
 
 
 #include "Response.hpp"
+#include <sys/epoll.h>
+
 
 void Response::generateResponse(int &fd, Request &req, Conf &server , uint32_t &event)
 {
@@ -39,13 +41,18 @@ void Response::generateResponse(int &fd, Request &req, Conf &server , uint32_t &
     {
         if (server.locat.find(req.locationPath) != server.locat.end() && !(server.locat.find(req.locationPath)->second.upload.empty()))
         {
-            // std::cout << RED << "POST METHOD, upload path : " << DEF
-                    //   << server.locat.find(req.get_path())->second.upload << std::endl; 
+
+            std::cout << RED << "POST METHOD, upload path : " << DEF
+                      << server.locat.find(req.get_path())->second.upload << std::endl; 
             POST(fd, req, server, event);
         }
         else
         {
-            // std::cout << "dont suport upload" << std::endl;
+            std::cout << "dont suport upload" << std::endl;
+            // if(!postToGet)
+            event = EPOLLOUT;
+            // postToGet = true;
+            req.query = req.get_body();
             GET(fd, req, server);
         }
     }
@@ -166,7 +173,7 @@ void Response::serv_dir(int &fd, Request &req, Conf &server)
             {
                 // std::cout << "the location : " << _path.substr(req.root_end) << "\nautoIndex : "
                         //   << (server.locat.find(_path.substr(req.root_end))->second.autoindex) << std::endl;
-                // std::cout << BLUE << "Listing The Directory ..." << DEF << std::endl;
+                std::cout << BLUE << "Listing The Directory ..." << DEF << std::endl;
 
                 std::string content = listDirectory(_path.c_str());
                 std::stringstream response;
@@ -204,6 +211,7 @@ void Response::serv_dir(int &fd, Request &req, Conf &server)
                     req.get_path() = _path;
                     if(!serveCgi(req,fd))
                     {
+                        fclose(output_file);
                         std::ifstream ff("./cgi_output.txt");
                         std::stringstream response;
                         std::string res = std::string(std::istreambuf_iterator<char>(ff), std::istreambuf_iterator<char>()); 
@@ -612,9 +620,9 @@ int Response::serveCgi(Request &req, int &fd)
                     
                     return 1 ;
                 }
-                if (req.get_method() == "POST"){
-                    dup2(fd,0);
-                }
+                // if (req.get_method() == "POST"){
+                //     dup2(fd,0);
+                // }
                 if (execve(args[0], (char* const*)args, env) == -1) 
                 {
                     std::cerr << "Failed to execute CGI script." << std::endl;

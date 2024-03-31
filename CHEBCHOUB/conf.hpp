@@ -44,15 +44,19 @@ class loca{
 class Conf {
 	private :
 		std::string name;
+		std::vector<std::string> vecc;
 		std::map<std::string, loca>::iterator it;
 		std::map<std::string,std::string> loc1;
 		std::map<std::string,std::string>::iterator ito;
 		// int mappp;
-		// int boody ;
+		int boody ;
 		int serv_n ;
+		int server_n;
+		// int err;
 		int serv_v ;
-		// int hostt ; 
-		// int portt ;
+		int cn;
+		int hostt ; 
+		int portt ;
 	public :
 		std::map<std::string, std::string> map;
 		std::map<std::string, loca> locat;

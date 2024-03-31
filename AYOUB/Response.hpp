@@ -21,6 +21,7 @@ class Response
 		std::string path;
 	public:
 		bool firstcgi;
+		bool postToGet;
 		bool firstExcep;
 		std::string tmp_path;
 	    pid_t pid;

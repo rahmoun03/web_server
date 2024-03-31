@@ -3,7 +3,7 @@
 /******************************************************************************/
 std::string Response::notImplement(std::string path, Request &req)
 {
-    if(req.firstTime)
+    if(!firstExcep)
     {
 
         file = open(path.c_str(), O_RDONLY);
@@ -95,7 +95,7 @@ std::string Response::notImplement(std::string path, Request &req)
 
 std::string Response::httpVersion(std::string path, Request &req)
 {
-    if(req.firstTime)
+    if(!firstExcep)
     {
         file = open(path.c_str(), O_RDONLY);
         std::stringstream response;
@@ -187,19 +187,19 @@ std::string Response::httpVersion(std::string path, Request &req)
 
 std::string Response::serverError(std::string path, Request &req)
 {
-    if(req.firstTime)
+    if(!firstExcep)
     {
 
         file = open(path.c_str(), O_RDONLY);
         std::stringstream response;
-        response << "HTTP/1.1 501 Not Implemented\r\n"
+        response << "HTTP/1.1 500 Internal Server Error\r\n"
                 << "Content-Type: text/html\r\n"
                 << "Connection: close\r\n"
                 << "Server: chabchoub\r\n"
                 << "Date: " << getCurrentDateTime() << "\r\n";
         if (file == -1 )
         {
-            std::cerr << RED << "failure in 501 page" << std::endl;
+            std::cerr << RED << "failure in 500 page" << std::endl;
             std::stringstream con ; 
             con << "<!DOCTYPE html>"
                 << " <html lang=\"en\">"

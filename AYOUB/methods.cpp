@@ -40,6 +40,7 @@ void	Response::GET(int &fd, Request &req, Conf &server)
             {
                 if (cgirespons)
                 {
+                    fclose(output_file);
                     std::cout << "tmp file : " << temp_file << std::endl;
                     std::ifstream ff(temp_file.c_str());
                     std::stringstream response;
@@ -52,6 +53,7 @@ void	Response::GET(int &fd, Request &req, Conf &server)
                     std::cout << "----QUARY IS : " << tmp_path << std::endl;
                     send(fd, response.str().c_str() , response.str().size(), 0);
                     req.connexion = true;
+                    ff.close();
                 }
                 else if (timeout)
                 {
@@ -70,7 +72,10 @@ void	Response::GET(int &fd, Request &req, Conf &server)
         else
         {
             std::cout << "NOT FOUND 404 in MimeTypes and cgi "<< std::endl;
-            throw(mediaType(server.confCherch("415"), req));
+            if(!server.locat.find(req.locationPath)->second.cgi && (extension(req.get_path()) == "php" || extension(req.get_path()) == "py"))
+                throw(forbidden(server.confCherch("403"), req));
+            else
+                throw(mediaType(server.confCherch("415"), req));
         }
     }
     else
@@ -102,6 +107,10 @@ void	Response::POST(int &fd, Request &req, Conf &server, uint32_t &event)
             std::string type = static_cast<std::string>(req.get_header("Content-Type:"));
             std::map<std::string, std::string> mime = post_type();
             map_iterator mmap = mime.find(type);
+            if (mmap == mime.end())
+            {
+                throw (mediaType(server.confCherch("415"), req));
+            }
             std::cout << "here: " << mmap->second << std::endl;
             tmp_path = up_ptah + ("upload." + mmap->second);
             tmp_path = up_ptah + ("upload." + mmap->second);
@@ -146,7 +155,9 @@ void	Response::POST(int &fd, Request &req, Conf &server, uint32_t &event)
                 // std::cout << "Query : " << req.query  << std::endl; 
                 // ff.close();
                 GET(fd, req, server);
-                // event = EPOLLOUT;
+                event = EPOLLOUT;
+                // postToGet = 
+
             }
             else{
                 req.connexion = true;

@@ -146,7 +146,12 @@ void Conf::parseFrom(std::string name)
             str.push_back(form);
         }
         if (str[0] == "]")
+		{
+			// std::cout << str[0][0] << std::endl;
+			if (str[0][1])
+            	throw "FORM NOT VALID!";
             return ;
+		}
         if (str[1] != "=")
             throw "FORM NOT VALID!";
     }
@@ -356,6 +361,12 @@ void Conf::parsLocation(std::ifstream & fg)
 						getline(fg,name);
 						if (name.find("[") != std::string::npos)
 						{
+							std::string form;
+							std::vector<std::string> str;
+							std::stringstream ss(name);
+							ss >> form;
+							if (form != "[")
+								throw "FORM NOT VALID!";
 							while (getline(fg,name)){
 								size_t tab = static_cast<size_t>(std::count(name.begin(),name.end(),'\t'));
 								size_t spac = static_cast<size_t>(std::count(name.begin(),name.end(),' '));

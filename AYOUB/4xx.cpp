@@ -4,7 +4,7 @@
 
 std::string Response::lengthRequired(std::string path, Request &req)
 {
-    if(req.firstTime)
+    if(!firstExcep)
     {
 
         file = open(path.c_str(), O_RDONLY);
@@ -97,8 +97,10 @@ std::string Response::lengthRequired(std::string path, Request &req)
 
 std::string Response::timeOut(std::string path, Request &req)
 {
-    if(req.firstTime)
+        std::cout << "here \n";
+    if(!firstExcep)
     {
+
         file = open(path.c_str(), O_RDONLY);
         std::stringstream response;
         response << "HTTP/1.1 408 Request Timeout\r\n"
@@ -106,9 +108,9 @@ std::string Response::timeOut(std::string path, Request &req)
                 << "Connection: close\r\n"
                 << "Server: chabchoub\r\n"
                 << "Date: " << getCurrentDateTime() << "\r\n";
-        if (file == -1 || extension(path) != "html"	)
+        if (file == -1)
         {
-            // std::cerr << RED << "failure in 408 page" << std::endl;
+            std::cerr << RED << "failure in 408 page" << std::endl;
             std::stringstream con ; 
             con << "<!DOCTYPE html>"\
                 << " <!DOCTYPE html>"
@@ -190,7 +192,7 @@ std::string Response::timeOut(std::string path, Request &req)
 
 std::string Response::notAllow(std::string method, std::string path, Request &req)
 {
-    if(req.firstTime)
+    if(!firstExcep)
     {
 
         file = open(path.c_str(), O_RDONLY);
@@ -284,7 +286,7 @@ std::string Response::notAllow(std::string method, std::string path, Request &re
 
 std::string Response::notFound(std::string path, Request &req)
 {
-    if(req.firstTime)
+    if(!firstExcep)
     {
 
         std::stringstream response;
@@ -378,7 +380,7 @@ std::string Response::notFound(std::string path, Request &req)
 
 std::string Response::EntityTooLarge(std::string path, Request &req)
 {
-    if(req.firstTime)
+    if(!firstExcep)
     {
 
         file = open(path.c_str(), O_RDONLY);
@@ -472,7 +474,7 @@ std::string Response::EntityTooLarge(std::string path, Request &req)
 
 std::string Response::forbidden(std::string path, Request &req)
 {
-    if(req.firstTime)
+    if(!firstExcep)
     {
 
         file = open(path.c_str(), O_RDONLY);
@@ -566,7 +568,7 @@ std::string Response::forbidden(std::string path, Request &req)
 
 std::string Response::badRequest(std::string path, Request &req)
 {
-    if(req.firstTime)
+    if(!firstExcep)
     {
 
         file = open(path.c_str(), O_RDONLY);
@@ -662,7 +664,7 @@ std::string Response::badRequest(std::string path, Request &req)
 
 std::string Response::longRequest(std::string path, Request &req)
 {
-    if(req.firstTime)
+    if(!firstExcep)
     {
 
         file = open(path.c_str(), O_RDONLY);
@@ -759,7 +761,7 @@ std::string Response::longRequest(std::string path, Request &req)
 
 std::string Response::mediaType(std::string path, Request &req)
 {
-    if(req.firstTime)
+    if(!firstExcep)
     {
 
         file = open(path.c_str(), O_RDONLY);
@@ -854,7 +856,7 @@ std::string Response::mediaType(std::string path, Request &req)
 
 std::string Response::headerTooLarge(std::string path, Request &req)
 {
-    if(req.firstTime)
+    if(!firstExcep)
     {
 
         file = open(path.c_str(), O_RDONLY);
@@ -949,7 +951,7 @@ std::string Response::headerTooLarge(std::string path, Request &req)
 
 std::string Response::conflict(std::string path, Request &req)
 {
-    if(req.firstTime)
+    if(!firstExcep)
     {
 
         file = open(path.c_str(), O_RDONLY);

@@ -1,3 +1,7 @@
 <?php
-while (true){};
+    echo "hello world ";
+    // while (1)
+    // {
+        
+    // }
 ?>

@@ -6,7 +6,7 @@
 /*   By: ahbajaou <ahbajaou@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/03/17 03:09:09 by himejjad          #+#    #+#             */
-/*   Updated: 2024/03/29 03:36:59 by ahbajaou         ###   ########.fr       */
+/*   Updated: 2024/03/31 02:55:40 by ahbajaou         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -125,6 +125,7 @@ class netPlix{
                 }
                 event.data.fd = socket_fd[i];
                 event.events = EPOLLIN ;
+                std::cout << "-------------------------000----------------------------------\n";
                 if (epoll_ctl(epoll_fd,EPOLL_CTL_ADD,socket_fd[i],&event) == -1){
                     perror("epoll_ctl");
                     exit(0);
@@ -157,13 +158,14 @@ class netPlix{
                             send(i, res.c_str(), res.size(), 0);
                             std::cout << YOLLOW <<"send response time out ..."<< DEF<< std::endl;
                             std::cout << RED <<"Client disconnected : "<< DEF << clientOut[i] << std::endl;
-                            if (epoll_ctl(epoll_fd, EPOLL_CTL_DEL, i, NULL) == -1) {
-                                perror("epoll_ctl");
-                                exit(EXIT_FAILURE);
-                            }
-                            client[i].clear();
-                            close(i);
-                            clientOut[i] = -1;
+                            std::cout << "-------------------------001----------------------------------\n";
+                
+                                if (epoll_ctl(epoll_fd, EPOLL_CTL_DEL, i, NULL) == -1) {
+                                    perror("epoll_ctl");
+                                    exit(EXIT_FAILURE);
+                                }
+                                client[i].clear();
+                                clientOut[i] = -1;
                         }
                     }
                 }
@@ -194,11 +196,12 @@ class netPlix{
 
                         client[new_socketfd].server_index = std::distance(socket_acc.begin(), it_serv);
                         std::string name = server[client[new_socketfd].server_index].confCherch("server_name");
-                        // std::cout << BLUE << name << GREEN << " Received connection from ==> " << DEF << inet_ntoa(clientaddr.sin_addr) << ", on fd : "<< new_socketfd << DEF << std::endl;
+                        std::cout << BLUE << name << GREEN << " Received connection from ==> " << DEF << inet_ntoa(clientaddr.sin_addr) << ", on fd : "<< new_socketfd << DEF << std::endl;
                     }
                     else if ((events[i].events & EPOLLERR) || (events[i].events & EPOLLHUP)) {
                         std::cout << "------{ Error Epoll }-------" << std::endl;
                         std::cout << RED <<"Client disconnected : "<< DEF<< fd<< std::endl;
+                        std::cout << "-------------------------002----------------------------------\n";
                         if (epoll_ctl(epoll_fd, EPOLL_CTL_DEL, fd, NULL) == -1) {
                             perror("epoll_ctl");
                             exit(EXIT_FAILURE);
@@ -225,6 +228,7 @@ class netPlix{
                         if (bytes_read == 0) {
                             std::cout << RED << "read 0 "<< DEF << std::endl;
                             std::cout << RED <<"Client disconnected : "<< DEF<< fd<< std::endl;
+                            std::cout << "-------------------------003----------------------------------\n";
                             if (epoll_ctl(epoll_fd, EPOLL_CTL_DEL, fd, NULL) == -1) {
                                 perror("epoll_ctl");
                                 exit(EXIT_FAILURE);
@@ -266,11 +270,10 @@ class netPlix{
 
                                     /***************************/
                                     // std::cout << YOLLOW << "request :\n" << DEF << client[fd].req << std::endl; 
-                                    if((client[fd].req.get_method() == "GET")
-                                        || (client[fd].req.get_method() == "POST"
-                                            && server[client[fd].server_index].locat.find(client[fd].req.get_path())->second.upload.empty()))
+                                    if(client[fd].req.get_method() == "GET")
                                     {
                                         events[i].events = EPOLLOUT;
+                                    std::cout << "-------------------------004----------------------------------\n";
                                         if (epoll_ctl(epoll_fd, EPOLL_CTL_MOD, fd, &events[i]) == -1) {
                                             perror("epoll_ctl");
                                             exit(EXIT_FAILURE);
@@ -289,15 +292,29 @@ class netPlix{
                                 {
                             		std::cout << " correct request "<< std::endl;
 
-                                    client[fd].res.generateResponse(fd, client[fd].req, server[client[fd].server_index]);
+                                    client[fd].res.generateResponse(fd, client[fd].req, server[client[fd].server_index], events[i].events);
+                                    
+                    
+                                    //     std::cout << "-----> "<< client[fd].req.get_method() << std::endl;
+                                    //     if (epoll_ctl(epoll_fd, EPOLL_CTL_MOD, fd, &events[i]) == -1) {
+                                    //         perror("epoll_ctl");
+                                    //         std::cout << fd << std::endl;
+                                    //         throw (client[fd].res.serverError(server[client[fd].server_index].confCherch("500"), client[fd].req));
+                                     
+                                    // }
+                                    std::cout << "change event to " << (events[i].events == EPOLLOUT ? "EPOLLOUT" : "EPOLLIN") << std::endl;
+
                                 }
                                 catch(std::string &content)
                                 {
-                                    if(client[fd].req.firstTime)
+                                    if(!client[fd].res.firstExcep)
                                     {
-                                        // std::cout<< BLUE<<"respone : \n"<<YOLLOW<< content  << std::endl;
+                                        std::cout<< BLUE<<"respone : \n"<<YOLLOW<< content  << std::endl;
+
                                         send(fd, content.c_str(), content.size(), 0);
                                         client[fd].req.firstTime = false;
+                                        client[fd].res.firstExcep = true;
+
                                     }
                                     else
                                     {
@@ -312,14 +329,17 @@ class netPlix{
                         }
                         if(client[fd].req.connexion)
                         {
-                            std::cout << RED <<"Client disconnected : "<< DEF<< fd<< std::endl;
-                            if (epoll_ctl(epoll_fd, EPOLL_CTL_DEL, fd, NULL) == -1) {
-                                perror("epoll_ctl");
-                                exit(EXIT_FAILURE);
-                            }
-                            client[fd].clear();
-                            close(fd);
-                            clientOut[fd] = -1;
+                            std::cout << RED <<"Client disconnected : "<< DEF<< fd << std::endl;
+                            std::cout << "-------------------------005----------------------------------\n";
+                 
+                                if (epoll_ctl(epoll_fd, EPOLL_CTL_DEL, fd, NULL) == -1) {
+                                    perror("epoll_ctl");
+                                    exit(EXIT_FAILURE);
+                                }
+                                client[fd].clear();
+                                clientOut[fd] = -1;
+                                close(fd);
+                
                         }
                         // servClient(i, fd);
                     }

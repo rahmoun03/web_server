@@ -66,8 +66,11 @@ std::map<std::string, std::string> post_type()
     mime_map["text/html"] = "html";
     mime_map["text/css"] = "css";
     mime_map["text/javascript"] = "js";
+    mime_map["text/xml"] = "xml";
 
     mime_map["application/json"] = "json";
+    mime_map["application/x-www-form-urlencoded"] = "txt";
+    mime_map["multipart/form-data"] = "bin";
     mime_map["application/ld+json"] = "jsonld";
     mime_map["application/xml"] = "xml";
     mime_map["application/pdf"] = "pdf";

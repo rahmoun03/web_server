@@ -10,6 +10,7 @@
 #include <iostream>
 #include <cstdlib> // For system function
 #include <unistd.h>
+#include <sys/epoll.h>
 
 void	Response::GET(int &fd, Request &req, Conf &server)
 {
@@ -31,28 +32,31 @@ void	Response::GET(int &fd, Request &req, Conf &server)
             std::cout << "the URL is a file : " << it->second << std::endl;
             serv_file(it, fd, req, server);
         }
-        else if (server.locat.find(req.locationPath)->second.cgi)
+        else if (server.locat.find(req.locationPath)->second.cgi && (extension(req.get_path()) == "php" || extension(req.get_path()) == "py"))
         {
             std::cout << "http://" << req.get_path() << "\n";
             std::cout << "the URL is a file : php" << std::endl;
-
             if(!serveCgi(req,fd))
             {
-                if (cgirespons){
+                if (cgirespons)
+                {
+                    std::cout << "tmp file : " << temp_file << std::endl;
                     std::ifstream ff(temp_file.c_str());
                     std::stringstream response;
-                    response << "HTTP/1.1 200 OK\r\n"
-                            << "Connection: close\r\n"
-                            << "Server: chabchoub\r\n"
-                            << "Date: " << getCurrentDateTime() << "\r\n";
                     std::string res = std::string(std::istreambuf_iterator<char>(ff), std::istreambuf_iterator<char>()); 
+                    response << "HTTP/1.1 200 OK\r\n"
                     // response << "Content-Length: " << res.size() << "\r\n"
-                            response << res;
+                            << res;
                     std::cout << "response send to client ...\n" << "response : \n" << response.str() << std::endl;
+                    // exit(0);
+                    std::cout << "----QUARY IS : " << tmp_path << std::endl;
                     send(fd, response.str().c_str() , response.str().size(), 0);
                     req.connexion = true;
                 }
-                else if (timeout){
+                else if (timeout)
+                {
+                    std::cout << "in time out " << std::endl;
+                    // sleep(5);
                     throw timeOut(server.confCherch("408"),req);
                 }
             }
@@ -87,7 +91,7 @@ unsigned long convertHexToDec(std::string hex)
 }
 
 
-void	Response::POST(int &fd, Request &req, Conf &server)
+void	Response::POST(int &fd, Request &req, Conf &server, uint32_t &event)
 {
     static int i;
     if(req.get_header("Transfer-Encoding:").empty())
@@ -96,27 +100,27 @@ void	Response::POST(int &fd, Request &req, Conf &server)
         {
             std::string up_ptah = server.locat.find(req.locationPath)->second.upload;
             std::string type = static_cast<std::string>(req.get_header("Content-Type:"));
-            std::string tmp_ = type.substr(type.find("/") + 1);
-            std::cout << tmp_ << std::endl;
-            type.erase(type.find("/"));
-            type.push_back('.');
-            path = up_ptah + ("upload." + tmp_);
-            while (fileExists(path))
+            std::map<std::string, std::string> mime = post_type();
+            map_iterator mmap = mime.find(type);
+            std::cout << "here: " << mmap->second << std::endl;
+            tmp_path = up_ptah + ("upload." + mmap->second);
+            tmp_path = up_ptah + ("upload." + mmap->second);
+            while (fileExists(tmp_path))
             {
                 i++;
                 std::stringstream ss;
                 ss << i;
                 std::string s;
                 ss >> s;
-                path = up_ptah + ("upload" + s + (".") + tmp_);
+                tmp_path = up_ptah + ("upload" + s + (".") + mmap->second);
             }
             std::string str = req.get_body();
-            out.open(path.c_str(), std::ios::binary);
+            out.open(tmp_path.c_str(), std::ios::binary);
             out.write(str.c_str(), str.size());
             out.flush();
             req.firstTime = false;            
         }
-        else 
+        else if(req.ra < (size_t )atof(req.get_header("Content-Length:").c_str()))
         {
             size_t a;
             char buffer[1024];
@@ -125,14 +129,24 @@ void	Response::POST(int &fd, Request &req, Conf &server)
             buffer[a] = '\0';
             out.write(buffer, a);
             out.flush();
+            std::cout << "herererererere" << std::endl;
         }
         if(req.ra >= (size_t )atof(req.get_header("Content-Length:").c_str()))
         {
+            std::cout << "finish post " << std::endl;
             if (server.locat.find(req.locationPath)->second.cgi){
-                std::ifstream ff(path.c_str());
-                req.query = std::string(std::istreambuf_iterator<char>(ff), std::istreambuf_iterator<char>()); 
-                ff.close();
+                // std::ifstream ff(tmp_path.c_str());
+                // std::cout <<"tmp_Path : " << tmp_path << std::endl;
+                // if(!ff.is_open())
+                // {
+                //     std::cout <<"tmp_Path : " << tmp_path << std::endl;
+                //     exit(1);
+                // }
+                // req.query = std::string(std::istreambuf_iterator<char>(ff), std::istreambuf_iterator<char>());
+                // std::cout << "Query : " << req.query  << std::endl; 
+                // ff.close();
                 GET(fd, req, server);
+                // event = EPOLLOUT;
             }
             else{
                 req.connexion = true;
@@ -155,23 +169,24 @@ void	Response::POST(int &fd, Request &req, Conf &server)
             std::cout << "request path : " << req.get_path() << std::endl;
             std::string up_ptah = server.locat.find(req.locationPath)->second.upload;
             std::string type = static_cast<std::string>(req.get_header("Content-Type:"));
-            std::string tmp_ = type.substr(type.find("/") + 1);
-            std::cout << tmp_ << std::endl;
-            type.erase(type.find("/"));
-            type.push_back('.');
-            std::string path = up_ptah + ("upload." + tmp_);
-            std::cout << "path : "<< path << std::endl;
+            std::map<std::string, std::string> mime = post_type();
+            map_iterator mmap = mime.find(type);
+            if (mmap == mime.end())
+            {
+                throw (mediaType(server.confCherch("415"), req));
+            }
+            tmp_path = up_ptah + ("upload." + mmap->second);
 
-            while (fileExists(path))
+            while (fileExists(tmp_path))
             {
                 i++;
                 std::stringstream ss;
                 ss << i;
                 std::string s;
                 ss >> s;
-                path = up_ptah + ("upload" + s + (".") + tmp_);
+                tmp_path = up_ptah + ("upload" + s + (".") + mmap->second);
             }
-            out.open(path.c_str(), std::ios::binary);
+            out.open(tmp_path.c_str(), std::ios::binary);
             str = req.get_body();
             std::istringstream f(str);
             std::getline(f, line);
@@ -181,6 +196,7 @@ void	Response::POST(int &fd, Request &req, Conf &server)
                 decimal = 0;
                 str.erase(0,line.size() + 1);
                 out.write(str.c_str(), str.size() - 7);
+                out.flush();
             }
             else
             {
@@ -191,7 +207,7 @@ void	Response::POST(int &fd, Request &req, Conf &server)
             req.firstTime = false;
             req.chun++;
         }
-        else 
+        else if (decimal != 0)
         {
             size_t a;
             char buffer[1024];
@@ -216,10 +232,18 @@ void	Response::POST(int &fd, Request &req, Conf &server)
         if (decimal == 0)
         {
             if (server.locat.find(req.locationPath)->second.cgi){
-                std::ifstream ff(path.c_str());
-                req.query = std::string(std::istreambuf_iterator<char>(ff), std::istreambuf_iterator<char>()); 
-                ff.close();
+                // std::ifstream ff(tmp_path.c_str());
+                std::cout <<"tmp_Path : " << tmp_path << std::endl;
+                // if(!ff.is_open())
+                // {
+                //     std::cout <<"tmp_Path : " << tmp_path << std::endl;
+                //     exit(1);
+                // }
+                // req.query = std::string(std::istreambuf_iterator<char>(ff), std::istreambuf_iterator<char>());
+                // std::cout << "Query : " << req.query  << std::endl;
+                // ff.close();
                 GET(fd, req, server);
+                event = EPOLLOUT;
             }
             else
             {
@@ -266,8 +290,6 @@ int	Response::DELETE(int &fd, Request &req, Conf &server, std::string dpath)
     str1 += "/";
     if(req.get_path() == dpath)
         tmp_ = str2;
-    // std::cout << "here1 : "<< str1  << std::endl;
-    // std::cout << "here1 : " << str2  <<  std::endl;
     if(str2.find(str1) != 0)
     {
         if(str2.empty())

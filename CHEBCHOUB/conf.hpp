@@ -21,6 +21,7 @@
 #include <unistd.h>   //close
 #include <netinet/in.h>
 #include <functional>
+#include <set>
 #include "../AYOUB/Response.hpp"
 
 bool directoryExists(std::string path);
@@ -46,12 +47,21 @@ class Conf {
 		std::map<std::string, loca>::iterator it;
 		std::map<std::string,std::string> loc1;
 		std::map<std::string,std::string>::iterator ito;
+		// int mappp;
+		// int boody ;
+		int serv_n ;
+		int serv_v ;
+		// int hostt ; 
+		// int portt ;
 	public :
 		std::map<std::string, std::string> map;
 		std::map<std::string, loca> locat;
 		int numOfserver;
 		Conf(){
 			numOfserver = 0;
+			serv_n = 0;
+			serv_v = 0;
+
 		}
 		Conf(std::ifstream & fg);
 		void parseFrom(std::string name);

@@ -53,6 +53,33 @@ Conf::Conf(std::ifstream & fg)
                             {
                                 name.erase(std::remove_if(name.begin(),name.end(),isspace),name.end());
                                 map[name.substr(0,name.find("="))] = name.substr(name.find("=") + 1);
+								vecc.push_back(name.substr(0,name.find("=")));
+								if(vecc[cn] == "port")
+								{
+									portt++;
+									if(portt == 2)
+										throw "Error dduplicate";
+								}
+								if(vecc[cn] == "host")
+								{
+									hostt++;
+									if(hostt == 2)
+										throw "Error dduplicate";
+								}
+								if(vecc[cn] == "body_size_limit")
+								{
+									boody++;
+									if(boody == 2)
+										throw "Error dduplicate";
+								}
+								if(vecc[cn] == "server_name")
+								{
+									server_n++;
+									if(server_n == 2)
+										throw "Error dduplicate";
+								}
+								cn++;
+						
                             }
                             if (name.find("}") != std::string::npos){
 								serv_v++;
@@ -62,10 +89,15 @@ Conf::Conf(std::ifstream & fg)
                             {
                                 throw "ERORR: Erorr Configfile";
                             }
-							std::cout << "---------------> : " << name << std::endl;
                         }
                         else if (name.find("}") != std::string::npos)
                         {
+							vecc.clear();
+							cn = 0;
+							portt = 0;
+							hostt = 0;
+							boody = 0;
+							server_n = 0;
 								serv_v++;
                             parsAndCheckServer();
                             if (loc1.empty())
@@ -114,7 +146,12 @@ void Conf::parseFrom(std::string name)
             str.push_back(form);
         }
         if (str[0] == "]")
+		{
+			// std::cout << str[0][0] << std::endl;
+			if (str[0][1])
+            	throw "FORM NOT VALID!";
             return ;
+		}
         if (str[1] != "=")
             throw "FORM NOT VALID!";
     }
@@ -281,6 +318,8 @@ void    Conf::parsAndCheckServer()
 				if (map.find("root") != map.end()){
 						throw "YOU SHOULD GIVES ROOT IN LOCATION!";
 				}
+				if (map.count(name.substr(0,name.find("="))))
+					throw "Error duplicate";
 
 			}
 			catch (const char * err){
@@ -322,6 +361,12 @@ void Conf::parsLocation(std::ifstream & fg)
 						getline(fg,name);
 						if (name.find("[") != std::string::npos)
 						{
+							std::string form;
+							std::vector<std::string> str;
+							std::stringstream ss(name);
+							ss >> form;
+							if (form != "[")
+								throw "FORM NOT VALID!";
 							while (getline(fg,name)){
 								size_t tab = static_cast<size_t>(std::count(name.begin(),name.end(),'\t'));
 								size_t spac = static_cast<size_t>(std::count(name.begin(),name.end(),' '));

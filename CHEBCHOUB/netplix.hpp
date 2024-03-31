@@ -116,7 +116,8 @@ class netPlix{
 				if (bin < 0)
 				{
 					perror("bind");
-					// exit(0);
+                    if(serverNum == 1)
+					    exit(0);
 				}
                 listen(socket_fd[i],SOMAXCONN);
                 if (socket_fd[i] == -1){
@@ -131,7 +132,7 @@ class netPlix{
                 }
             }
             printServer();
-            exit(0);
+            // exit(0);
             for (size_t i = 0; i < MAX_EVENTS; i++)
             {
                 client[i].endOf = -1;
@@ -289,13 +290,16 @@ class netPlix{
 
                                     client[fd].res.generateResponse(fd, client[fd].req, server[client[fd].server_index], events[i].events);
                                     
-                                    
-                                    if (epoll_ctl(epoll_fd, EPOLL_CTL_MOD, fd, &events[i]) == -1) {
-                                        perror("epoll_ctl");
-                                        std::cout << fd << std::endl;
-                                        throw (client[fd].res.serverError(server[client[fd].server_index].confCherch("500"), client[fd].req));
-                                    }
-                                    std::cout << "change event to " << (events[i].events == EPOLLOUT ? "EPOLLOUT" : "EPOLLIN") << std::endl;
+                                    // if(!client[fd].res.postToGet)
+                                    // {
+                                        if (epoll_ctl(epoll_fd, EPOLL_CTL_MOD, fd, &events[i]) == -1) {
+                                            perror("epoll_ctl");
+                                            std::cout << "bnt L7ram :" << fd << std::endl;
+                                            throw (client[fd].res.serverError(server[client[fd].server_index].confCherch("500"), client[fd].req));
+                                        }
+                                        // client[fd].res.postToGet = true;
+                                        std::cout << "change event to " << (events[i].events == EPOLLOUT ? "EPOLLOUT" : "EPOLLIN") << std::endl;
+                                    // }
 
                                 }
                                 catch(std::string &content)

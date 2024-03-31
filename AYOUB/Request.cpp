@@ -26,7 +26,7 @@ void Request::pars(std::stringstream &buf, size_t &endOf)
 	std::cout <<"space :" << std::count(dst.begin(), dst.end(), ' ') << std::endl;
 	std::cout <<"tab   :" << std::count(dst.begin(), dst.end(), '\t') << std::endl;
 
-	if(std::count(dst.begin(), dst.end(), ' ') < 3 && std::count(dst.begin(), dst.end(), '\t') < 3)
+	if(std::count(dst.begin(), dst.end(), ' ') == 2)
 	{
 		// std::cout << "correct request : "<< std::endl;
 		startLineForma = true;

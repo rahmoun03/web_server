@@ -1,5 +1,6 @@
 
-#include "netplix.hpp"
+#include "WebServer.hpp"
+
 
 
 int main(int ac,char *av[]) 
@@ -10,7 +11,7 @@ int main(int ac,char *av[])
 
     const char *_null = "NULL";
     if (!av[1])
-            netPlix netPlix(_null);
-    netPlix netPlix(av[1]);
+            WebServer WebServer(_null);
+    WebServer WebServer(av[1]);
     return 0;
 }

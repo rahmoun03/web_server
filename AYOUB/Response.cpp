@@ -1,7 +1,20 @@
 
 
 #include "Response.hpp"
+#include "Request.hpp"
+#include "../CHEBCHOUB/conf.hpp"
+
+
+#include <sys/socket.h>
 #include <sys/epoll.h>
+#include <fcntl.h>
+#include <unistd.h>   //close
+#include <ctime>
+#include <sys/stat.h>
+#include <sys/wait.h>
+
+
+
 
 
 void Response::generateResponse(int &fd, Request &req, Conf &server , uint32_t &event)
@@ -78,7 +91,7 @@ void Response::generateResponse(int &fd, Request &req, Conf &server , uint32_t &
             if(send(fd, response.str().c_str(), response.str().size(), 0) == -1)
             {
                 perror("send :");
-                serverError(server.confCherch("500"),req);
+                throw serverError(server.confCherch("500"),req);
             }
             req.connexion = true;
             ff.close();
@@ -95,7 +108,7 @@ void Response::generateResponse(int &fd, Request &req, Conf &server , uint32_t &
             // std::cout << "response :\n" << YOLLOW << response.str() << DEF <<std::endl;
             // std::cout << YOLLOW << "send response to client ==> " << DEF << std::endl;
             if (send(fd, response.str().c_str(), response.str().size(), 0) == -1)
-                throw serverError(server.confCherch("500"), req);
+                throw true;
             req.connexion = true;
         }
     }
@@ -142,7 +155,7 @@ void Response::serv_file(map_iterator &type, int &fd, Request &req, Conf &server
                 //   << YOLLOW << response.str() << std::endl;
         // std::cout << YOLLOW << "send response to client" << DEF << std::endl;
         if (send(fd, response.str().c_str(), response.str().size(), 0) ==-1)
-            throw serverError(server.confCherch("500"), req);
+            throw true;
         req.firstTime = false;
     }
     else
@@ -150,9 +163,9 @@ void Response::serv_file(map_iterator &type, int &fd, Request &req, Conf &server
         // std::cout << "second time" << std::endl;
         std::string content = getResource(file, req, server);
         // std::cout << RAN << content << DEF << std::endl;
-        // std::cout << YOLLOW << "send response to client " << DEF << std::endl;
+        std::cout << YOLLOW << "send response to client wowowowoow" << DEF << std::endl;
         if (send(fd, content.c_str(), content.size(), 0) == -1)
-            throw serverError(server.confCherch("500"), req);
+            throw true;
         // req.connexion = true;
     }
 }
@@ -188,7 +201,7 @@ void Response::serv_dir(int &fd, Request &req, Conf &server)
                 // std::cout << YOLLOW << "send response to client " << DEF << std::endl;
 
                 if (send(fd, response.str().c_str(), response.str().size(), 0) == -1)
-                    throw serverError(server.confCherch("500"), req);
+                    throw true;
                 req.connexion = true;
                 req.firstTime = false;
             }
@@ -219,7 +232,7 @@ void Response::serv_dir(int &fd, Request &req, Conf &server)
                                 << res;
                         // std::cout << "response : \n" << response.str() << std::endl;
                         if (send(fd, response.str().c_str() , response.str().size(), 0) == -1)
-                            throw serverError(server.confCherch("500"), req);
+                            throw true;
                         req.connexion = true;
                         ff.close();
                     }
@@ -270,7 +283,7 @@ void Response::checkHeaders(Request &req, Conf &server)
         std::cout << "requist line not correct Method " << std::endl;
         throw (badRequest(server.confCherch("400"), req));
     }
-    if(req.get_method().empty() || req.get_path().empty())
+    if(req.get_method().empty() || req.get_path().empty() || !req.startLineForma)
     {
         std::cout << "requist line not correct "<< (req.startLineForma ? "yes" : "no") << std::endl;
         throw(badRequest(server.confCherch("400"), req));
@@ -327,6 +340,7 @@ Response::~Response()
 std::string Response::getResource(int &file, Request &req, Conf &server)
 {
     // std::string buffer((std::istreambuf_iterator<char>(file)), std::istreambuf_iterator<char>());
+    (void)server;
     std::stringstream content;
     char buffer[1024];
     size_t a = read(file, buffer, 1023);
@@ -334,7 +348,7 @@ std::string Response::getResource(int &file, Request &req, Conf &server)
     {
         std::cout << "file : " << file << std::endl;
         std::cerr << "---read---" << std::endl;
-        throw serverError(server.confCherch("500"), req);
+        throw true;
     }
     if (a < 1023)
         req.connexion = true;
@@ -394,12 +408,13 @@ void Response::clear()
 
 void Response::Redirect(std::string &location, Request &req, int &fd, Conf &server)
 {
+    (void)server;
     std::string content = getRedirctionS(location);
     // std::cout << BLUE << "respone : \n"
     //           << YOLLOW << content << std::endl;
     std::cout << YOLLOW << "send response to client " << DEF << std::endl;
-    if (send(fd, content.c_str(), content.size(), 0) == -1)
-        throw serverError(server.confCherch("500"), req);
+    send(fd, content.c_str(), content.size(), 0);
+        // throw true;
     req.connexion = true;
     req.firstTime = false;
 }
@@ -566,14 +581,13 @@ int Response::serveCgi(Request &req, int &fd)
     (void)fd;
 
     const char* args[3];
-    char** env = new char*[7];
+    char** env = new char*[8];
     if (!firstcgi)
     {
         firstcgi = true;
         start = clock();
         temp_file = "/tmp/cgi_" + random_name();
         output_file = fopen(temp_file.c_str(), "w");
-        // exit(0);
         if (!output_file) {
             std::cerr << "Failed to open temporary file for writing." << std::endl;
             return 1;
@@ -594,7 +608,9 @@ int Response::serveCgi(Request &req, int &fd)
                         env[4] = new char [("CONTENT_TYPE=" + req.get_header("Content-Type:")).size() + 1];
                         strcpy((char *)env[4],("CONTENT_TYPE="+ req.get_header("Content-Type:")).c_str());
                     };
-                    env[6] = NULL;
+                    env[6] = new char [("HTTP_COOKIE=" + req.get_header("Cookie:")).size() + 1];
+                    strcpy(env[6],("HTTP_COOKIE=" + req.get_header("Cookie:")).c_str());
+                    env[7] = NULL;
         if (extension(req.get_path()) == "php"){
             args[0] = php_path.c_str();
             args[1] = req.get_path().c_str();
@@ -620,9 +636,6 @@ int Response::serveCgi(Request &req, int &fd)
                     
                     return 1 ;
                 }
-                // if (req.get_method() == "POST"){
-                //     dup2(fd,0);
-                // }
                 if (execve(args[0], (char* const*)args, env) == -1) 
                 {
                     std::cerr << "Failed to execute CGI script." << std::endl;
@@ -631,7 +644,7 @@ int Response::serveCgi(Request &req, int &fd)
                     return 1;
                 }
                 int i = 0;
-                while (i < 6){
+                while (env[i]){
                     delete[] env[i];
                     i++;
                 }
@@ -644,28 +657,24 @@ int Response::serveCgi(Request &req, int &fd)
         int WAIT_PID = waitpid(pid, &status, WNOHANG);
         if (WAIT_PID == -1){
             perror("waitpid");
-            exit(0);
+            kill(pid, SIGKILL);
+            waitpid(pid, &status, 0);
+            std::cout << "we kill this process : "<< pid << std::endl;
+            req.connexion = true;
+            return 1;
         }
-        else if (WAIT_PID == 0){
+        else if (WAIT_PID == 0)
+        {
             end = (double)(clock() - start) / CLOCKS_PER_SEC;
             if (end >= 5.00){
                 timeout = true;
-                fclose(output_file);
-                kill(pid, SIGTERM);
+                kill(pid, SIGKILL);
+                std::cout << "we kill this process : "<< pid << std::endl;
                 waitpid(pid, &status, 0);
-                usleep(500000);
+                firstcgi = false;
+                fclose(output_file);
             }
-            if (WIFEXITED(status))
-            {
-                if (timeout){
-                    cgirespons = false;
-                }
-                else
-                {
-                    cgirespons = true;
-                }
-                
-            }
+
         }
         else
             cgirespons = true;

@@ -5,126 +5,99 @@
 Conf::Conf(std::ifstream & fg)
 {
     try{
-            getline(fg,name);
-            size_t tab = static_cast<size_t>(std::count(name.begin(),name.end(),'\t'));
-            size_t spac = static_cast<size_t>(std::count(name.begin(),name.end(),' '));
-            if ((name.empty()) || (spac == name.size())
-                || (tab == name.size()) || (spac + tab == name.size()))
-                return;
-            if (name.find("server") != std::string::npos)
-            {
-                numOfserver++;
-                getline(fg,name);
+		serv_n = 0;
+		serv_v = 0;
+		numOfserver = 0;
+		getline(fg,name);
+		size_t tab = static_cast<size_t>(std::count(name.begin(),name.end(),'\t'));
+		size_t spac = static_cast<size_t>(std::count(name.begin(),name.end(),' '));
+		if ((name.empty()) || (spac == name.size())
+			|| (tab == name.size()) || (spac + tab == name.size()))
+			return;
+		if (name.find("server") != std::string::npos)
+		{
+			numOfserver++;
+			getline(fg,name);
 
-				map_iterator tmp_tmp;
-                if (name.find("{") != std::string::npos)
-                {	
-					serv_n++;
-                    while (getline(fg,name))
-                    {
+			map_iterator tmp_tmp;
+			if (name.find("{") != std::string::npos)
+			{	
+				serv_n++;
+				while (getline(fg,name))
+				{
 
-                        size_t tab = static_cast<size_t>(std::count(name.begin(),name.end(),'\t'));
-                        size_t spac = static_cast<size_t>(std::count(name.begin(),name.end(),' '));
-                        if ((name.empty()) || (spac == name.size())
-                            || (tab == name.size()) || (spac + tab == name.size()))
-                            continue;
-                        if (name.find("=") != std::string::npos)
-                        {
-                            parseFrom(name);
-                            parsLocation(fg);
-                            if (name.find("]") != std::string::npos){
-                                displayLocation();
-                                continue;
-                            }							
-                            if (isspaceRemove(name.substr(0,name.find("="))) == "error_page"){
-                                std::stringstream ss(name.substr(name.find("=") + 1));
-                                std::string key;
-                                std::string value;
-                                std::string err;
-                                ss >> key;
-                                ss >> value;
-                                if (ss >> err || !fileExists(value.c_str()))
-                                        throw "ERORR: Erorr Configfile";
-                                map[key] = value;
-							 }
-                            else
-                            {
-                                name.erase(std::remove_if(name.begin(),name.end(),isspace),name.end());
-                                map[name.substr(0,name.find("="))] = name.substr(name.find("=") + 1);
-								vecc.push_back(name.substr(0,name.find("=")));
-								if(vecc[cn] == "port")
-								{
-									portt++;
-									if(portt == 2)
-										throw "Error dduplicate";
-								}
-								if(vecc[cn] == "host")
-								{
-									hostt++;
-									if(hostt == 2)
-										throw "Error dduplicate";
-								}
-								if(vecc[cn] == "body_size_limit")
-								{
-									boody++;
-									if(boody == 2)
-										throw "Error dduplicate";
-								}
-								if(vecc[cn] == "server_name")
-								{
-									server_n++;
-									if(server_n == 2)
-										throw "Error dduplicate";
-								}
-								cn++;
-						
-                            }
-                            if (name.find("}") != std::string::npos){
-								std::cout << "--------HERE-----------\n";
-								serv_v++;
-                                break; 
-                            }
-                            if (name.find("server") != std::string::npos && name.size() == 6)
-                            {
-                                throw "ERORR: Erorr Configfile";
-                            }
-                        }
-                        else if (name.find("}") != std::string::npos)
-                        {
-							vecc.clear();
-							cn = 0;
-							portt = 0;
-							hostt = 0;
-							boody = 0;
-							server_n = 0;
-								serv_v++;
-                            parsAndCheckServer();
-                            if (loc1.empty())
-                                throw "LOCATION NOT FOUND!";
-                            break;
-                        }
-                        else
-                        {
-                            if (!name.empty())
-                                throw "ERORR: Erorr Configfile";
-							
-                        }
-                    }
-					if (serv_n != serv_v){
-                            throw "ERORR: Erorr Configfile";
-						std::cout << "-- END OF LOOP -- \n";
+					size_t tab = static_cast<size_t>(std::count(name.begin(),name.end(),'\t'));
+					size_t spac = static_cast<size_t>(std::count(name.begin(),name.end(),' '));
+					if ((name.empty()) || (spac == name.size())
+						|| (tab == name.size()) || (spac + tab == name.size()))
+						continue;
+					if (name.find("=") != std::string::npos)
+					{
+						parseFrom(name);
+						parsLocation(fg);
+						if (name.find("]") != std::string::npos){
+							displayLocation();
+							continue;
+						}							
+						if (isspaceRemove(name.substr(0,name.find("="))) == "error_page"){
+							std::stringstream ss(name.substr(name.find("=") + 1));
+							std::string key;
+							std::string value;
+							std::string err;
+							ss >> key;
+							ss >> value;
+							if (ss >> err || !fileExists(value.c_str()))
+									throw "ERORR: Erorr Configfile";
+							map[key] = value;
+							}
+						else
+						{
+							std::cout << "----name is : " << name << std::endl;
+							name.erase(std::remove_if(name.begin(),name.end(),isspace),name.end());
+							if (map.count(name.substr(0,name.find("="))) != 0)
+								throw "ERROR DUPLICATE!";
+							map[name.substr(0,name.find("="))] = name.substr(name.find("=") + 1);
+					
+						}
+						if (name.find("}") != std::string::npos){
+							serv_v++;
+							break; 
+						}
+						if (name.find("server") != std::string::npos && name.size() == 6)
+						{
+							throw "ERORR: Erorr Configfile";
+						}
 					}
- 
-                }
-                else
-                {
-                    throw "ERORR: Erorr Configfile";
-                }
-            }
-            else
-            {
-                throw "ERORR: Erorr Configfile";
-            }
+					else if (name.find("}") != std::string::npos)
+					{
+							serv_v++;
+						parsAndCheckServer();
+						if (loc1.empty())
+							throw "LOCATION NOT FOUND!";
+						break;
+					}
+					else
+					{
+						if (!name.empty())
+							throw "ERORR: Erorr Configfile";
+						
+					}
+				}
+				if (serv_n != serv_v){
+							std::cout << "--------HERE-----------\n";
+						throw "ERORR: Erorr Configfile";
+				}
+
+			}
+			else
+			{
+				throw "ERORR: Erorr Configfile";
+			}
+		}
+		else
+		{
+			throw "ERORR: Erorr Configfile";
+		}
 
     }
     catch (const char * err){

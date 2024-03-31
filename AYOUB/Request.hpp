@@ -6,7 +6,7 @@
 /*   By: ahbajaou <ahbajaou@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/17 09:53:30 by arahmoun          #+#    #+#             */
-/*   Updated: 2024/03/28 01:09:48 by ahbajaou         ###   ########.fr       */
+/*   Updated: 2024/03/31 11:30:11 by ahbajaou         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,24 +14,24 @@
 #define REQUEST_HPP
 #include <sstream>
 #include <iostream>
-#include <string>
-#include <netinet/in.h>
-#include <stdio.h>
+// #include <string>
+// #include <netinet/in.h>
+// #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <fcntl.h>
-#include <sys/socket.h>
-#include <unistd.h>
+// #include <fcntl.h>
+// #include <sys/socket.h>
+// #include <unistd.h>
 #include <map>
-#include <vector>
-#include <fstream>
-#include <iterator>
+// #include <vector>
+// #include <fstream>
+// #include <iterator>
 #include <algorithm>
-#include <arpa/inet.h>
-#include <sys/stat.h>
-#include <sys/wait.h>
-#include <ctime>
-#include <bits/stdc++.h> 
+// #include <arpa/inet.h>
+// #include <sys/stat.h>
+// #include <sys/wait.h>
+// #include <ctime>
+// #include <bits/stdc++.h> 
 // #include "Response.hpp"
 
 

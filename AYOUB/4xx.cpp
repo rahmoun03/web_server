@@ -1,4 +1,8 @@
 #include "Response.hpp"
+#include "Request.hpp"
+#include <fcntl.h>
+#include <sstream>
+#include <iostream>
 
 /******************************************************************************/
 
@@ -16,7 +20,100 @@ std::string Response::lengthRequired(std::string path, Request &req)
                 << "Date: " << getCurrentDateTime() << "\r\n";
         if (file == -1 || extension(path) != "html"	)
         {
-            std::cerr << RED << "failure in 411 page" << std::endl;
+            // std::cerr << RED << "failure in 411 page" << std::endl;
+            std::stringstream con ; 
+            con << "<!DOCTYPE html>"\
+                << " <!DOCTYPE html>"
+                << " <html lang=\"en\">"
+                << " <head>"
+                << "     <meta charset=\"UTF-8\">"
+                << "     <meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">"
+                << "    <title>411 Length Required</title>"
+                << "     <style>"
+                << "         body {"
+                << "             font-family: Arial, sans-serif;"
+                << "             margin: 0;"
+                << "             padding: 0;"
+                << "             background-color: #f5f5f5;"
+                << "         }"
+                << " "
+                << "         .container {"
+                << "             display: flex;"
+                << "             justify-content: center;"
+                << "             align-items: center;"
+                << "             height: 100vh;"
+                << "         }"
+                << " "
+                << "         .error-message {"
+                << "             text-align: center;"
+                << "         }"
+                << " "
+                << "         h1 {"
+                << "             font-size: 48px;"
+                << "             color: #333;"
+                << "             margin-bottom: 20px;"
+                << "         }"
+                << " "
+                << "         p {"
+                << "             font-size: 18px;"
+                << "             color: #666;"
+                << "             margin-bottom: 20px;"
+                << "         }"
+                << " "
+                << "         .back-link {"
+                << "             font-size: 16px;"
+                << "             color: #007bff;"
+                << "             text-decoration: none;"
+                << "         }"
+                << "     </style>"
+                << " </head>"
+                << "<body>"
+                << "    <div class=\"container\">"
+                << "        <div class=\"error-message\">"
+                << "            <h1>411 Length Required</h1>"
+                << "            <p>The server refuses to accept the request without a defined Content-Length.</p>"
+                << "            <a href=\"/\" class=\"back-link\">Go back to the homepage</a>"
+                << "        </div>"
+                << "    </div>"
+                << "</body>"
+                << "</html>";
+
+            response << "Content-Length: " << con.str().size() << "\r\n"
+                    << "\r\n"
+                    << con.str();
+            req.connexion = true;
+        }
+        else
+        {
+            std::ifstream ff(path.c_str(), std::ios::binary);
+
+            ff.seekg(0, std::ios::end);
+            std::streampos size = ff.tellg();
+            ff.seekg(0, std::ios::beg);
+            ff.close();
+            response << "Content-Length: " << size << "\r\n"
+                    << "\r\n";
+        }
+        return response.str();
+    }
+    return "";
+}
+
+std::string Response::Created(std::string path, Request &req)
+{
+    if(!firstExcep)
+    {
+
+        file = open(path.c_str(), O_RDONLY);
+        std::stringstream response;
+        response << "HTTP/1.1 201 Created\r\n"
+                << "Content-Type: text/html\r\n"
+                << "Connection: close\r\n"
+                << "Server: chabchoub\r\n"
+                << "Date: " << getCurrentDateTime() << "\r\n";
+        if (file == -1 )
+        {
+            // std::cerr << RED << "failure in 411 page" << std::endl;
             std::stringstream con ; 
             con << "<!DOCTYPE html>"\
                 << " <!DOCTYPE html>"
@@ -103,14 +200,14 @@ std::string Response::timeOut(std::string path, Request &req)
 
         file = open(path.c_str(), O_RDONLY);
         std::stringstream response;
-        response << "HTTP/1.1 408 Request Timeout\r\n"
+        response << "HTTP/1.1 504 Request Timeout\r\n"
                 << "Content-Type: text/html\r\n"
                 << "Connection: close\r\n"
                 << "Server: chabchoub\r\n"
                 << "Date: " << getCurrentDateTime() << "\r\n";
         if (file == -1)
         {
-            std::cerr << RED << "failure in 408 page" << std::endl;
+            // std::cerr << RED << "failure in 408 page" << std::endl;
             std::stringstream con ; 
             con << "<!DOCTYPE html>"\
                 << " <!DOCTYPE html>"
@@ -204,7 +301,7 @@ std::string Response::notAllow(std::string method, std::string path, Request &re
                 << "Date: " << getCurrentDateTime() << "\r\n";
         if (file == -1 || extension(path) != "html"	)
         {
-            std::cerr << RED << "failure in 405 page" << std::endl;
+            // std::cerr << RED << "failure in 405 page" << std::endl;
             std::stringstream con ; 
             con << "<!DOCTYPE html>"
                 << " <!DOCTYPE html>"
@@ -297,7 +394,7 @@ std::string Response::notFound(std::string path, Request &req)
         file = open(path.c_str(), O_RDONLY);
         if (file == -1 || extension(path) != "html")
         {
-            std::cerr << RED << "failure in 404 page" << std::endl;
+            // std::cerr << RED << "failure in 404 page" << std::endl;
             std::stringstream con ;
             con << "<!DOCTYPE html>"
                 << " <html lang=\"en\">"
@@ -392,7 +489,7 @@ std::string Response::EntityTooLarge(std::string path, Request &req)
                 << "Date: " << getCurrentDateTime() << "\r\n";
         if (file == -1 || extension(path) != "html"	)
         {
-            std::cerr << RED << "failure in home page" << std::endl;
+            // std::cerr << RED << "failure in home page" << std::endl;
             std::stringstream con ;
             con << "<!DOCTYPE html>"
                 << " <html lang=\"en\">"
@@ -453,7 +550,6 @@ std::string Response::EntityTooLarge(std::string path, Request &req)
                     << "\r\n"
                     << con.str();
             req.connexion = true;  
-            req.connexion = true;
 
         }
         else
@@ -486,7 +582,7 @@ std::string Response::forbidden(std::string path, Request &req)
                 << "Date: " << getCurrentDateTime() << "\r\n";
         if (file == -1 || extension(path) != "html"	)
         {
-            std::cerr << RED << "failure in 403 page" << std::endl;
+            // std::cerr << RED << "failure in 403 page" << std::endl;
             std::stringstream con;
             con << "<!DOCTYPE html>"
                 << "<html lang=\"en\">"
@@ -582,7 +678,7 @@ std::string Response::badRequest(std::string path, Request &req)
                 << "Date: " << getCurrentDateTime() << "\r\n";
         if (file == -1 || extension(path) != "html"	)
         {
-            std::cerr << RED << "failure in home page" << std::endl;
+            // std::cerr << RED << "failure in home page" << std::endl;
             std::stringstream con;
             con << " <!DOCTYPE html>"
                 << " <html lang=\"en\">"
@@ -678,7 +774,7 @@ std::string Response::longRequest(std::string path, Request &req)
                 << "Date: " << getCurrentDateTime() << "\r\n";
         if (file == -1 || extension(path) != "html"	)
         {
-            std::cerr << RED << "failure in home page" << std::endl;
+            // std::cerr << RED << "failure in home page" << std::endl;
             std::stringstream con;
 
             con << " <!DOCTYPE html>"
@@ -773,7 +869,7 @@ std::string Response::mediaType(std::string path, Request &req)
                 << "Date: " << getCurrentDateTime() << "\r\n";
         if (file == -1 || extension(path) != "html"	)
         {
-            std::cerr << RED << "failure in 415 page" << std::endl;
+            // std::cerr << RED << "failure in 415 page" << std::endl;
             std::stringstream con ; 
             con << "<!DOCTYPE html>"
                 << " <!DOCTYPE html>"
@@ -868,7 +964,7 @@ std::string Response::headerTooLarge(std::string path, Request &req)
                 << "Date: " << getCurrentDateTime() << "\r\n";
         if (file == -1 || extension(path) != "html"	)
         {
-            std::cerr << RED << "failure in 431 page" << std::endl;
+            // std::cerr << RED << "failure in 431 page" << std::endl;
             std::stringstream con ; 
             con << "<!DOCTYPE html>"
                 << " <!DOCTYPE html>"
@@ -963,7 +1059,7 @@ std::string Response::conflict(std::string path, Request &req)
                 << "Date: " << getCurrentDateTime() << "\r\n";
         if (file == -1 || extension(path) != "html"	)
         {
-            std::cerr << RED << "failure in 431 page" << std::endl;
+            // std::cerr << RED << "failure in 431 page" << std::endl;
             std::stringstream con ; 
             con << "<!DOCTYPE html>"
                 << " <html lang=\"en\">"

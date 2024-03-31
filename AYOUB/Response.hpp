@@ -1,15 +1,17 @@
 #ifndef RESPONSE_HPP
 #define RESPONSE_HPP
+// #include "Request.hpp"
+// #include <filesystem>
+#include <fstream>
+#include <map>
+#include <stdint.h>
 #include "../CHEBCHOUB/conf.hpp"
-#include <filesystem>
-
+class Conf;
+class Request;
+// class WebServer;
+// class WebServer;
 // class Conf;
-// class netPlix;
-class netPlix;
-class Conf;
-#include "Request.hpp"
-typedef std::map<std::string , std::string>::iterator map_iterator;
-class Conf;
+// class Conf;
 class Response
 {
 	private:
@@ -20,6 +22,7 @@ class Response
         std::string tmp;
 		std::string path;
 	public:
+		typedef std::map<std::string , std::string>::iterator map_iterator;
 		bool firstcgi;
 		bool postToGet;
 		bool firstExcep;
@@ -40,7 +43,7 @@ class Response
 		/*             METHODs              */
 		void	GET(int &fd, Request &req, Conf &server);
 		void	POST(int &fd, Request &req, Conf &server, uint32_t &event);
-		int	DELETE(int &fd, Request &req, Conf &server, std::string dpath);
+		int		DELETE(int &fd, Request &req, Conf &server, std::string dpath);
 		/**************************************/
 
 		void	clear();
@@ -75,6 +78,9 @@ class Response
 			std::string httpVersion(std::string path, Request &req);//    	 			505
 
 			// std::string homepage(); // 200 home
+
+		std::string Created(std::string path, Request &req);
+
 		/***********************/
 		
 		void Redirect(std::string &location, Request &req, int &fd, Conf &server);

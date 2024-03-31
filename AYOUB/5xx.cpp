@@ -1,4 +1,7 @@
 #include "Response.hpp"
+#include "Request.hpp"
+#include <fcntl.h>
+#include <sstream>
 
 /******************************************************************************/
 std::string Response::notImplement(std::string path, Request &req)
@@ -15,7 +18,7 @@ std::string Response::notImplement(std::string path, Request &req)
                 << "Date: " << getCurrentDateTime() << "\r\n";
         if (file == -1 )
         {
-            std::cerr << RED << "failure in 501 page" << std::endl;
+            // std::cerr << RED << "failure in 501 page" << std::endl;
             std::stringstream con ; 
             con << "<!DOCTYPE html>"
                 << " <html lang=\"en\">"
@@ -106,7 +109,7 @@ std::string Response::httpVersion(std::string path, Request &req)
                 << "Date: " << getCurrentDateTime() << "\r\n";
         if (file == -1)
         {
-            std::cerr << RED << "failure in 505 page" << std::endl;
+            // std::cerr << RED << "failure in 505 page" << std::endl;
             std::stringstream con ; 
             con << "<!DOCTYPE html>"
                 << " <html lang=\"en\">"
@@ -189,7 +192,6 @@ std::string Response::serverError(std::string path, Request &req)
 {
     if(!firstExcep)
     {
-
         file = open(path.c_str(), O_RDONLY);
         std::stringstream response;
         response << "HTTP/1.1 500 Internal Server Error\r\n"
@@ -199,7 +201,7 @@ std::string Response::serverError(std::string path, Request &req)
                 << "Date: " << getCurrentDateTime() << "\r\n";
         if (file == -1 )
         {
-            std::cerr << RED << "failure in 500 page" << std::endl;
+            // std::cerr << RED << "failure in 500 page" << std::endl;
             std::stringstream con ; 
             con << "<!DOCTYPE html>"
                 << " <html lang=\"en\">"

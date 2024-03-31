@@ -35,13 +35,13 @@ void	Response::GET(int &fd, Request &req, Conf &server)
         else if (server.locat.find(req.locationPath)->second.cgi && (extension(req.get_path()) == "php" || extension(req.get_path()) == "py"))
         {
             std::cout << "http://" << req.get_path() << "\n";
-            std::cout << "the URL is a file : php" << std::endl;
+            std::cout << "the URL is a file : php/py" << std::endl;
             if(!serveCgi(req,fd))
             {
                 if (cgirespons)
                 {
                     fclose(output_file);
-                    std::cout << "tmp file : " << temp_file << std::endl;
+                    std::cout << "close tmp file : " << temp_file << std::endl;
                     std::ifstream ff(temp_file.c_str());
                     std::stringstream response;
                     std::string res = std::string(std::istreambuf_iterator<char>(ff), std::istreambuf_iterator<char>()); 
@@ -51,12 +51,14 @@ void	Response::GET(int &fd, Request &req, Conf &server)
                     std::cout << "response send to client ...\n" << "response : \n" << response.str() << std::endl;
                     send(fd, response.str().c_str() , response.str().size(), 0);
                     req.connexion = true;
+                    // exit()
+                    kill(pid, SIGKILL);
                     ff.close();
                 }
                 else if (timeout)
                 {
                     std::cout << "in time out " << std::endl;
-                    // sleep(5);
+// fclose(output_file);
                     throw timeOut(server.confCherch("408"),req);
                 }
             }

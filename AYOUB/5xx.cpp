@@ -189,7 +189,6 @@ std::string Response::serverError(std::string path, Request &req)
 {
     if(!firstExcep)
     {
-
         file = open(path.c_str(), O_RDONLY);
         std::stringstream response;
         response << "HTTP/1.1 500 Internal Server Error\r\n"

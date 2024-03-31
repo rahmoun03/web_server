@@ -19,6 +19,10 @@ class Client
         Client(/* args */);
         void clear();
         ~Client();
+        // class Conextion : public std::exception
+        // {
+
+        // }
 };
 
 

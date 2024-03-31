@@ -75,6 +75,9 @@ class Response
 			std::string httpVersion(std::string path, Request &req);//    	 			505
 
 			// std::string homepage(); // 200 home
+
+		std::string Created(std::string path, Request &req);
+
 		/***********************/
 		
 		void Redirect(std::string &location, Request &req, int &fd, Conf &server);

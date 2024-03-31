@@ -47,12 +47,10 @@ class Conf {
 		std::map<std::string, loca>::iterator it;
 		std::map<std::string,std::string> loc1;
 		std::map<std::string,std::string>::iterator ito;
-		// int locc;
-		// int mappp;
+
 		int boody ;
 		int serv_n ;
 		int server_n;
-		// int err;
 		int serv_v ;
 		int cn;
 		int hostt ; 

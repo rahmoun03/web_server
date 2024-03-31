@@ -78,7 +78,7 @@ void Response::generateResponse(int &fd, Request &req, Conf &server , uint32_t &
             if(send(fd, response.str().c_str(), response.str().size(), 0) == -1)
             {
                 perror("send :");
-                serverError(server.confCherch("500"),req);
+                throw serverError(server.confCherch("500"),req);
             }
             req.connexion = true;
             ff.close();
@@ -95,7 +95,7 @@ void Response::generateResponse(int &fd, Request &req, Conf &server , uint32_t &
             // std::cout << "response :\n" << YOLLOW << response.str() << DEF <<std::endl;
             // std::cout << YOLLOW << "send response to client ==> " << DEF << std::endl;
             if (send(fd, response.str().c_str(), response.str().size(), 0) == -1)
-                throw serverError(server.confCherch("500"), req);
+                throw true;
             req.connexion = true;
         }
     }
@@ -142,7 +142,7 @@ void Response::serv_file(map_iterator &type, int &fd, Request &req, Conf &server
                 //   << YOLLOW << response.str() << std::endl;
         // std::cout << YOLLOW << "send response to client" << DEF << std::endl;
         if (send(fd, response.str().c_str(), response.str().size(), 0) ==-1)
-            throw serverError(server.confCherch("500"), req);
+            throw true;
         req.firstTime = false;
     }
     else
@@ -150,9 +150,9 @@ void Response::serv_file(map_iterator &type, int &fd, Request &req, Conf &server
         // std::cout << "second time" << std::endl;
         std::string content = getResource(file, req, server);
         // std::cout << RAN << content << DEF << std::endl;
-        // std::cout << YOLLOW << "send response to client " << DEF << std::endl;
+        std::cout << YOLLOW << "send response to client wowowowoow" << DEF << std::endl;
         if (send(fd, content.c_str(), content.size(), 0) == -1)
-            throw serverError(server.confCherch("500"), req);
+            throw true;
         // req.connexion = true;
     }
 }
@@ -188,7 +188,7 @@ void Response::serv_dir(int &fd, Request &req, Conf &server)
                 // std::cout << YOLLOW << "send response to client " << DEF << std::endl;
 
                 if (send(fd, response.str().c_str(), response.str().size(), 0) == -1)
-                    throw serverError(server.confCherch("500"), req);
+                    throw true;
                 req.connexion = true;
                 req.firstTime = false;
             }
@@ -219,7 +219,7 @@ void Response::serv_dir(int &fd, Request &req, Conf &server)
                                 << res;
                         // std::cout << "response : \n" << response.str() << std::endl;
                         if (send(fd, response.str().c_str() , response.str().size(), 0) == -1)
-                            throw serverError(server.confCherch("500"), req);
+                            throw true;
                         req.connexion = true;
                         ff.close();
                     }
@@ -270,7 +270,7 @@ void Response::checkHeaders(Request &req, Conf &server)
         std::cout << "requist line not correct Method " << std::endl;
         throw (badRequest(server.confCherch("400"), req));
     }
-    if(req.get_method().empty() || req.get_path().empty())
+    if(req.get_method().empty() || req.get_path().empty() || !req.startLineForma)
     {
         std::cout << "requist line not correct "<< (req.startLineForma ? "yes" : "no") << std::endl;
         throw(badRequest(server.confCherch("400"), req));
@@ -327,13 +327,14 @@ Response::~Response()
 std::string Response::getResource(int &file, Request &req, Conf &server)
 {
     // std::string buffer((std::istreambuf_iterator<char>(file)), std::istreambuf_iterator<char>());
+    (void)server;
     std::stringstream content;
     char buffer[1024];
     size_t a = read(file, buffer, 1023);
     if (a == (size_t)-1)
     {
         std::cerr << "---read---" << std::endl;
-        throw serverError(server.confCherch("500"), req);
+        throw true;
     }
     if (a < 1023)
         req.connexion = true;
@@ -393,12 +394,13 @@ void Response::clear()
 
 void Response::Redirect(std::string &location, Request &req, int &fd, Conf &server)
 {
+    (void)server;
     std::string content = getRedirctionS(location);
     // std::cout << BLUE << "respone : \n"
     //           << YOLLOW << content << std::endl;
     std::cout << YOLLOW << "send response to client " << DEF << std::endl;
-    if (send(fd, content.c_str(), content.size(), 0) == -1)
-        throw serverError(server.confCherch("500"), req);
+    send(fd, content.c_str(), content.size(), 0);
+        // throw true;
     req.connexion = true;
     req.firstTime = false;
 }
@@ -639,28 +641,37 @@ int Response::serveCgi(Request &req, int &fd)
         int WAIT_PID = waitpid(pid, &status, WNOHANG);
         if (WAIT_PID == -1){
             perror("waitpid");
-            exit(0);
+            kill(pid, SIGKILL);
+            waitpid(pid, &status, 0);
+            std::cout << "we kill this process : "<< pid << std::endl;
+            req.connexion = true;
+            return 1;
         }
-        else if (WAIT_PID == 0){
+        else if (WAIT_PID == 0)
+        {
             end = (double)(clock() - start) / CLOCKS_PER_SEC;
             if (end >= 5.00){
                 timeout = true;
-                fclose(output_file);
-                kill(pid, SIGTERM);
+                kill(pid, SIGKILL);
+                std::cout << "we kill this process : "<< pid << std::endl;
                 waitpid(pid, &status, 0);
-                usleep(500000);
+                // usleep(500000);
+                // sleep(5);
+                firstcgi = false;
+                fclose(output_file);
+                // sleep(5);
             }
-            if (WIFEXITED(status))
-            {
-                if (timeout){
-                    cgirespons = false;
-                }
-                else
-                {
-                    cgirespons = true;
-                }
+            // if (WIFEXITED(status))
+            // {
+            //     if (timeout){
+            //         cgirespons = false;
+            //     }
+            //     else
+            //     {
+            //         cgirespons = true;
+            //     }
                 
-            }
+            // }
         }
         else
             cgirespons = true;

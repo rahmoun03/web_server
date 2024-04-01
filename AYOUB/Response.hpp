@@ -3,6 +3,7 @@
 // #include "Request.hpp"
 // #include <filesystem>
 #include <fstream>
+#include <sys/epoll.h>
 #include <map>
 #include <stdint.h>
 #include "../CHEBCHOUB/conf.hpp"
@@ -42,7 +43,7 @@ class Response
 
 		/*             METHODs              */
 		void	GET(int &fd, Request &req, Conf &server);
-		void	POST(int &fd, Request &req, Conf &server, uint32_t &event);
+		void	POST(int &fd, Request &req, Conf &server, epoll_event &event);
 		int		DELETE(int &fd, Request &req, Conf &server, std::string dpath);
 		/**************************************/
 
@@ -51,7 +52,7 @@ class Response
 		void 	serv_dir(int &fd, Request &req, Conf &server);
 		int 	serveCgi(Request &req,int &fd);
 
-		void	generateResponse(int &fd, Request &req, Conf &server, uint32_t &event);
+		void	generateResponse(int &fd, Request &req, Conf &server, epoll_event &event);
 		void	checkHeaders(Request &req, Conf &server);
 		std::string extension(const std::string &path);
 		
@@ -76,10 +77,13 @@ class Response
 			std::string serverError(std::string path, Request &req);// 					500
 			std::string notImplement(std::string path, Request &req); //  				501
 			std::string httpVersion(std::string path, Request &req);//    	 			505
+			std::string CGtimeOut();//													504
 
 			// std::string homepage(); // 200 home
 
-		std::string Created(std::string path, Request &req);
+			std::string Created();
+			std::string noContent();
+
 
 		/***********************/
 		

@@ -99,108 +99,223 @@ std::string Response::lengthRequired(std::string path, Request &req)
     return "";
 }
 
-std::string Response::Created(std::string path, Request &req)
+std::string Response::Created()
 {
-    if(!firstExcep)
-    {
+    std::stringstream response;
+    response << "HTTP/1.1 201 Created\r\n"
+            << "Content-Type: text/html\r\n"
+            << "Connection: close\r\n"
+            << "Server: chabchoub\r\n"
+            << "Date: " << getCurrentDateTime() << "\r\n";
+    std::stringstream con ; 
+    con << " <!DOCTYPE html>"
+        << " <html lang=\"en\">"
+        << " <head>"
+        << "     <meta charset=\"UTF-8\">"
+        << "     <meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">"
+        << "     <title>201 Created</title>"
+        << "     <style>"
+        << "         body {"
+        << "             font-family: Arial, sans-serif;"
+        << "             margin: 0;"
+        << "             padding: 0;"
+        << "             background-color: #f5f5f5;"
+        << "         }"
+        << " "
+        << "         .container {"
+        << "             display: flex;"
+        << "             justify-content: center;"
+        << "             align-items: center;"
+        << "             height: 100vh;"
+        << "         }"
+        << " "
+        << "         .success-message {"
+        << "             text-align: center;"
+        << "         }"
+        << " "
+        << "         h1 {"
+        << "             font-size: 48px;"
+        << "             color: #333;"
+        << "             margin-bottom: 20px;"
+        << "         }"
+        << " "
+        << "         p {"
+        << "             font-size: 18px;"
+        << "             color: #666;"
+        << "             margin-bottom: 20px;"
+        << "         }"
+        << " "
+        << "         .back-link {"
+        << "             font-size: 16px;"
+        << "             color: #007bff;"
+        << "             text-decoration: none;"
+        << "         }"
+        << "     </style>"
+        << " </head>"
+        << " <body>"
+        << "     <div class=\"container\">"
+        << "         <div class=\"success-message\">"
+        << "             <h1>201 Created</h1>"
+        << "             <p>The request has been fulfilled and resulted in the creation of a new resource.</p>"
+        << "             <a href=\"/\" class=\"back-link\">Go back to the homepage</a>"
+        << "         </div>"
+        << "     </div>"
+        << " </body>"
+        << " </html>";
+    response << "Content-Length: " << con.str().size() << "\r\n"
+            << "\r\n"
+            << con.str();
+    return response.str();
+}
 
-        file = open(path.c_str(), O_RDONLY);
-        std::stringstream response;
-        response << "HTTP/1.1 201 Created\r\n"
-                << "Content-Type: text/html\r\n"
-                << "Connection: close\r\n"
-                << "Server: chabchoub\r\n"
-                << "Date: " << getCurrentDateTime() << "\r\n";
-        if (file == -1 )
-        {
-            // std::cerr << RED << "failure in 411 page" << std::endl;
-            std::stringstream con ; 
-            con << "<!DOCTYPE html>"\
-                << " <!DOCTYPE html>"
-                << " <html lang=\"en\">"
-                << " <head>"
-                << "     <meta charset=\"UTF-8\">"
-                << "     <meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">"
-                << "    <title>411 Length Required</title>"
-                << "     <style>"
-                << "         body {"
-                << "             font-family: Arial, sans-serif;"
-                << "             margin: 0;"
-                << "             padding: 0;"
-                << "             background-color: #f5f5f5;"
-                << "         }"
-                << " "
-                << "         .container {"
-                << "             display: flex;"
-                << "             justify-content: center;"
-                << "             align-items: center;"
-                << "             height: 100vh;"
-                << "         }"
-                << " "
-                << "         .error-message {"
-                << "             text-align: center;"
-                << "         }"
-                << " "
-                << "         h1 {"
-                << "             font-size: 48px;"
-                << "             color: #333;"
-                << "             margin-bottom: 20px;"
-                << "         }"
-                << " "
-                << "         p {"
-                << "             font-size: 18px;"
-                << "             color: #666;"
-                << "             margin-bottom: 20px;"
-                << "         }"
-                << " "
-                << "         .back-link {"
-                << "             font-size: 16px;"
-                << "             color: #007bff;"
-                << "             text-decoration: none;"
-                << "         }"
-                << "     </style>"
-                << " </head>"
-                << "<body>"
-                << "    <div class=\"container\">"
-                << "        <div class=\"error-message\">"
-                << "            <h1>411 Length Required</h1>"
-                << "            <p>The server refuses to accept the request without a defined Content-Length.</p>"
-                << "            <a href=\"/\" class=\"back-link\">Go back to the homepage</a>"
-                << "        </div>"
-                << "    </div>"
-                << "</body>"
-                << "</html>";
+std::string Response::noContent()
+{
+    std::stringstream response;
+    response << "HTTP/1.1 204 No Content\r\n"
+            << "Content-Type: text/html\r\n"
+            << "Connection: close\r\n"
+            << "Server: chabchoub\r\n"
+            << "Date: " << getCurrentDateTime() << "\r\n";
+    std::stringstream con ; 
+    con << " <!DOCTYPE html>"
+        << " <html lang=\"en\">"
+        << " <head>"
+        << "     <meta charset=\"UTF-8\">"
+        << "     <meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">"
+        << "     <title>204 No Content</title>"
+        << "     <style>"
+        << "         body {"
+        << "             font-family: Arial, sans-serif;"
+        << "             margin: 0;"
+        << "             padding: 0;"
+        << "             background-color: #f5f5f5;"
+        << "         }"
+        << " "
+        << "         .container {"
+        << "             display: flex;"
+        << "             justify-content: center;"
+        << "             align-items: center;"
+        << "             height: 100vh;"
+        << "         }"
+        << " "
+        << "         .success-message {"
+        << "             text-align: center;"
+        << "         }"
+        << " "
+        << "         h1 {"
+        << "             font-size: 48px;"
+        << "             color: #333;"
+        << "             margin-bottom: 20px;"
+        << "         }"
+        << " "
+        << "         p {"
+        << "             font-size: 18px;"
+        << "             color: #666;"
+        << "             margin-bottom: 20px;"
+        << "         }"
+        << " "
+        << "         .back-link {"
+        << "             font-size: 16px;"
+        << "             color: #007bff;"
+        << "             text-decoration: none;"
+        << "         }"
+        << "     </style>"
+        << " </head>"
+        << " <body>"
+        << "     <div class=\"container\">"
+        << "         <div class=\"success-message\">"
+        << "             <h1>204 No Content</h1>"
+        << "             <p>The server successfully processed the request but is not returning any content.</p>"
+        << "             <a href=\"/\" class=\"back-link\">Go back to the homepage</a>"
+        << "         </div>"
+        << "     </div>"
+        << " </body>"
+        << " </html>";
+    response << "Content-Length: " << con.str().size() << "\r\n"
+            << "\r\n"
+            << con.str();
+    return response.str();
+}
 
-            response << "Content-Length: " << con.str().size() << "\r\n"
-                    << "\r\n"
-                    << con.str();
-            req.connexion = true;
-        }
-        else
-        {
-            std::ifstream ff(path.c_str(), std::ios::binary);
+std::string Response::CGtimeOut()
+{
+    std::stringstream response;
+    response << "HTTP/1.1 504 Gateway Timeout\r\n"
+            << "Content-Type: text/html\r\n"
+            << "Connection: close\r\n"
+            << "Server: chabchoub\r\n"
+            << "Date: " << getCurrentDateTime() << "\r\n";
+        std::stringstream con ; 
+        con << "<!DOCTYPE html>"\
+            << " <!DOCTYPE html>"
+            << " <html lang=\"en\">"
+            << " <head>"
+            << "     <meta charset=\"UTF-8\">"
+            << "     <meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">"
+            << "     <title> 504 Gateway Timeout</title>"
+            << "     <style>"
+            << "         body {"
+            << "             font-family: Arial, sans-serif;"
+            << "             margin: 0;"
+            << "             padding: 0;"
+            << "             background-color: #f5f5f5;"
+            << "         }"
+            << " "
+            << "         .container {"
+            << "             display: flex;"
+            << "             justify-content: center;"
+            << "             align-items: center;"
+            << "             height: 100vh;"
+            << "         }"
+            << " "
+            << "         .error-message {"
+            << "             text-align: center;"
+            << "         }"
+            << " "
+            << "         h1 {"
+            << "             font-size: 48px;"
+            << "             color: #333;"
+            << "             margin-bottom: 20px;"
+            << "         }"
+            << " "
+            << "         p {"
+            << "             font-size: 18px;"
+            << "             color: #666;"
+            << "             margin-bottom: 20px;"
+            << "         }"
+            << " "
+            << "         .back-link {"
+            << "             font-size: 16px;"
+            << "             color: #007bff;"
+            << "             text-decoration: none;"
+            << "         }"
+            << "     </style>"
+            << " </head>"
+            << " <body>"
+            << "     <div class=\"container\">"
+            << "         <div class=\"error-message\">"
+            << "             <h1> 504 Gateway Timeout</h1>"
+            << "             <p>he server did not receive a timely response from the upstream server while attempting to load the URL.</p>"
+            << "             <a href=\"/\" class=\"back-link\">Go back to the homepage</a>"
+            << "         </div>"
+            << "     </div>"
+            << " </body>"
+            << " </html>";
 
-            ff.seekg(0, std::ios::end);
-            std::streampos size = ff.tellg();
-            ff.seekg(0, std::ios::beg);
-            ff.close();
-            response << "Content-Length: " << size << "\r\n"
-                    << "\r\n";
-        }
-        return response.str();
-    }
-    return "";
+        response << "Content-Length: " << con.str().size() << "\r\n"
+                << "\r\n"
+                << con.str();
+    return response.str();
 }
 
 std::string Response::timeOut(std::string path, Request &req)
 {
-        std::cout << "here \n";
     if(!firstExcep)
     {
 
         file = open(path.c_str(), O_RDONLY);
         std::stringstream response;
-        response << "HTTP/1.1 504 Request Timeout\r\n"
+        response << "HTTP/1.1 408 Request Timeout\r\n"
                 << "Content-Type: text/html\r\n"
                 << "Connection: close\r\n"
                 << "Server: chabchoub\r\n"

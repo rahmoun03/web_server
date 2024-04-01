@@ -21,7 +21,7 @@ void WebServer::printServer()
 
         while (loc_it != loc_ite)
         {
-            // std::cout << RED << "location : " << BLUE << loc_it->first << std::endl; 
+            std::cout << RED << "location : " << BLUE << loc_it->first << std::endl; 
             std::cout << "  POST          :" << (loc_it->second.post ? "yes" : "no") << std::endl;
             std::cout << "  GET           :" << (loc_it->second.get ? "yes" : "no") << std::endl;
             std::cout << "  DELETE        :" << (loc_it->second.delet ? "yes" : "no") << std::endl;
@@ -30,8 +30,28 @@ void WebServer::printServer()
             std::cout << "  upload        :" << loc_it->second.upload << std::endl;
             std::cout << "  autoindex     :" << (loc_it->second.autoindex ? "yes" : "no") << std::endl;
             std::cout << "  redirect      :" << loc_it->second.redirect << std::endl;
-            // std::cout << "  CGI           :" << (loc_it->second.cgi ? "yes" : "no") << DEF <<std::endl;
+            std::cout << "  CGI           :" << (loc_it->second.cgi ? "yes" : "no") << DEF <<std::endl;
             loc_it++;
+        }
+    }
+}
+
+void WebServer::checkDefaulLocation()
+{
+    for (int i = 0; i < serverNum; i++)
+    {
+        std::map<std::string, loca>::iterator loc_it = server[i].locat.begin();
+        std::map<std::string, loca>::iterator loc_ite = server[i].locat.end();
+        int def = 0;
+        while (loc_it != loc_ite)
+        {
+            if (loc_it->first == "/")
+                def++;
+            loc_it++;
+        }
+        if (def == 0){
+            std::cout << server[i].confCherch("server_name")<< " : YOU SHOULD ENTER DEFAULT LOCATION!" << std::endl;
+            exit(0);
         }
     }
 }
@@ -42,18 +62,18 @@ void WebServer::servClient(int &i, int &fd)
     {
         try
         {
-            client[fd].res.generateResponse(fd, client[fd].req, server[client[fd].server_index], (events[i].events));                            
-                if (epoll_ctl(epoll_fd, EPOLL_CTL_MOD, fd, &events[i]) == -1) {
-                    perror("epoll_ctl");
-                    if(client[fd].res.pid != -1)
-                    {
-                        kill(client[fd].res.pid , SIGTERM);
-                        waitpid(client[fd].res.pid, NULL, 0);
-                    }
-                    client[fd].req.connexion = true;
-                    throw (client[fd].res.serverError(server[client[fd].server_index].confCherch("500"), client[fd].req));
+            client[fd].res.generateResponse(fd, client[fd].req, server[client[fd].server_index], events[i]);                            
+            if (epoll_ctl(epoll_fd, EPOLL_CTL_MOD, fd, &events[i]) == -1) {
+                perror("epoll_ctl");
+                if(client[fd].res.pid != -1)
+                {
+                    kill(client[fd].res.pid , SIGTERM);
+                    waitpid(client[fd].res.pid, NULL, 0);
                 }
-                std::cout << "change event to " << (events[i].events == EPOLLOUT ? "EPOLLOUT" : "EPOLLIN") << std::endl;
+                client[fd].req.connexion = true;
+                throw (client[fd].res.serverError(server[client[fd].server_index].confCherch("500"), client[fd].req));
+            }
+            std::cout << "change event to " << (events[i].events == EPOLLOUT ? "EPOLLOUT" : "EPOLLIN") << std::endl;
         }
         catch(bool a)
         {
@@ -119,88 +139,99 @@ void WebServer::servClient(int &i, int &fd)
 
 void WebServer::createServer(const char * os)
 {
-        int opt = 1;
-        epoll_fd = epoll_create1(0);
-        if (epoll_fd == -1){
-            perror("epoll create");
-            exit(0);
-        }
-        addrlen = sizeof(socketadress);
+    if(!os)
+    {
+        conf.defaultConfic();
+        conf.displayLocation();
+        server[0] = conf;
+        serverNum = 1;
+    }
+    else
+    {
         std::ifstream fg(os);
         if (fg.is_open())
         {
             serverNum = 0;
             while (!fg.eof()){
                 Conf conf(fg);
+                std::cout << "the server  : " << serverNum << std::endl;
                 server[serverNum] = conf;
-                serverNum = conf.numOfserver;
-                std::cout << "num of server os : " << serverNum << std::endl;
+                serverNum += conf.numOfserver;
             }
             fg.close();
         }
-        else{
-                conf.defaultConfic();
-                conf.displayLocation();
-                server[0] = conf;
-                serverNum = 1;
+        else
+        {
+            std::cerr << "ERROR : FILE NOT FOUND!" << std::endl;
+            exit(0);
         }
-        for(int i = 0; i < serverNum; i++)
-        {   
-            socket_fd[i] = socket(AF_INET,SOCK_STREAM,0);
-            socket_acc.push_back(socket_fd[i]);
-            setsockopt(socket_fd[i],SOL_SOCKET,SO_REUSEADDR,&opt,sizeof(opt));
-            socketadress.sin_family = AF_INET;
-            socketadress.sin_port = htons(atoi(server[i].confCherch("port").c_str()));
-            socketadress.sin_addr.s_addr = inet_addr(server[i].confCherch("host").c_str());
-            int bin = bind(socket_fd[i],(struct  sockaddr*)&socketadress,sizeof(socketadress));
-            if (bin < 0)
-            {
-                perror("bind");
-                if(serverNum == 1)
-                    exit(0);
-            }
-            listen(socket_fd[i],SOMAXCONN);
-            if (socket_fd[i] == -1){
-                perror("could not create socket");
+    }
+    std::cout << "number of servers : " << serverNum << std::endl;
+    checkDefaulLocation();
+    int opt = 1;
+    epoll_fd = epoll_create1(0);
+    if (epoll_fd == -1){
+        perror("epoll create");
+        exit(0);
+    }
+    addrlen = sizeof(socketadress);
+    for(int i = 0; i < serverNum; i++)
+    {   
+        socket_fd[i] = socket(AF_INET,SOCK_STREAM,0);
+        socket_acc.push_back(socket_fd[i]);
+        setsockopt(socket_fd[i],SOL_SOCKET,SO_REUSEADDR,&opt,sizeof(opt));
+        socketadress.sin_family = AF_INET;
+        socketadress.sin_port = htons(atoi(server[i].confCherch("port").c_str()));
+        socketadress.sin_addr.s_addr = inet_addr(server[i].confCherch("host").c_str());
+        int bin = bind(socket_fd[i],(struct  sockaddr*)&socketadress,sizeof(socketadress));
+        if (bin < 0)
+        {
+            perror("bind");
+            if(serverNum == 1)
                 exit(0);
-            }
-            event.data.fd = socket_fd[i];
-            event.events = EPOLLIN ;
-            if (epoll_ctl(epoll_fd,EPOLL_CTL_ADD,socket_fd[i],&event) == -1){
-                perror("epoll_ctl");
-                exit(0);
-            }
         }
+        listen(socket_fd[i],SOMAXCONN);
+        if (socket_fd[i] == -1){
+            perror("could not create socket");
+            exit(0);
+        }
+        event.data.fd = socket_fd[i];
+        event.events = EPOLLIN ;
+        if (epoll_ctl(epoll_fd,EPOLL_CTL_ADD,socket_fd[i],&event) == -1){
+            perror("epoll_ctl");
+            exit(0);
+        }
+    }
 }
 
 
 int WebServer::wait_event(){
-        std::cout << "epoll waiting for events ...\n";
-        int wait_fd = epoll_wait(epoll_fd, events, MAX_EVENTS, 5000);
-        if(wait_fd == 0)
+    std::cout << "epoll waiting for events ...\n";
+    int wait_fd = epoll_wait(epoll_fd, events, MAX_EVENTS, 5000);
+    if(wait_fd == 0)
+    {
+        for (int i = 0; i < MAX_EVENTS; i++)
         {
-            for (int i = 0; i < MAX_EVENTS; i++)
+            if(clientOut[i] != -1)
             {
-                if(clientOut[i] != -1)
-                {
-                    client[i].req.firstTime = true;
-                    std::string res = client[i].res.timeOut(server[client[i].server_index].confCherch("408"), client[i].req);
-                    send(i, res.c_str(), res.size(), 0);
-                    std::cout << YOLLOW <<"send response time out ..."<< DEF<< std::endl;
-                    std::cout << RED <<"Client disconnected : "<< DEF << clientOut[i] << std::endl;
-                    if (epoll_ctl(epoll_fd, EPOLL_CTL_DEL, i, NULL) == -1) {
-                        perror("epoll_ctl");
-                    }
-                    client[i].clear();
-                    close(i);
-                    clientOut[i] = -1;
+                client[i].req.firstTime = true;
+                std::string res = client[i].res.timeOut(server[client[i].server_index].confCherch("408"), client[i].req);
+                send(i, res.c_str(), res.size(), 0);
+                std::cout << YOLLOW <<"send response time out ..."<< DEF<< std::endl;
+                std::cout << RED <<"Client disconnected : "<< DEF << clientOut[i] << std::endl;
+                if (epoll_ctl(epoll_fd, EPOLL_CTL_DEL, i, NULL) == -1) {
+                    perror("epoll_ctl");
                 }
+                client[i].clear();
+                close(i);
+                clientOut[i] = -1;
             }
         }
-        if (wait_fd == -1){
-            perror("epoll_wait");
-            exit(0);
-        }
+    }
+    if (wait_fd == -1){
+        perror("epoll_wait");
+        exit(0);
+    }
     return wait_fd;
 }
 
@@ -265,7 +296,7 @@ void WebServer::checkRequest(int &fd,ssize_t & bytes_read,int & i,char *buffer)
 WebServer::WebServer(const char *os)
 {
     createServer(os);
-    // printServer();
+    printServer();
     for (size_t i = 0; i < MAX_EVENTS; i++)
     {
         client[i].endOf = -1;

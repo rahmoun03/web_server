@@ -15,7 +15,7 @@
 
 
 
-void Response::generateResponse(int &fd, Request &req, Conf &server , uint32_t &event)
+void Response::generateResponse(int &fd, Request &req, Conf &server , epoll_event &event)
 {
     if(req.firstTime)
     {
@@ -61,10 +61,12 @@ void Response::generateResponse(int &fd, Request &req, Conf &server , uint32_t &
         {
             std::cout << "dont suport upload" << std::endl;
             // if(!postToGet)
-            event = EPOLLOUT;
-            // postToGet = true;
-            req.query = req.get_body();
-            GET(fd, req, server);
+            // event.events = EPOLLOUT;
+            // // postToGet = true;
+            // req.query = req.get_body();
+            // GET(fd, req, server);
+
+            throw(notImplement(server.confCherch("501"), req));
         }
     }
 
@@ -196,8 +198,6 @@ void Response::serv_dir(int &fd, Request &req, Conf &server)
                          << "Date: " << getCurrentDateTime() << "\r\n"
                          << "\r\n"
                          << content;
-                // std::cout << YOLLOW << "send response to client " << DEF << std::endl;
-
                 if (send(fd, response.str().c_str(), response.str().size(), 0) == -1)
                     throw true;
                 req.connexion = true;
@@ -214,7 +214,7 @@ void Response::serv_dir(int &fd, Request &req, Conf &server)
                     req.get_path() = _path;
                     serv_file(it, fd, req, server);
                 }
-                else if (server.locat.find(req.locationPath)->second.cgi)
+                else if (server.locat.find(req.locationPath)->second.cgi && (extension(_path) == "php" || extension(_path) == "py"))
                 {
                     std::cout << "http://" << _path << "\n";
                     std::cout << "the index is a file : php" << std::endl;
@@ -222,29 +222,32 @@ void Response::serv_dir(int &fd, Request &req, Conf &server)
                     req.get_path() = _path;
                     if(!serveCgi(req,fd))
                     {
-                        fclose(output_file);
-                        std::ifstream ff("./cgi_output.txt");
-                        std::stringstream response;
-                        std::string res = std::string(std::istreambuf_iterator<char>(ff), std::istreambuf_iterator<char>()); 
-                        response << "HTTP/1.1 200 OK\r\n"
-                                << res;
-                        // std::cout << "response : \n" << response.str() << std::endl;
-                        if (send(fd, response.str().c_str() , response.str().size(), 0) == -1)
-                            throw true;
-                        req.connexion = true;
-                        ff.close();
+                        if (cgirespons)
+                        {
+                            fclose(output_file);
+                            std::ifstream ff(temp_file.c_str());
+                            std::stringstream response;
+                            std::string res = std::string(std::istreambuf_iterator<char>(ff), std::istreambuf_iterator<char>()); 
+                            response << "HTTP/1.1 200 OK\r\n"
+                                    << res;
+                            printf("%s\n", response.str().c_str());
+                            if (send(fd, response.str().c_str() , response.str().size(), 0) == -1)
+                                throw true;
+                            req.connexion = true;
+                            ff.close();
+                        }
                     }
                     else
                     {
                         std::cout << "CGI ERROR\n";
                         throw (serverError(server.confCherch("500"), req));
                     }
-                
+                    req.firstTime = false;
                 }
                 else
                 {
-                    std::cout << "this if forbidden folder" << std::endl;
-                    throw(forbidden(server.confCherch("404"), req));
+                    // std::cout << "this if forbidden folder" << std::endl;
+                    throw(forbidden(server.confCherch("403"), req));
                 }
             }
         }
@@ -289,6 +292,7 @@ void Response::checkHeaders(Request &req, Conf &server)
     if(req.get_path().empty() || req.get_path()[0] != '/')
     {
         std::cout << "requist line not correct ohhhh "<< std::endl;
+        std::cout << req.get_path()<< std::endl;
         throw(badRequest(server.confCherch("400"), req));
     }
     // {
@@ -372,7 +376,7 @@ std::string Response::extension(const std::string &path)
     if (dot == std::string::npos)
     {
         std::cerr << RED << "failure to find extension !" << DEF << std::endl;
-        return "";
+        return "null";
     }
     return path.substr(dot + 1);
 }
@@ -582,6 +586,7 @@ int Response::serveCgi(Request &req, int &fd)
     char** env = new char*[8];
     if (!firstcgi)
     {
+        printf("hererre\n");
         firstcgi = true;
         start = clock();
         temp_file = "/tmp/cgi_" + random_name();

@@ -1,6 +1,5 @@
 #include "Response.hpp"
 #include "Request.hpp"
-
 #include "../CHEBCHOUB/conf.hpp"
 #include <sys/socket.h>
 #include <signal.h>
@@ -8,30 +7,39 @@
 #include <limits.h>
 #include <dirent.h>
 
-// #include <filesystem>
-// #include<stdio.h>
-// #include<sys/stat.h>
-// #include<iostream>
-// #include<string.h>
-// #include<string>
-// #include <stdlib.h>
-// #include<dirent.h>
-// #include <iostream>
-// #include <cstdlib> // For system function
-// #include <unistd.h>
-
 void	Response::GET(int &fd, Request &req, Conf &server)
 {
     if(!req.red_path.empty())
             Redirect(req.red_path, req, fd,server);
     else if(directoryExists(req.get_path()))
     {
-        std::cout << "http://" << req.get_path() << "\n";
-        std::cout << "the URL is a directory \n";
+        std::string root =  server.locat.find(req.locationPath)->second.root;
+        const char* r_path = root.c_str();
+        const char* path2 = req.get_path().c_str();
+        char resolved_path[PATH_MAX];
+        
+        std::string roo_pa =  realpath(r_path, resolved_path);
+        std::string rea_pa =  realpath(path2, resolved_path) ;
+        
+        if(strncmp(roo_pa.c_str() , rea_pa.c_str() , strlen(roo_pa.c_str())) != 0)
+            throw forbidden(server.confCherch("403"), req);
+
         serv_dir(fd, req, server);
     }
     else if (fileExists(req.get_path()))
     {
+
+        std::string root =  server.locat.find(req.locationPath)->second.root;
+        const char* r_path = root.c_str();
+        const char* path2 = req.get_path().c_str();
+        char resolved_path[PATH_MAX];
+
+        std::string roo_pa =  realpath(r_path, resolved_path);
+        std::string rea_pa =  realpath(path2, resolved_path) ;
+        
+        if(strncmp(roo_pa.c_str() , rea_pa.c_str() , strlen(roo_pa.c_str())) != 0)
+            throw forbidden(server.confCherch("403"), req);
+
         std::map<std::string , std::string> mime_map = mimeTypes();
         map_iterator it = mime_map.find(extension(req.get_path()));
         if(it != mime_map.end()) 
@@ -42,8 +50,6 @@ void	Response::GET(int &fd, Request &req, Conf &server)
         }
         else if (server.locat.find(req.locationPath)->second.cgi && (extension(req.get_path()) == "php" || extension(req.get_path()) == "py"))
         {
-            std::cout << "http://" << req.get_path() << "\n";
-            std::cout << "the URL is a file : php/py" << std::endl;
             if(!serveCgi(req,fd))
             {
                 if (cgirespons)
@@ -54,22 +60,19 @@ void	Response::GET(int &fd, Request &req, Conf &server)
                     std::stringstream response;
                     std::string res = std::string(std::istreambuf_iterator<char>(ff), std::istreambuf_iterator<char>()); 
                     response << "HTTP/1.1 200 OK\r\n"
-                    // response << "Content-Length: " << res.size() << "\r\n"
                             << res;
                     std::cout << "response send to client ...\n" << "response : \n" << response.str() << std::endl;
-                    // exit(0);
                     std::cout << "----QUARY IS : " << tmp_path << std::endl;
                     send(fd, response.str().c_str() , response.str().size(), 0);
                     req.connexion = true;
-                    // exit()
                     kill(pid, SIGKILL);
                     ff.close();
                 }
                 else if (timeout)
                 {
                     std::cout << "in time out " << std::endl;
-// fclose(output_file);
-                    throw timeOut(server.confCherch("408"),req);
+                    req.connexion = true;
+                    throw CGtimeOut();
                 }
             }
             else
@@ -106,7 +109,7 @@ unsigned long convertHexToDec(std::string hex)
 }
 
 
-void	Response::POST(int &fd, Request &req, Conf &server, uint32_t &event)
+void	Response::POST(int &fd, Request &req, Conf &server, epoll_event &event)
 {
     static int i;
     if(req.get_header("Transfer-Encoding:").empty())
@@ -154,30 +157,13 @@ void	Response::POST(int &fd, Request &req, Conf &server, uint32_t &event)
         {
             std::cout << "finish post " << std::endl;
             if (server.locat.find(req.locationPath)->second.cgi){
-                // std::ifstream ff(tmp_path.c_str());
-                // std::cout <<"tmp_Path : " << tmp_path << std::endl;
-                // if(!ff.is_open())
-                // {
-                //     std::cout <<"tmp_Path : " << tmp_path << std::endl;
-                //     exit(1);
-                // }
-                // req.query = std::string(std::istreambuf_iterator<char>(ff), std::istreambuf_iterator<char>());
-                // std::cout << "Query : " << req.query  << std::endl; 
-                // ff.close();
                 GET(fd, req, server);
-                event = EPOLLOUT;
-                // postToGet = 
-
+                event.events = EPOLLOUT; 
             }
             else{
                 req.connexion = true;
-                std::ifstream fi("www/server1/suc.html");
-                std::stringstream response;
-                response << "HTTP/1.1 201 Created\r\n"
-                        << "\r\n"
-                        << fi.rdbuf();
-                fi.close();
-                send(fd, response.str().c_str(), response.str().size(),0);
+                std::string response = Created();
+                send(fd, response.c_str(), response.size(),0);
             }
         }
     }
@@ -253,30 +239,15 @@ void	Response::POST(int &fd, Request &req, Conf &server, uint32_t &event)
         if (decimal == 0)
         {
             if (server.locat.find(req.locationPath)->second.cgi){
-                // std::ifstream ff(tmp_path.c_str());
-                std::cout <<"tmp_Path : " << tmp_path << std::endl;
-                // if(!ff.is_open())
-                // {
-                //     std::cout <<"tmp_Path : " << tmp_path << std::endl;
-                //     exit(1);
-                // }
-                // req.query = std::string(std::istreambuf_iterator<char>(ff), std::istreambuf_iterator<char>());
-                // std::cout << "Query : " << req.query  << std::endl;
-                // ff.close();
                 GET(fd, req, server);
-                event = EPOLLOUT;
+                event.events = EPOLLOUT;
             }
             else
             {
                 std::cout << "------------------ LAST CHUNKED --------------------------\n";
                 req.connexion = true;
-                std::ifstream fi("www/server1/suc.html");
-                std::stringstream response;
-                response << "HTTP/1.1 201 Created\r\n"
-                        << "\r\n"
-                        << fi.rdbuf();
-                fi.close();
-                send(fd, response.str().c_str(), response.str().size(),0);
+                std::string response = Created();
+                send(fd, response.c_str(), response.size(),0);
             }
         }
     }

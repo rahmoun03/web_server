@@ -17,6 +17,7 @@ Conf::Conf(std::ifstream & fg)
 		if (name.find("server") != std::string::npos)
 		{
 			numOfserver++;
+			// number++;
 			getline(fg,name);
 
 			map_iterator tmp_tmp;
@@ -52,7 +53,6 @@ Conf::Conf(std::ifstream & fg)
 							}
 						else
 						{
-							std::cout << "----name is : " << name << std::endl;
 							name.erase(std::remove_if(name.begin(),name.end(),isspace),name.end());
 							if (map.count(name.substr(0,name.find("="))) != 0)
 								throw "ERROR DUPLICATE!";
@@ -84,7 +84,6 @@ Conf::Conf(std::ifstream & fg)
 					}
 				}
 				if (serv_n != serv_v){
-							std::cout << "--------HERE-----------\n";
 						throw "ERORR: Erorr Configfile";
 				}
 
@@ -193,6 +192,7 @@ void Conf::displayLocation()
 						if (isspaceRemove(it->second).empty())
 							throw "DEFAULT NOT FOUND!";
 						loc.defau = isspaceRemove(it->second);
+
 					}
 					else if (it->first.find("upload") != std::string::npos){
 						if (isspaceRemove(it->second).empty())
@@ -221,7 +221,7 @@ std::string Conf::isspaceRemove(std::string tmp)
 }
 
 void    Conf::parseAndCheckLocation()
-{
+{		
         std::map<std::string,std::string>::iterator lc;
         try{
             if (loc1.find("method") == loc1.end() || (map.find("method") != loc1.end() && isspaceRemove(loc1.find("method")->second).empty())){
@@ -240,13 +240,17 @@ void    Conf::parseAndCheckLocation()
                         throw "UPLOAD NOT FOUND!";
                     }
             }
+			if ((lc = loc1.find("default")) != loc1.end()){
+				if (!fileExists(isspaceRemove(loc1.find("root")->second + "/" + lc->second)) || (loc1.find("default") != loc1.end() && isspaceRemove(loc1.find("default")->second).empty())){
+					throw "DEFAULT NOT FOUND!";
+				}
+            }
         lc = loc1.begin();
         for(; lc != loc1.end(); lc++){
             if (lc->first.compare("cgi") != 0 && lc->first.compare("autoindex") != 0 && lc->first.compare("default") != 0\
             && lc->first.compare("location") != 0 && lc->first.compare("root") != 0 && lc->first.compare("method") != 0\
             && lc->first.compare("redirect") != 0 && lc->first.compare("upload") != 0)
             {
-
                 throw "SYNTAX ERROR!";
             }
         }
@@ -264,9 +268,11 @@ void Conf::defaultConfic()
     map["server_name"] = "weldjed";
     map["body_size_limit"] = "10000000";
     loc1["location"] = "/";
-    loc1["method"] = "GET POST DELETE";
+    loc1["method"] = "GET POST";
     loc1["root"] = "www/server1";
-    this->numOfserver = 1;
+    loc1["autoindex"] = "on";
+    loc1["cgi"] = "off";
+
 }
 
 void    Conf::parsAndCheckServer()

@@ -4,11 +4,11 @@ body {
     justify-content: center;
     align-items: center;
     height: 100vh; 
-    background-color: #f5f5f5;
+    background-color: #110202;
     margin: 0; /* Remove default body margin */
 }
 .main-content {
-        background-color: #f5f5f5;
+        background-color: #0e0101;
         border-radius: 50px;
         display: block;
         width: 80%;
@@ -39,6 +39,7 @@ img  {
     align-items: center;
 }
 .swiri{
+    /* box-shadow: 2px 2px 2px 2px rgb(235, 15, 235); */
     /* display: block; */
     display: block;
     justify-content: center;

@@ -60,6 +60,7 @@ class WebServer{
     public :
         std::map<int,Conf> server;
         void printServer();
+        void checkDefaulLocation();
         void servClient(int &i, int &fd);
         void createServer(const char * os);
         int wait_event();

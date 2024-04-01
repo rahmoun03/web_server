@@ -7,7 +7,7 @@ AYOUB_SRC = AYOUB/Request.cpp AYOUB/Response.cpp AYOUB/mime_types.cpp AYOUB/4xx.
 
 SRC = $(CHAB_SRC) $(AYOUB_SRC) $(SWIRI_SRC)
 
-FLAGS = -Wall -Wextra -Werror -std=c++98 -fsanitize=address -g3
+FLAGS = -Wall -Wextra -Werror -pedantic -std=c++98 -fsanitize=address -g3
 
 $(NAME) : $(SRC)
 	c++ $(FLAGS) $(SRC) -o $@

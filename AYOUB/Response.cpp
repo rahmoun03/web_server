@@ -53,8 +53,8 @@ void Response::generateResponse(int &fd, Request &req, Conf &server , epoll_even
         if (server.locat.find(req.locationPath) != server.locat.end() && !(server.locat.find(req.locationPath)->second.upload.empty()))
         {
 
-            std::cout << RED << "POST METHOD, upload path : " << DEF
-                      << server.locat.find(req.get_path())->second.upload << std::endl; 
+            // std::cout << RED << "POST METHOD, upload path : " << DEF
+            //           << server.locat.find(req.locationPath)->second.upload << std::endl; 
             POST(fd, req, server, event);
         }
         else
@@ -587,6 +587,7 @@ int Response::serveCgi(Request &req, int &fd)
     if (!firstcgi)
     {
         printf("hererre\n");
+        // std::cout <<  req.get_query() << std::endl;
         firstcgi = true;
         start = clock();
         temp_file = "/tmp/cgi_" + random_name();

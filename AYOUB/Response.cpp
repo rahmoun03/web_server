@@ -15,8 +15,6 @@
 
 
 
-
-
 void Response::generateResponse(int &fd, Request &req, Conf &server , uint32_t &event)
 {
     if(req.firstTime)

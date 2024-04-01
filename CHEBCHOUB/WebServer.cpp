@@ -42,7 +42,7 @@ void WebServer::servClient(int &i, int &fd)
     {
         try
         {
-            client[fd].res.generateResponse(fd, client[fd].req, server[client[fd].server_index], events[i].events);                            
+            client[fd].res.generateResponse(fd, client[fd].req, server[client[fd].server_index], (events[i].events));                            
                 if (epoll_ctl(epoll_fd, EPOLL_CTL_MOD, fd, &events[i]) == -1) {
                     perror("epoll_ctl");
                     if(client[fd].res.pid != -1)

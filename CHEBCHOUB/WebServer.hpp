@@ -37,11 +37,6 @@ class Client;
 #include "../AYOUB/Response.hpp"
 #define MAX_EVENTS 1024
 
-// class Client;
-// class Request;
-
-// class Response;
-
 
 class WebServer{
     private :
@@ -49,7 +44,7 @@ class WebServer{
         int clientOut[MAX_EVENTS];
         Client client[MAX_EVENTS];
         int serverNum;
-        struct  sockaddr_in socketadress, clientaddr;
+        struct sockaddr_in socketadress, clientaddr;
         socklen_t addrlen;
         struct epoll_event event, events[MAX_EVENTS];
         int socket_fd[MAX_EVENTS];
@@ -68,7 +63,6 @@ class WebServer{
         void checkRequest(int &fd,ssize_t & bytes_read,int & i,char *buffer);
         WebServer(const char *os);
         ~WebServer();
-        
 };
 
 #endif

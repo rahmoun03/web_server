@@ -1,18 +1,13 @@
-
-
 #include "Response.hpp"
 #include "Request.hpp"
 #include "../CHEBCHOUB/conf.hpp"
-
-
 #include <sys/socket.h>
 #include <sys/epoll.h>
 #include <fcntl.h>
-#include <unistd.h>   //close
+#include <unistd.h>
 #include <ctime>
 #include <sys/stat.h>
 #include <sys/wait.h>
-
 
 
 void Response::generateResponse(int &fd, Request &req, Conf &server , epoll_event &event)
@@ -29,8 +24,6 @@ void Response::generateResponse(int &fd, Request &req, Conf &server , epoll_even
         if (server.locat.find(_path + "/") != server.locat.end())
         {
             loca _location = server.locat.find(_path + "/")->second;
-            // std::cout << "location : " << (_path + "/") << std::endl;
-            // std::cout << "Add root : " << (_location.root) << std::endl;
             req.root_end = strlen((_location.root).c_str());
             req.get_path() = _location.root + req.get_path();
             req.red_path = _location.redirect;
@@ -45,78 +38,44 @@ void Response::generateResponse(int &fd, Request &req, Conf &server , epoll_even
     }
     if (req.get_method() == "GET")
     {
-        // std::cout << RED << "GET METHOD for " << DEF << server.confCherch("server_name") << std::endl;
         GET(fd, req, server);
     }
     else if (req.get_method() == "POST")
     {
         if (server.locat.find(req.locationPath) != server.locat.end() && !(server.locat.find(req.locationPath)->second.upload.empty()))
         {
-
-            // std::cout << RED << "POST METHOD, upload path : " << DEF
-            //           << server.locat.find(req.locationPath)->second.upload << std::endl; 
             POST(fd, req, server, event);
         }
         else
         {
-            std::cout << "dont suport upload" << std::endl;
-            // if(!postToGet)
-            // event.events = EPOLLOUT;
-            // // postToGet = true;
-            // req.query = req.get_body();
-            // GET(fd, req, server);
-
             throw(notImplement(server.confCherch("501"), req));
         }
     }
-
     else if (req.get_method() == "DELETE")
     {
         int d = DELETE(fd, req, server, req.get_path());
         if(d == 1)
-        {
-            std::ifstream ff("www/server1/delete.html", std::ios::binary);
-            
-            std::stringstream response;
-            response << "HTTP/1.1 200 OK\r\n"
-             << "Content-Type: text/html\r\n"
-             << "Connection: close\rEncoding\n"
-             << "Server: " << "chabchoub" << "\r\n"
-             << "Date: " << getCurrentDateTime() << "\r\n"
-             << "\r\n"
-             << ff.rdbuf();
-            
-            // std::cout << "response :\n" << YOLLOW << response.str() << DEF <<std::endl;
-            // std::cout << YOLLOW << "send response to client ==> " << DEF << std::endl;
-            if(send(fd, response.str().c_str(), response.str().size(), 0) == -1)
+        {   
+            std::string response = DeleteSuc();
+
+            if(send(fd, response.c_str(), response.size(), 0) == -1)
             {
                 perror("send :");
-                throw serverError(server.confCherch("500"),req);
+                throw true;
             }
             req.connexion = true;
-            ff.close();
         }
         else
         {
-            std::stringstream response;
-            response << "HTTP/1.1 204 No Content\r\n"
-             << "Connection: close\r\n"
-             << "Server: " << "chabchoub" << "\r\n"
-             << "Date: " << getCurrentDateTime() << "\r\n"
-             << "\r\n";
-
-            // std::cout << "response :\n" << YOLLOW << response.str() << DEF <<std::endl;
-            // std::cout << YOLLOW << "send response to client ==> " << DEF << std::endl;
-            if (send(fd, response.str().c_str(), response.str().size(), 0) == -1)
+            std::string response = noContent();
+            if (send(fd, response.c_str(), response.size(), 0) == -1)
                 throw true;
             req.connexion = true;
         }
     }
-
     else
     {
         req.connexion = true;
-        std::cout << RED << "UNKOWN METHOD" << DEF << std::endl;
     }
 }
 
@@ -125,12 +84,9 @@ void Response::serv_file(map_iterator &type, int &fd, Request &req, Conf &server
 
     if (req.firstTime)
     {
-        file = open(req.get_path().c_str(), O_RDONLY);
-        // std::cout << "first time , fd file = " << file << std::endl;
+        file = open(req.get_path().c_str(), O_RDONLY | O_NONBLOCK);
         if (file < 0)
         {
-            std::cout << " <  ---------- Error file --------->\n"
-                      << std::endl;
             throw(notFound(server.confCherch("404"), req));
         }
         std::ifstream ff(req.get_path().c_str(), std::ios::binary);
@@ -145,28 +101,17 @@ void Response::serv_file(map_iterator &type, int &fd, Request &req, Conf &server
                  << "Content-Type: " << type->second << "\r\n"
                  << "Content-Length: " << size << "\r\n"
                  << "Connection: keep-alive\r\n"
-                 << "Server: "
-                 << "chabchoub"
-                 << "\r\n"
                  << "Date: " << getCurrentDateTime() << "\r\n"
                  << "\r\n";
-
-        // std::cout << BLUE << "respone : \n"
-                //   << YOLLOW << response.str() << std::endl;
-        // std::cout << YOLLOW << "send response to client" << DEF << std::endl;
         if (send(fd, response.str().c_str(), response.str().size(), 0) ==-1)
             throw true;
         req.firstTime = false;
     }
     else
     {
-        // std::cout << "second time" << std::endl;
         std::string content = getResource(file, req, server);
-        // std::cout << RAN << content << DEF << std::endl;
-        std::cout << YOLLOW << "send response to client wowowowoow" << DEF << std::endl;
         if (send(fd, content.c_str(), content.size(), 0) == -1)
             throw true;
-        // req.connexion = true;
     }
 }
 
@@ -180,14 +125,10 @@ void Response::serv_dir(int &fd, Request &req, Conf &server)
     {
         if (*(_path.end() - 1) == '/')
         {
-            // std::cout << GREEN <<"location : " << req.locationPath <<DEF << std::endl;
+            std::cout << GREEN <<"location : " << req.locationPath <<DEF << std::endl;
             if (server.locat.find(req.locationPath) != server.locat.end()
                 && server.locat.find(req.locationPath)->second.autoindex)
             {
-                // std::cout << "the location : " << _path.substr(req.root_end) << "\nautoIndex : "
-                        //   << (server.locat.find(_path.substr(req.root_end))->second.autoindex) << std::endl;
-                std::cout << BLUE << "Listing The Directory ..." << DEF << std::endl;
-
                 std::string content = listDirectory(_path.c_str());
                 std::stringstream response;
                 response << "HTTP/1.1 200 OK\r\n"
@@ -206,7 +147,6 @@ void Response::serv_dir(int &fd, Request &req, Conf &server)
             else
             {
                 _path += server.locat.find(req.locationPath)->second.defau;
-                std::cout << "open index file :  " << path << std::endl;
                 std::map<std::string, std::string> mime_map = mimeTypes();
                 map_iterator it = mime_map.find(extension(_path));
                 if (it != mime_map.end() && fileExists(_path))
@@ -216,9 +156,6 @@ void Response::serv_dir(int &fd, Request &req, Conf &server)
                 }
                 else if (server.locat.find(req.locationPath)->second.cgi && (extension(_path) == "php" || extension(_path) == "py"))
                 {
-                    std::cout << "http://" << _path << "\n";
-                    std::cout << "the index is a file : php" << std::endl;
-
                     req.get_path() = _path;
                     if(!serveCgi(req,fd))
                     {
@@ -239,14 +176,13 @@ void Response::serv_dir(int &fd, Request &req, Conf &server)
                     }
                     else
                     {
-                        std::cout << "CGI ERROR\n";
                         throw (serverError(server.confCherch("500"), req));
                     }
                     req.firstTime = false;
                 }
                 else
                 {
-                    // std::cout << "this if forbidden folder" << std::endl;
+                    std::cout << "this if forbidden folder" << std::endl;
                     throw(forbidden(server.confCherch("403"), req));
                 }
             }
@@ -254,11 +190,6 @@ void Response::serv_dir(int &fd, Request &req, Conf &server)
         else
         {
             std::string location = (_path.substr(req.root_end)) + "/";
-
-            std::cout << "make a redirection URL " << std::endl;
-            std::cout << "from this : " << _path.substr(req.root_end) << std::endl;
-            std::cout << "to   this : " << location << std::endl;
-
             Redirect(location, req, fd, server);
         }
     }
@@ -267,66 +198,66 @@ void Response::serv_dir(int &fd, Request &req, Conf &server)
 void Response::checkHeaders(Request &req, Conf &server)
 {
     std::map<std::string, std::string> head;
-    std::cout << "firts time  : " << req.firstTime << std::endl;
+    // std::cout << "firts time  : " << req.firstTime << std::endl;
     head = req.get_headers();
     if (head.count("Transfer-Encoding:") && req.get_header("Transfer-Encoding:") != "chunked")
     {
-        std::cout << "Transfer-Encoding Not chanked" << std::endl;
+        // std::cout << "Transfer-Encoding Not chanked" << std::endl;
         throw(notImplement(server.confCherch("501"), req));
     }
     if (req.get_method() == "POST" && !head.count("Content-Type:"))
     {
-        std::cout << "Content-Type Not exist" << std::endl;
+        // std::cout << "Content-Type Not exist" << std::endl;
         throw(notImplement(server.confCherch("501"), req));
     }
     if((req.get_method() != "GET") && (req.get_method() != "POST") && (req.get_method() != "DELETE"))
     {
-        std::cout << "requist line not correct Method " << std::endl;
+        // std::cout << "requist line not correct Method " << std::endl;
         throw (badRequest(server.confCherch("400"), req));
     }
     if(req.get_method().empty() || req.get_path().empty() || !req.startLineForma)
     {
-        std::cout << "requist line not correct "<< (req.startLineForma ? "yes" : "no") << std::endl;
+        // std::cout << "requist line not correct "<< (req.startLineForma ? "yes" : "no") << std::endl;
         throw(badRequest(server.confCherch("400"), req));
     }
     if(req.get_path().empty() || req.get_path()[0] != '/')
     {
-        std::cout << "requist line not correct ohhhh "<< std::endl;
-        std::cout << req.get_path()<< std::endl;
+        // std::cout << "requist line not correct ohhhh "<< std::endl;
+        // std::cout << req.get_path()<< std::endl;
         throw(badRequest(server.confCherch("400"), req));
     }
     // {
-    //     std::cout << "requist line not correct "<< (req.startLineForma ? "yes" : "no") << std::endl;
+        // std::cout << "requist line not correct "<< (req.startLineForma ? "yes" : "no") << std::endl;
     //     throw(badRequest(server.confCherch("400"), req));
     // }
     if (req.get_method() == "POST" && !head.count("Transfer-Encoding:") && !head.count("Content-Length:"))
     {
-        std::cout << "TE and CL Not exist" << std::endl;
+        // std::cout << "TE and CL Not exist" << std::endl;
         throw(lengthRequired(server.confCherch("411"), req));
     }
     if ((req.get_method() == "GET") && (!req.get_body().empty() || head.count("Content-Length:")))
     {
-        std::cout << "find Content-Lenght or Body" << std::endl;
+        // std::cout << "find Content-Lenght or Body" << std::endl;
         throw(badRequest(server.confCherch("400"), req));
     }
     if (head.count("Transfer-Encoding:") && head.count("Content-Length:"))
     {
-        std::cout << "find TE and CL together" << std::endl;
+        // std::cout << "find TE and CL together" << std::endl;
         throw(badRequest(server.confCherch("400"), req));
     }
     if (req.get_protocol().empty() || req.get_protocol() != "HTTP/1.1")
     {
-        std::cout << "protocol is : " << req.get_protocol() << std::endl;
+        // std::cout << "protocol is : " << req.get_protocol() << std::endl;
         throw(httpVersion(server.confCherch("505"), req));
     }
     if (req.body_limit < std::atol(req.get_header("Content-Length:").c_str()))
     {
-        std::cout << "Entity too large : " << req.body_limit << " < " << std::atol(req.get_header("Content-Length:").c_str()) << std::endl;
+        // std::cout << "Entity too large : " << req.body_limit << " < " << std::atol(req.get_header("Content-Length:").c_str()) << std::endl;
         throw(EntityTooLarge(server.confCherch("413"), req));
     }
     if (req.get_path().size() > 2048)
     {
-        std::cout << "long URI" << std::endl;
+        // std::cout << "long URI" << std::endl;
         throw(longRequest(server.confCherch("414"), req));
     }
 }
@@ -341,14 +272,13 @@ Response::~Response()
 
 std::string Response::getResource(int &file, Request &req, Conf &server)
 {
-    // std::string buffer((std::istreambuf_iterator<char>(file)), std::istreambuf_iterator<char>());
     (void)server;
     std::stringstream content;
     char buffer[1024];
     size_t a = read(file, buffer, 1023);
     if (a == (size_t)-1)
     {
-        std::cout << "file : " << file << std::endl;
+        // std::cout << "file : " << file << std::endl;
         std::cerr << "---read---" << std::endl;
         throw true;
     }
@@ -381,9 +311,6 @@ std::string Response::extension(const std::string &path)
     return path.substr(dot + 1);
 }
 
-// TODO <=====================              Error pages                 ================================>
-
-// TODO /===================================================================================================/
 
 void Response::clear()
 {
@@ -403,20 +330,15 @@ void Response::clear()
     temp_file.clear();
     firstExcep = false;
     end = 0;
-    // start = clock();
     tmp_path.clear();
-    // std::cout << RED << "clear response object" << DEF << std::endl;
 }
 
 void Response::Redirect(std::string &location, Request &req, int &fd, Conf &server)
 {
     (void)server;
     std::string content = getRedirctionS(location);
-    // std::cout << BLUE << "respone : \n"
-    //           << YOLLOW << content << std::endl;
-    std::cout << YOLLOW << "send response to client " << DEF << std::endl;
-    send(fd, content.c_str(), content.size(), 0);
-        // throw true;
+    if(send(fd, content.c_str(), content.size(), 0) == -1)
+        throw true;
     req.connexion = true;
     req.firstTime = false;
 }
@@ -494,19 +416,14 @@ std::string listDirectory(const char *path)
             {
                 response << "<a href=\"" << entry->d_name << "\"> <li class='li'><i  style='color: #edbe00;'class='material-symbols-outlined'>unknown_document</i>";
             }
-            // std::cout << "type : " << (int)entry->d_type << ", directory name :" << entry->d_name << std::endl;
             response << entry->d_name << " </li></a>";
         }
         closedir(dir);
     }
     else
-    {
         perror("opendir");
-    }
-    response << "</div></div>";
-    response << "</body></html>";
-    // std::cout << "\n\nherrrerrer \n\n"
-    //           << response.str() << "\n\n endddddd" << std::endl;
+    response << "</div></div>"
+                << "</body></html>";
     return response.str();
 }
 
@@ -519,7 +436,6 @@ std::string getCurrentDateTime()
     std::time(&rawtime);
     timeinfo = std::gmtime(&rawtime);
 
-    // Format the date and time
     std::strftime(buffer, 80, "%a, %d %b %Y %H:%M:%S GMT", timeinfo);
     return std::string(buffer);
 }
@@ -528,32 +444,24 @@ bool directoryExists(std::string path)
 {
     struct stat info;
 
-    // Use stat to check if the directory exists
     if (stat(path.c_str(), &info) != 0)
     {
-        // If stat returns non-zero, the directory doesn't exist
         return false;
     }
 
-    // Check if it is a directory
     return (info.st_mode & S_IFDIR) != 0;
-    // S_IFREG
 }
 
 bool fileExists(std::string path)
 {
     struct stat info;
 
-    // Use stat to check if the directory exists
     if (stat(path.c_str(), &info) != 0)
     {
-        // If stat returns non-zero, the directory doesn't exist
         return false;
     }
 
-    // Check if it is a directory
     return (info.st_mode & S_IFREG) != 0;
-    // S_IFREG
 }
 
 size_t hexadecimal(const std::string &chunkHeader)
@@ -586,8 +494,6 @@ int Response::serveCgi(Request &req, int &fd)
     char** env = new char*[8];
     if (!firstcgi)
     {
-        printf("hererre\n");
-        // std::cout <<  req.get_query() << std::endl;
         firstcgi = true;
         start = clock();
         temp_file = "/tmp/cgi_" + random_name();
@@ -663,7 +569,6 @@ int Response::serveCgi(Request &req, int &fd)
             perror("waitpid");
             kill(pid, SIGKILL);
             waitpid(pid, &status, 0);
-            std::cout << "we kill this process : "<< pid << std::endl;
             req.connexion = true;
             return 1;
         }
@@ -673,7 +578,6 @@ int Response::serveCgi(Request &req, int &fd)
             if (end >= 5.00){
                 timeout = true;
                 kill(pid, SIGKILL);
-                std::cout << "we kill this process : "<< pid << std::endl;
                 waitpid(pid, &status, 0);
                 firstcgi = false;
                 fclose(output_file);
@@ -689,7 +593,6 @@ int Response::serveCgi(Request &req, int &fd)
         fclose(output_file);
         return 1;
     }
-    
+
     return 0;
 }
-

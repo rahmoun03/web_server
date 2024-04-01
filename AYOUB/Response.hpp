@@ -83,6 +83,7 @@ class Response
 
 			std::string Created();
 			std::string noContent();
+			std::string DeleteSuc();
 
 
 		/***********************/

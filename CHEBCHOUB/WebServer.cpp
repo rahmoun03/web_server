@@ -206,13 +206,13 @@ void WebServer::createServer(const char * os)
 
 
 int WebServer::wait_event(){
-    std::cout << "epoll waiting for events ...\n";
-    int wait_fd = epoll_wait(epoll_fd, events, MAX_EVENTS, 5000);
+    // std::cout << "epoll waiting for events ...\n";
+    int wait_fd = epoll_wait(epoll_fd, events, MAX_EVENTS, 10000);
     if(wait_fd == 0)
     {
         for (int i = 0; i < MAX_EVENTS; i++)
         {
-            if(clientOut[i] != -1)
+            if(clientOut[i] != -1 && client[i].endOf == (size_t)-1)
             {
                 client[i].req.firstTime = true;
                 std::string res = client[i].res.timeOut(server[client[i].server_index].confCherch("408"), client[i].req);
@@ -235,8 +235,8 @@ int WebServer::wait_event(){
     return wait_fd;
 }
 
-int WebServer::acccept_newconnection(std::vector<int>::iterator it_serv,int & fd){
-
+int WebServer::acccept_newconnection(std::vector<int>::iterator it_serv,int & fd)
+{
     new_socketfd = accept(fd, (struct sockaddr *)&clientaddr, &addrlen);
     
     if (new_socketfd == -1){
@@ -248,11 +248,12 @@ int WebServer::acccept_newconnection(std::vector<int>::iterator it_serv,int & fd
     event.data.fd = new_socketfd;
     clientOut[new_socketfd] = new_socketfd;
     event.events = EPOLLIN;
-    epoll_ctl(epoll_fd, EPOLL_CTL_ADD, new_socketfd, &event);
-
+    if (epoll_ctl(epoll_fd, EPOLL_CTL_ADD, new_socketfd, &event) == -1)
+        return 1;
+    client[new_socketfd].addr = clientaddr;
     client[new_socketfd].server_index = std::distance(socket_acc.begin(), it_serv);
     std::string name = server[client[new_socketfd].server_index].confCherch("server_name");
-    std::cout << BLUE << name << GREEN << " Received connection from ==> " << DEF << inet_ntoa(clientaddr.sin_addr) << ", on fd : "<< new_socketfd << DEF << std::endl;
+    std::cout << BLUE << name << GREEN << " Received connection from ==> " << DEF << inet_ntoa(client[new_socketfd].addr.sin_addr) << DEF << std::endl;
     return 0;
 }
 
@@ -262,19 +263,19 @@ void WebServer::checkRequest(int &fd,ssize_t & bytes_read,int & i,char *buffer)
     {
         buffer[bytes_read] = '\0';
         client[fd].buf.write(buffer, bytes_read);
-        std::cout << RAN << "buf :\n" << (client[fd].buf.str().empty() ? "empty" : client[fd].buf.str()) << DEF << std::endl;
+        // std::cout << RAN << "buf :\n" << (client[fd].buf.str().empty() ? "empty" : client[fd].buf.str()) << DEF << std::endl;
         client[fd].endOf = findEndOfHeaders(const_cast<char *>(client[fd].buf.str().c_str()) , (ssize_t)client[fd].buf.str().size());
 
         
         /***********************************************************************/
-        std::cout << "end of file is :"<< (int)client[fd].endOf << std::endl;
+        // std::cout << "end of file is :"<< (int)client[fd].endOf << std::endl;
         if(client[fd].endOf != (size_t)-1)
         {
-            std::cout << GREEN << "parse the request ... for " << DEF << fd << std::endl;
+            // std::cout << GREEN << "parse the request ... for " << DEF << fd << std::endl;
             client[fd].req.pars(client[fd].buf, client[fd].endOf);
             client[fd].req.ra += (client[fd].buf.str().size() - client[fd].endOf);
             client[fd].req.body_limit = std::atof(server[0].confCherch("body_size_limit").c_str());
-            std::cout << "----limit is : " << server[0].confCherch("body_size_limit") << std::endl;
+            // std::cout << "----limit is : " << server[0].confCherch("body_size_limit") << std::endl;
             if(client[fd].req.get_method() == "GET")
             {
                 events[i].events = EPOLLOUT;
@@ -317,7 +318,7 @@ WebServer::WebServer(const char *os)
                     continue;
             }
             else if ((events[i].events & EPOLLERR) || (events[i].events & EPOLLHUP)) {
-                std::cout << RED <<"Client disconnected : "<< DEF<< fd<< std::endl;
+                std::cout << RED << "Client disconnected ==> " << DEF << inet_ntoa(client[fd].addr.sin_addr) << std::endl;
                 if (epoll_ctl(epoll_fd, EPOLL_CTL_DEL, fd, NULL) == -1) 
                 {
                     
@@ -334,7 +335,7 @@ WebServer::WebServer(const char *os)
             }
             else
             {
-                std::cout << BLUE << "serv the client : " << DEF << fd << std::endl;
+                // std::cout << BLUE << "serv the client : " << DEF << fd << std::endl;
                 char buffer[1024];
                 ssize_t bytes_read = -1;
                 if(events[i].events == EPOLLIN && client[fd].endOf == (size_t)-1)
@@ -350,12 +351,12 @@ WebServer::WebServer(const char *os)
                         }
                         bytes_read = 0;
                     }
-                    std::cout << GREEN << "reading : "<< bytes_read << " request from : " << DEF << fd <<std::endl;
+                    // std::cout << GREEN << "reading : "<< bytes_read << " request from : " << DEF << fd <<std::endl;
                 }
 
                 if (bytes_read == 0) {
-                    std::cout << RED << "read 0 "<< DEF << std::endl;
-                    std::cout << RED <<"Client disconnected : "<< DEF<< fd<< std::endl;
+                    // std::cout << RED << "read 0 "<< DEF << std::endl;
+                    std::cout << RED << "Client disconnected ==> " << DEF << inet_ntoa(client[fd].addr.sin_addr) << std::endl;
                     if (epoll_ctl(epoll_fd, EPOLL_CTL_DEL, fd, NULL) == -1) 
                     {
                         
@@ -377,7 +378,7 @@ WebServer::WebServer(const char *os)
                 }
                 if(client[fd].req.connexion)
                 {
-                    std::cout << RED <<"Client disconnected : "<< DEF<< fd << std::endl;
+                    std::cout << RED << "Client disconnected ==> " << DEF << inet_ntoa(client[fd].addr.sin_addr) << std::endl;
                     if (epoll_ctl(epoll_fd, EPOLL_CTL_DEL, fd, NULL) == -1) 
                     {
                         

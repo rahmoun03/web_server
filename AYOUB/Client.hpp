@@ -1,12 +1,9 @@
 #ifndef CLIENT
 #define CLIENT
 #include <sstream>
-// #include "../CHEBCHOUB/WebServer.hpp"
 #include "Request.hpp"
 #include "Response.hpp"
-// class Response;
-// class Request;
-
+#include <arpa/inet.h>
 
 class Client
 {
@@ -17,9 +14,9 @@ class Client
         size_t endOf;
         Request req;
         Response res;
+        struct  sockaddr_in addr;
         
-        
-        Client(/* args */);
+        Client();
         void clear();
         ~Client();
 

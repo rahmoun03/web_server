@@ -58,7 +58,7 @@ class Request
 	public:
 		std::string query;
 		int chun;
-		size_t ra;
+		ssize_t ra;
 		long int body_limit;
 		bool firstTime;
 		bool connexion;

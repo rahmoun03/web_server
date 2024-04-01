@@ -142,18 +142,20 @@ void	Response::POST(int &fd, Request &req, Conf &server, epoll_event &event)
             out.flush();
             req.firstTime = false;            
         }
-        else if(req.ra < (size_t )atof(req.get_header("Content-Length:").c_str()))
+        else if(req.ra < (ssize_t )atof(req.get_header("Content-Length:").c_str()))
         {
-            size_t a;
+            ssize_t a;
             char buffer[1024];
             a = recv(fd, buffer, 1023, 0);
+            if(a == -1)
+                throw (true);
             req.ra += a;
             buffer[a] = '\0';
             out.write(buffer, a);
             out.flush();
             // std::cout << "herererererere" << std::endl;
         }
-        if(req.ra >= (size_t )atof(req.get_header("Content-Length:").c_str()))
+        if(req.ra >= (ssize_t )atof(req.get_header("Content-Length:").c_str()))
         {
             // std::cout << "finish post " << std::endl;
             if (server.locat.find(req.locationPath)->second.cgi && (extension(req.get_path()) == "php" || extension(req.get_path()) == "py"))
@@ -167,7 +169,8 @@ void	Response::POST(int &fd, Request &req, Conf &server, epoll_event &event)
             else{
                 req.connexion = true;
                 std::string response = Created();
-                send(fd, response.c_str(), response.size(),0);
+                if ( send(fd, response.c_str(), response.size(),0) == -1)
+                    throw true;
             }
         }
     }
@@ -220,15 +223,17 @@ void	Response::POST(int &fd, Request &req, Conf &server, epoll_event &event)
         }
         else if (decimal != 0)
         {
-            size_t a;
+            ssize_t a;
             char buffer[1024];
             a = recv(fd, buffer, 1023, 0);
+            if(a == -1)
+                throw (true);
             buffer[a] = '\0';
             tmp.append(buffer, a);
             if((tmp.size() > (decimal + 10))
                 || ((tmp.size() >= decimal + 5 ) && (*(tmp.end() - 1) == '\n') && (*(tmp.end() - 2) == '\r')))
             {
-                size_t distance = tmp.size() - (decimal + 2);
+                ssize_t distance = tmp.size() - (decimal + 2);
                 out.write(tmp.c_str(), decimal);
                 out.flush();
                 tmp = tmp.substr(decimal + 2, distance);
@@ -254,7 +259,8 @@ void	Response::POST(int &fd, Request &req, Conf &server, epoll_event &event)
             {
                 req.connexion = true;
                 std::string response = Created();
-                send(fd, response.c_str(), response.size(),0);
+                if ( send(fd, response.c_str(), response.size(),0) == -1)
+                    throw true;
             }
         }
     }

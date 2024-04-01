@@ -16,7 +16,7 @@ std::string Response::lengthRequired(std::string path, Request &req)
         response << "HTTP/1.1 411 Length Required\r\n"
                 << "Content-Type: text/html\r\n"
                 << "Connection: close\r\n"
-                << "Server: chabchoub\r\n"
+
                 << "Date: " << getCurrentDateTime() << "\r\n";
         if (file == -1 || extension(path) != "html"	)
         {
@@ -105,7 +105,6 @@ std::string Response::Created()
     response << "HTTP/1.1 201 Created\r\n"
             << "Content-Type: text/html\r\n"
             << "Connection: close\r\n"
-            << "Server: chabchoub\r\n"
             << "Date: " << getCurrentDateTime() << "\r\n";
     std::stringstream con ; 
     con << " <!DOCTYPE html>"
@@ -174,7 +173,6 @@ std::string Response::noContent()
     response << "HTTP/1.1 204 No Content\r\n"
             << "Content-Type: text/html\r\n"
             << "Connection: close\r\n"
-            << "Server: chabchoub\r\n"
             << "Date: " << getCurrentDateTime() << "\r\n";
     std::stringstream con ; 
     con << " <!DOCTYPE html>"
@@ -237,13 +235,82 @@ std::string Response::noContent()
     return response.str();
 }
 
+std::string Response::DeleteSuc()
+{
+    std::stringstream response;
+    response << "HTTP/1.1 200 OK\r\n"
+            << "Content-Type: text/html\r\n"
+            << "Connection: close\r\n"
+            << "Date: " << getCurrentDateTime() << "\r\n";
+        std::stringstream con ; 
+        con << "<!DOCTYPE html>"\
+            << " <!DOCTYPE html>"
+            << " <html lang=\"en\">"
+            << " <head>"
+            << "     <meta charset=\"UTF-8\">"
+            << "     <meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">"
+            << "     <title>Delete Successful</title>"
+            << "     <style>"
+            << "         body {"
+            << "             font-family: Arial, sans-serif;"
+            << "             margin: 0;"
+            << "             padding: 0;"
+            << "             background-color: #f5f5f5;"
+            << "         }"
+            << " "
+            << "         .container {"
+            << "             display: flex;"
+            << "             justify-content: center;"
+            << "             align-items: center;"
+            << "             height: 100vh;"
+            << "         }"
+            << " "
+            << "         .error-message {"
+            << "             text-align: center;"
+            << "         }"
+            << " "
+            << "         h1 {"
+            << "             font-size: 48px;"
+            << "             color: #333;"
+            << "             margin-bottom: 20px;"
+            << "         }"
+            << " "
+            << "         p {"
+            << "             font-size: 18px;"
+            << "             color: #666;"
+            << "             margin-bottom: 20px;"
+            << "         }"
+            << " "
+            << "         .back-link {"
+            << "             font-size: 16px;"
+            << "             color: #007bff;"
+            << "             text-decoration: none;"
+            << "         }"
+            << "     </style>"
+            << " </head>"
+            << " <body>"
+            << "     <div class=\"container\">"
+            << "         <div class=\"error-message\">"
+            << "             <h1>Delete Successful</h1>"
+            << "             <p>The item has been successfully deleted.</p>"
+            << "             <a href=\"/\" class=\"back-link\">Go back to the homepage</a>"
+            << "         </div>"
+            << "     </div>"
+            << " </body>"
+            << " </html>";
+
+        response << "Content-Length: " << con.str().size() << "\r\n"
+                << "\r\n"
+                << con.str();
+    return response.str();
+}
+
 std::string Response::CGtimeOut()
 {
     std::stringstream response;
     response << "HTTP/1.1 504 Gateway Timeout\r\n"
             << "Content-Type: text/html\r\n"
             << "Connection: close\r\n"
-            << "Server: chabchoub\r\n"
             << "Date: " << getCurrentDateTime() << "\r\n";
         std::stringstream con ; 
         con << "<!DOCTYPE html>"\
@@ -318,7 +385,7 @@ std::string Response::timeOut(std::string path, Request &req)
         response << "HTTP/1.1 408 Request Timeout\r\n"
                 << "Content-Type: text/html\r\n"
                 << "Connection: close\r\n"
-                << "Server: chabchoub\r\n"
+
                 << "Date: " << getCurrentDateTime() << "\r\n";
         if (file == -1)
         {
@@ -412,7 +479,7 @@ std::string Response::notAllow(std::string method, std::string path, Request &re
         response << "HTTP/1.1 405 Method Not Allowed\r\n"
                 << "Content-Type: text/html\r\n"
                 << "Connection: close\r\n"
-                << "Server: chabchoub\r\n"
+
                 << "Date: " << getCurrentDateTime() << "\r\n";
         if (file == -1 || extension(path) != "html"	)
         {
@@ -504,7 +571,7 @@ std::string Response::notFound(std::string path, Request &req)
         std::stringstream response;
         response << "HTTP/1.1 404 Not Found\r\n"
                 << "Connection: close\r\n"
-                << "Server: chabchoub\r\n"
+
                 << "Date: " << getCurrentDateTime() << "\r\n";
         file = open(path.c_str(), O_RDONLY);
         if (file == -1 || extension(path) != "html")
@@ -600,7 +667,7 @@ std::string Response::EntityTooLarge(std::string path, Request &req)
         response << "HTTP/1.1 413 Entity too large\r\n"
                 << "Content-Type: text/html\r\n"
                 << "Connection: close\r\n"
-                << "Server: chabchoub\r\n"
+
                 << "Date: " << getCurrentDateTime() << "\r\n";
         if (file == -1 || extension(path) != "html"	)
         {
@@ -693,7 +760,7 @@ std::string Response::forbidden(std::string path, Request &req)
         response << "HTTP/1.1 403 forbidden\r\n"
                 << "Content-Type: text/html\r\n"
                 << "Connection: close\r\n"
-                << "Server: chabchoub\r\n"
+
                 << "Date: " << getCurrentDateTime() << "\r\n";
         if (file == -1 || extension(path) != "html"	)
         {
@@ -980,7 +1047,7 @@ std::string Response::mediaType(std::string path, Request &req)
         response << "HTTP/1.1 415 Unsupported Media Type\r\n"
                 << "Content-Type: text/html\r\n"
                 << "Connection: close\r\n"
-                << "Server: chabchoub\r\n"
+
                 << "Date: " << getCurrentDateTime() << "\r\n";
         if (file == -1 || extension(path) != "html"	)
         {
@@ -1075,7 +1142,7 @@ std::string Response::headerTooLarge(std::string path, Request &req)
         response << "HTTP/1.1 431 Request Header Fields Too Large\r\n"
                 << "Content-Type: text/html\r\n"
                 << "Connection: close\r\n"
-                << "Server: chabchoub\r\n"
+
                 << "Date: " << getCurrentDateTime() << "\r\n";
         if (file == -1 || extension(path) != "html"	)
         {
@@ -1170,7 +1237,7 @@ std::string Response::conflict(std::string path, Request &req)
         response << "HTTP/1.1 409 Conflict\r\n"
                 << "Content-Type: text/html\r\n"
                 << "Connection: close\r\n"
-                << "Server: chabchoub\r\n"
+
                 << "Date: " << getCurrentDateTime() << "\r\n";
         if (file == -1 || extension(path) != "html"	)
         {

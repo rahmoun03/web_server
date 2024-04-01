@@ -215,7 +215,7 @@ int WebServer::wait_event()
                 client[i].req.firstTime = true;
                 std::string res = client[i].res.timeOut(server[client[i].server_index].confCherch("408"), client[i].req);
                 send(i, res.c_str(), res.size(), 0);
-                std::cout << BLUE << server[client[i].server_index].confCherch("server_name")<< " " << RED << "Client disconnected ==> " << DEF << inet_ntoa(client[i].addr.sin_addr) << std::endl;
+                std::cout << BLUE << server[client[i].server_index].confCherch("server_name")<< " " << RED << "     Client disconnected         " << DEF << inet_ntoa(client[i].addr.sin_addr) << std::endl;
                 if (epoll_ctl(epoll_fd, EPOLL_CTL_DEL, i, NULL) == -1) {
                     perror("epoll_ctl");
                 }
@@ -259,6 +259,7 @@ void WebServer::checkRequest(int &fd,ssize_t & bytes_read,int & i,char *buffer)
     if(client[fd].endOf == (size_t)-1 && bytes_read > -1 && events[i].events == EPOLLIN)
     {
         buffer[bytes_read] = '\0';
+        std::cout<< buffer << std::endl;
         client[fd].buf.write(buffer, bytes_read);
         client[fd].endOf = findEndOfHeaders(const_cast<char *>(client[fd].buf.str().c_str()) , (ssize_t)client[fd].buf.str().size());
 

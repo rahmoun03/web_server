@@ -12,7 +12,7 @@
 
 #include "../includes/Request.hpp"
 
-Request::Request(/* args */)
+Request::Request()
 {
 }
 void Request::pars(std::stringstream &buf, size_t &endOf)
@@ -23,12 +23,9 @@ void Request::pars(std::stringstream &buf, size_t &endOf)
 
 	std::getline(buf, dst);
 	size_t i = dst.size() + 1;
-	// std::cout <<"space :" << std::count(dst.begin(), dst.end(), ' ') << std::endl;
-	// std::cout <<"tab   :" << std::count(dst.begin(), dst.end(), '\t') << std::endl;
 
 	if(std::count(dst.begin(), dst.end(), ' ') == 2)
 	{
-		// std::cout << "correct request : "<< std::endl;
 		startLineForma = true;
 	}
 	startline << dst;
@@ -44,8 +41,6 @@ void Request::pars(std::stringstream &buf, size_t &endOf)
 
 	if(buf && (endOf + 4) < buf.str().size())
 	{
-		std::cout << "there is body : "<< std::endl;
-
 		buf >> key;
 		body << key << buf.rdbuf();
 	}
@@ -58,45 +53,6 @@ void Request::pars(std::stringstream &buf, size_t &endOf)
 	tmp.rfind('?') != std::string::npos ? path = tmp.substr(0, tmp.rfind('?')) : path = tmp;
 	tmp.rfind('?') != std::string::npos ? query = tmp.substr(tmp.rfind('?') + 1) : query = "";
 }
-
-// Request::Request(std::stringstream &buf, size_t &endOf)
-// {
-	// std::string key;
-	// std::string dst;
-	// std::string value;
-	// std::string tmp;
-
-	// std::getline(buf, dst);
-	// size_t i = dst.size() + 1;
-	// // std::cout <<"space :" << std::count(dst.begin(), dst.end(), ' ') << std::endl;
-	// // std::cout <<"tab   :" << std::count(dst.begin(), dst.end(), '\t') << std::endl;
-
-	// if(std::count(dst.begin(), dst.end(), ' ') < 3 && std::count(dst.begin(), dst.end(), '\t') < 3)
-	// {
-	// 	// std::cout << "correct request : "<< std::endl;
-	// 	startLineForma = true;
-	// }
-	// startline << dst;
-	// startline >> method;
-	// startline >> path;
-	// startline >> protocol;
-	
-	// while(i < endOf && buf >> key && std::getline(buf, value))
-	// {
-	// 	headers[key] = value;
-	// 	i += key.length() + value.length() + 1;
-	// }
-	// if(buf && (endOf + 4) < buf.str().size())
-	// {
-	// 	buf >> key;
-	// 	body << key << buf.rdbuf();
-	// }
-	// chun = 0;
-	// ra = 0;
-	// firstTime = true;
-	// replacePercent20(path);
-	// std::cout << (startLineForma ? "yes" : "no") << std::endl;
-// }
 
 size_t findEndOfHeaders(char* buffer, ssize_t bufferSize)
 {

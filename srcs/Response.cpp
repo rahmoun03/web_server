@@ -46,6 +46,13 @@ void Response::generateResponse(int &fd, Request &req, Conf &server , epoll_even
         {
             POST(fd, req, server, event);
         }
+        else if(server.locat.find(req.locationPath) != server.locat.end()
+            && (server.locat.find(req.locationPath)->second.cgi) && (extension(req.get_path()) == "php" || extension(req.get_path()) == "py"))
+        {
+            req.query = req.get_body();
+            GET(fd, req, server);
+            event.events = EPOLLOUT;
+        }
         else
         {
             throw(notImplement(server.confCherch("501"), req));
@@ -165,8 +172,10 @@ void Response::serv_dir(int &fd, Request &req, Conf &server)
                             std::ifstream ff(temp_file.c_str());
                             std::stringstream response;
                             std::string res = std::string(std::istreambuf_iterator<char>(ff), std::istreambuf_iterator<char>()); 
-                            response << "HTTP/1.1 200 OK\r\n"
-                                    << res;
+                            response << "HTTP/1.1 200 OK\r\n";
+                            if(!req.get_header("Cookie").empty())
+                                   response << "Cookie: "<< req.get_header("Cookie") <<"\r\n";
+                            response << res;
                             printf("%s\n", response.str().c_str());
                             if (send(fd, response.str().c_str() , response.str().size(), 0) == -1)
                                 throw true;
@@ -497,17 +506,21 @@ int Response::serveCgi(Request &req, int &fd)
         firstcgi = true;
         start = clock();
         temp_file = "/tmp/cgi_" + random_name();
+        const char* path = req.get_path().c_str();
+        char resolved_path[PATH_MAX];
+        std::string pp = realpath(path, resolved_path);
+        std::cout << pp <<std::endl;
         output_file = fopen(temp_file.c_str(), "w");
         if (!output_file) {
             std::cerr << "Failed to open temporary file for writing." << std::endl;
             return 1;
         }
                     env[0] = new char [("QUERY_STRING=" + req.get_query()).size() + 1];
-                    strcpy((char *)env[0],("QUERY_STRING=" + req.get_query()).c_str());
+                    strcpy((char *)env[0], ("QUERY_STRING=" + req.get_query()).c_str());
                     env[1] = new char [("REQUEST_METHOD=" + req.get_method()).size() + 1];
-                    strcpy((char *)env[1],("REQUEST_METHOD=" + req.get_method()).c_str());
-                    env[2] = new char [("SCRIPT_FILENAME=" + req.get_path()).size() + 1];
-                    strcpy((char *)env[2],("SCRIPT_FILENAME=" + req.get_path()).c_str());
+                    strcpy((char *)env[1], ("REQUEST_METHOD=" + req.get_method()).c_str());
+                    env[2] = new char [("SCRIPT_FILENAME=" + pp).size() + 1];
+                    strcpy((char *)env[2], ("SCRIPT_FILENAME=" + pp).c_str());
                     env[3] = new char [21];
                     strcpy(env[3], "REDIRECT_STATUS=200");
                     if (req.get_method() != "POST"){
@@ -582,7 +595,6 @@ int Response::serveCgi(Request &req, int &fd)
                 firstcgi = false;
                 fclose(output_file);
             }
-
         }
         else
             cgirespons = true;

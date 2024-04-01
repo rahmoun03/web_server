@@ -62,7 +62,7 @@ void	Response::GET(int &fd, Request &req, Conf &server)
                     response << "HTTP/1.1 200 OK\r\n"
                             << res;
                     // std::cout << "response send to client ...\n" << "response : \n" << response.str() << std::endl;
-                    std::cout << "----QUARY IS : " << tmp_path << std::endl;
+                    // std::cout << "----QUARY IS : " << tmp_path << std::endl;
                     send(fd, response.str().c_str() , response.str().size(), 0);
                     req.connexion = true;
                     kill(pid, SIGKILL);
@@ -177,7 +177,7 @@ void	Response::POST(int &fd, Request &req, Conf &server, epoll_event &event)
     else if(req.get_header("Transfer-Encoding:") == "chunked")
     {
         std::string line; 
-        std::cout << "------------BEFRO POST ------------------------------------\n";
+        // std::cout << "------------BEFRO POST ------------------------------------\n";
         if (req.firstTime)
         {
             // std::cout << "request path : " << req.get_path() << std::endl;

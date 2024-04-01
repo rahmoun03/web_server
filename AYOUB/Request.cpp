@@ -23,8 +23,8 @@ void Request::pars(std::stringstream &buf, size_t &endOf)
 
 	std::getline(buf, dst);
 	size_t i = dst.size() + 1;
-	std::cout <<"space :" << std::count(dst.begin(), dst.end(), ' ') << std::endl;
-	std::cout <<"tab   :" << std::count(dst.begin(), dst.end(), '\t') << std::endl;
+	// std::cout <<"space :" << std::count(dst.begin(), dst.end(), ' ') << std::endl;
+	// std::cout <<"tab   :" << std::count(dst.begin(), dst.end(), '\t') << std::endl;
 
 	if(std::count(dst.begin(), dst.end(), ' ') == 2)
 	{

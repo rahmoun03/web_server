@@ -125,7 +125,7 @@ void Response::serv_dir(int &fd, Request &req, Conf &server)
     {
         if (*(_path.end() - 1) == '/')
         {
-            std::cout << GREEN <<"location : " << req.locationPath <<DEF << std::endl;
+            // std::cout << GREEN <<"location : " << req.locationPath <<DEF << std::endl;
             if (server.locat.find(req.locationPath) != server.locat.end()
                 && server.locat.find(req.locationPath)->second.autoindex)
             {
@@ -182,7 +182,7 @@ void Response::serv_dir(int &fd, Request &req, Conf &server)
                 }
                 else
                 {
-                    std::cout << "this if forbidden folder" << std::endl;
+                    // std::cout << "this if forbidden folder" << std::endl;
                     throw(forbidden(server.confCherch("403"), req));
                 }
             }

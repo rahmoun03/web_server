@@ -6,6 +6,8 @@
 
 void WebServer::printServer()
 {
+
+    
     for (int i = 0; i < serverNum; i++)
     {
         std::map<std::string, std::string>::iterator it = server[i].map.begin();
@@ -73,13 +75,13 @@ void WebServer::servClient(int &i, int &fd)
                 client[fd].req.connexion = true;
                 throw (client[fd].res.serverError(server[client[fd].server_index].confCherch("500"), client[fd].req));
             }
-            std::cout << "change event to " << (events[i].events == EPOLLOUT ? "EPOLLOUT" : "EPOLLIN") << std::endl;
+            // std::cout << "change event to " << (events[i].events == EPOLLOUT ? "EPOLLOUT" : "EPOLLIN") << std::endl;
         }
         catch(bool a)
         {
             if(a)
             {
-                std::cout << RED <<"Client disconnected : "<< DEF<< fd << std::endl;
+                std::cout << BLUE << server[client[fd].server_index].confCherch("server_name") << RED << "     Client disconnected     	    " << DEF << inet_ntoa(client[fd].addr.sin_addr) << std::endl;
                 if (epoll_ctl(epoll_fd, EPOLL_CTL_DEL, fd, NULL) == -1) 
                 {
                     
@@ -99,11 +101,11 @@ void WebServer::servClient(int &i, int &fd)
         {
             if(!client[fd].res.firstExcep)
             {
-                std::cout<< BLUE<<"respone : \n"<<YOLLOW<< content  << std::endl;
+                // std::cout<< BLUE<<"respone : \n"<<YOLLOW<< content  << std::endl;
 
                 if(send(fd, content.c_str(), content.size(), 0) < 0)
                 {
-                    perror("send hihih : ");
+                    // perror("send : ");
                     
                     if(client[fd].res.pid != -1)
                     {
@@ -119,11 +121,11 @@ void WebServer::servClient(int &i, int &fd)
             else
             {
                 std::string cont = client[fd].res.getResource(client[fd].res.file, client[fd].req, server[client[fd].server_index]);
-                std::cout << RAN << cont << DEF << std::endl;
-                std::cout << YOLLOW << "send response to client " << DEF << std::endl;
+                // std::cout << RAN << cont << DEF << std::endl;
+                // std::cout << YOLLOW << "send response to client " << DEF << std::endl;
                 if(send(fd, cont.c_str(), cont.size(), 0) < 0)
                 {
-                    perror("send : ");
+                    // perror("send : ");
                     
                     if(client[fd].res.pid != -1)
                     {
@@ -154,7 +156,7 @@ void WebServer::createServer(const char * os)
             serverNum = 0;
             while (!fg.eof()){
                 Conf conf(fg);
-                std::cout << "the server  : " << serverNum << std::endl;
+                // std::cout << "the server  : " << serverNum << std::endl;
                 server[serverNum] = conf;
                 serverNum += conf.numOfserver;
             }
@@ -166,7 +168,7 @@ void WebServer::createServer(const char * os)
             exit(0);
         }
     }
-    std::cout << "number of servers : " << serverNum << std::endl;
+    // std::cout << "number of servers : " << serverNum << std::endl;
     checkDefaulLocation();
     int opt = 1;
     epoll_fd = epoll_create1(0);
@@ -189,6 +191,13 @@ void WebServer::createServer(const char * os)
             perror("bind");
             if(serverNum == 1)
                 exit(0);
+        }
+        else
+        {
+            std::cout << "listning ...\n";
+            std::cout << "";
+            std::cout << "      host :"<< BLUE << ((server[i].confCherch("host")) == "0" ? "127.0.0.1" : inet_ntoa(socketadress.sin_addr)) << DEF << std::endl;
+            std::cout << "      port :"<< BLUE  << server[i].confCherch("port") << DEF << std::endl;
         }
         listen(socket_fd[i],SOMAXCONN);
         if (socket_fd[i] == -1){
@@ -217,8 +226,8 @@ int WebServer::wait_event(){
                 client[i].req.firstTime = true;
                 std::string res = client[i].res.timeOut(server[client[i].server_index].confCherch("408"), client[i].req);
                 send(i, res.c_str(), res.size(), 0);
-                std::cout << YOLLOW <<"send response time out ..."<< DEF<< std::endl;
-                std::cout << RED <<"Client disconnected : "<< DEF << clientOut[i] << std::endl;
+                // std::cout << YOLLOW <<"send response time out ..."<< DEF<< std::endl;
+                std::cout << BLUE << server[client[i].server_index].confCherch("server_name")<< " " << RED << "Client disconnected ==> " << DEF << inet_ntoa(client[i].addr.sin_addr) << std::endl;
                 if (epoll_ctl(epoll_fd, EPOLL_CTL_DEL, i, NULL) == -1) {
                     perror("epoll_ctl");
                 }
@@ -253,7 +262,7 @@ int WebServer::acccept_newconnection(std::vector<int>::iterator it_serv,int & fd
     client[new_socketfd].addr = clientaddr;
     client[new_socketfd].server_index = std::distance(socket_acc.begin(), it_serv);
     std::string name = server[client[new_socketfd].server_index].confCherch("server_name");
-    std::cout << BLUE << name << GREEN << " Received connection from ==> " << DEF << inet_ntoa(client[new_socketfd].addr.sin_addr) << DEF << std::endl;
+    std::cout << BLUE << name << GREEN << "     Received connection from        " << DEF << inet_ntoa(client[new_socketfd].addr.sin_addr) << DEF << std::endl;
     return 0;
 }
 
@@ -297,7 +306,7 @@ void WebServer::checkRequest(int &fd,ssize_t & bytes_read,int & i,char *buffer)
 WebServer::WebServer(const char *os)
 {
     createServer(os);
-    printServer();
+    // printServer();
     for (size_t i = 0; i < MAX_EVENTS; i++)
     {
         client[i].endOf = -1;
@@ -318,7 +327,7 @@ WebServer::WebServer(const char *os)
                     continue;
             }
             else if ((events[i].events & EPOLLERR) || (events[i].events & EPOLLHUP)) {
-                std::cout << RED << "Client disconnected ==> " << DEF << inet_ntoa(client[fd].addr.sin_addr) << std::endl;
+                std::cout << BLUE << server[client[fd].server_index].confCherch("server_name") << RED << "     Client disconnected     	        " << DEF << inet_ntoa(client[fd].addr.sin_addr) << std::endl;
                 if (epoll_ctl(epoll_fd, EPOLL_CTL_DEL, fd, NULL) == -1) 
                 {
                     
@@ -356,7 +365,7 @@ WebServer::WebServer(const char *os)
 
                 if (bytes_read == 0) {
                     // std::cout << RED << "read 0 "<< DEF << std::endl;
-                    std::cout << RED << "Client disconnected ==> " << DEF << inet_ntoa(client[fd].addr.sin_addr) << std::endl;
+                    std::cout << BLUE << server[client[fd].server_index].confCherch("server_name") << RED << "     Client disconnected     	    " << DEF << inet_ntoa(client[fd].addr.sin_addr) << std::endl;
                     if (epoll_ctl(epoll_fd, EPOLL_CTL_DEL, fd, NULL) == -1) 
                     {
                         
@@ -378,7 +387,7 @@ WebServer::WebServer(const char *os)
                 }
                 if(client[fd].req.connexion)
                 {
-                    std::cout << RED << "Client disconnected ==> " << DEF << inet_ntoa(client[fd].addr.sin_addr) << std::endl;
+                    std::cout << BLUE << server[client[fd].server_index].confCherch("server_name") << RED << "     Client disconnected     	    " << DEF << inet_ntoa(client[fd].addr.sin_addr) << std::endl;
                     if (epoll_ctl(epoll_fd, EPOLL_CTL_DEL, fd, NULL) == -1) 
                     {
                         

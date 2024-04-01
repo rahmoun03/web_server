@@ -49,6 +49,7 @@ void Request::pars(std::stringstream &buf, size_t &endOf)
 	ra = 0;
 	firstTime = true;
 	replacePercent20(path);
+	removeDuplicateSlashes(path);
 	std::string tmp(path);
 	tmp.rfind('?') != std::string::npos ? path = tmp.substr(0, tmp.rfind('?')) : path = tmp;
 	tmp.rfind('?') != std::string::npos ? query = tmp.substr(tmp.rfind('?') + 1) : query = "";
@@ -182,5 +183,19 @@ void replacePercent20(std::string& str) {
     while ((pos = str.find(pattern, pos)) != std::string::npos) {
         str.replace(pos, pattern.length(), space);
         pos += space.length();
+    }
+}
+
+void removeDuplicateSlashes(std::string& str) {
+    std::string::iterator it = str.begin();
+    char prevChar = '\0';
+    
+    while (it != str.end()) {
+        if (*it == '/' && prevChar == '/') {
+            it = str.erase(it);
+        } else {
+            prevChar = *it;
+            ++it;
+        }
     }
 }

@@ -281,8 +281,6 @@ int	Response::DELETE(int &fd, Request &req, Conf &server, std::string dpath)
     str1 += "/";
     if(req.get_path() == dpath)
         tmp_ = str2;
-    if (access(str2.c_str(), W_OK) != 0)
-        throw (forbidden(server.confCherch("403"),req));
     if(str2.find(str1) != 0)
     {
         if(str2.empty())
@@ -291,6 +289,8 @@ int	Response::DELETE(int &fd, Request &req, Conf &server, std::string dpath)
         throw forbidden(server.confCherch("403"),req);
 
     }   
+    if (access(str2.c_str(), W_OK) != 0)
+        return -1;
     if(directoryExists(str2.c_str()))
     {
         DIR* dir = opendir(str2.c_str());

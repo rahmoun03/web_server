@@ -91,5 +91,6 @@ class Request
 std::ostream &operator<<(std::ostream &os, Request &other);
 size_t findEndOfHeaders(char* buffer, ssize_t bufferSize);
 void replacePercent20(std::string& str);
+void removeDuplicateSlashes(std::string& str);
 
 #endif

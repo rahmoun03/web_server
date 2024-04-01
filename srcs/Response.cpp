@@ -72,6 +72,8 @@ void Response::generateResponse(int &fd, Request &req, Conf &server , epoll_even
             }
             req.connexion = true;
         }
+        else if(d == -1)
+            throw (forbidden(server.confCherch("403"), req));
         else
         {
             std::string response = noContent();
@@ -211,7 +213,6 @@ void Response::checkHeaders(Request &req, Conf &server)
     head = req.get_headers();
     if (head.count("Transfer-Encoding:") && req.get_header("Transfer-Encoding:") != "chunked")
     {
-        // std::cout << "Transfer-Encoding Not chanked" << std::endl;
         throw(notImplement(server.confCherch("501"), req));
     }
     if (req.get_method() == "POST" && !head.count("Content-Type:"))
@@ -229,6 +230,7 @@ void Response::checkHeaders(Request &req, Conf &server)
         // std::cout << "requist line not correct "<< (req.startLineForma ? "yes" : "no") << std::endl;
         throw(badRequest(server.confCherch("400"), req));
     }
+    if(head.count("Content-Length:") && std::atol(req.get_header("Content-Length:").c_str()) <= 0)
     if(req.get_path().empty() || req.get_path()[0] != '/')
     {
         // std::cout << "requist line not correct ohhhh "<< std::endl;
@@ -302,7 +304,6 @@ std::string Response::getRedirctionS(std::string &location)
     std::stringstream response;
     response << "HTTP/1.1 301 Moved Permanently\r\n"
              << "Location: " << location << "\r\n"
-             << "Server: chabchoub\r\n"
              << "Date: " << getCurrentDateTime() << "\r\n"
              << "\r\n";
     return response.str();
@@ -317,7 +318,7 @@ std::string Response::extension(const std::string &path)
         std::cerr << RED << "failure to find extension !" << DEF << std::endl;
         return "null";
     }
-    return path.substr(dot + 1);
+    return path.substr(dot + 1);    
 }
 
 

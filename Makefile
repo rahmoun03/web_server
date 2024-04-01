@@ -1,11 +1,8 @@
 NAME = webserv
 
-CHAB_SRC = CHEBCHOUB/main.cpp CHEBCHOUB/conf.cpp CHEBCHOUB/WebServer.cpp 
-
-AYOUB_SRC = AYOUB/Request.cpp AYOUB/Response.cpp AYOUB/mime_types.cpp AYOUB/4xx.cpp \
-			AYOUB/5xx.cpp AYOUB/methods.cpp AYOUB/Client.cpp
-
-SRC = $(CHAB_SRC) $(AYOUB_SRC) $(SWIRI_SRC)
+SRC = srcs/main.cpp srcs/conf.cpp srcs/WebServer.cpp \
+	srcs/Request.cpp srcs/Response.cpp srcs/mime_types.cpp srcs/4xx.cpp \
+	srcs/5xx.cpp srcs/methods.cpp srcs/Client.cpp
 
 FLAGS = -Wall -Wextra -Werror -pedantic -std=c++98 -fsanitize=address -g3
 
@@ -17,7 +14,6 @@ all : $(NAME)
 clean :
 	clear
 	rm -rf $(NAME)
-	rm -rf assets/upload/*
 
 fclean : clean
 

@@ -4,29 +4,15 @@
 #define CONF_HPP
 
 #include <iostream>
-// #include <string>
 #include <fstream>
-// #include <algorithm>
-// #include <iostream>
 #include <string>
-// #include <fstream>
 #include <algorithm>
 #include <sstream>
 #include <map>
 #include <filesystem>
 #include <vector>
 
-// #include <vector>
-// #include <stdio.h>
-// #include <sys/socket.h>
-// #include <string.h>   //strlen
-// #include <stdlib.h>
-// #include <unistd.h>   //close
-// #include <netinet/in.h>
-// #include <functional>
-// #include <set>
-// #include "../AYOUB/Response.hpp"
-// typedef std::map<std::string , std::string>::iterator map_iterator;
+
 
 
 bool directoryExists(std::string path);

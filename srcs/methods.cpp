@@ -1,6 +1,6 @@
-#include "Response.hpp"
-#include "Request.hpp"
-#include "../CHEBCHOUB/conf.hpp"
+#include "../includes/Response.hpp"
+#include "../includes/Request.hpp"
+#include "../includes/conf.hpp"
 #include <sys/socket.h>
 #include <signal.h>
 #include <sys/epoll.h>
@@ -44,8 +44,6 @@ void	Response::GET(int &fd, Request &req, Conf &server)
         map_iterator it = mime_map.find(extension(req.get_path()));
         if(it != mime_map.end()) 
         {
-            // std::cout << "http://" << req.get_path() << "\n";
-            // std::cout << "the URL is a file : " << it->second << std::endl;
             serv_file(it, fd, req, server);
         }
         else if (fileExists(req.get_path()) && server.locat.find(req.locationPath)->second.cgi && (extension(req.get_path()) == "php" || extension(req.get_path()) == "py"))
@@ -55,14 +53,12 @@ void	Response::GET(int &fd, Request &req, Conf &server)
                 if (cgirespons)
                 {
                     fclose(output_file);
-                    // std::cout << "close tmp file : " << temp_file << std::endl;
                     std::ifstream ff(temp_file.c_str());
                     std::stringstream response;
                     std::string res = std::string(std::istreambuf_iterator<char>(ff), std::istreambuf_iterator<char>()); 
                     response << "HTTP/1.1 200 OK\r\n"
                             << res;
-                    // std::cout << "response send to client ...\n" << "response : \n" << response.str() << std::endl;
-                    // std::cout << "----QUARY IS : " << tmp_path << std::endl;
+
                     send(fd, response.str().c_str() , response.str().size(), 0);
                     req.connexion = true;
                     kill(pid, SIGKILL);
@@ -70,21 +66,18 @@ void	Response::GET(int &fd, Request &req, Conf &server)
                 }
                 else if (timeout)
                 {
-                    // std::cout << "in time out " << std::endl;
                     req.connexion = true;
                     throw CGtimeOut();
                 }
             }
             else
             {
-                // std::cout << "CGI ERROR\n";
                 throw (serverError(server.confCherch("500"), req));
             }
             req.firstTime = false;
         }
         else
         {
-            // std::cout << "NOT FOUND 404 in MimeTypes and cgi "<< std::endl;
             if(!server.locat.find(req.locationPath)->second.cgi && (extension(req.get_path()) == "php" || extension(req.get_path()) == "py"))
                 throw(forbidden(server.confCherch("403"), req));
             else
@@ -93,7 +86,6 @@ void	Response::GET(int &fd, Request &req, Conf &server)
     }
     else
     {
-        // std::cout << "NOT FOUND 404"<< std::endl;
         throw(notFound(server.confCherch("404"), req));
     }
 }
@@ -124,7 +116,6 @@ void	Response::POST(int &fd, Request &req, Conf &server, epoll_event &event)
             {
                 throw (mediaType(server.confCherch("415"), req));
             }
-            // std::cout << "here: " << mmap->second << std::endl;
             tmp_path = up_ptah + ("upload." + mmap->second);
             tmp_path = up_ptah + ("upload." + mmap->second);
             while (fileExists(tmp_path))
@@ -153,11 +144,9 @@ void	Response::POST(int &fd, Request &req, Conf &server, epoll_event &event)
             buffer[a] = '\0';
             out.write(buffer, a);
             out.flush();
-            // std::cout << "herererererere" << std::endl;
         }
         if(req.ra >= (ssize_t )atof(req.get_header("Content-Length:").c_str()))
         {
-            // std::cout << "finish post " << std::endl;
             if (server.locat.find(req.locationPath)->second.cgi && (extension(req.get_path()) == "php" || extension(req.get_path()) == "py"))
             {
                 std::ifstream ff(tmp_path.c_str());
@@ -177,10 +166,8 @@ void	Response::POST(int &fd, Request &req, Conf &server, epoll_event &event)
     else if(req.get_header("Transfer-Encoding:") == "chunked")
     {
         std::string line; 
-        // std::cout << "------------BEFRO POST ------------------------------------\n";
         if (req.firstTime)
         {
-            // std::cout << "request path : " << req.get_path() << std::endl;
             std::string up_ptah = server.locat.find(req.locationPath)->second.upload;
             std::string type = static_cast<std::string>(req.get_header("Content-Type:"));
             std::map<std::string, std::string> mime = post_type();
@@ -206,7 +193,6 @@ void	Response::POST(int &fd, Request &req, Conf &server, epoll_event &event)
             std::getline(f, line);
             if(str.substr(str.size() - 5, str.size()) == "0\r\n\r\n")
             {
-                // std::cout << "the body is finish\n";
                 decimal = 0;
                 str.erase(0,line.size() + 1);
                 out.write(str.c_str(), str.size() - 7);
@@ -242,7 +228,6 @@ void	Response::POST(int &fd, Request &req, Conf &server, epoll_event &event)
                 decimal = convertHexToDec(line);
                 req.chun++;
                 tmp.erase(0,line.size() + 1);
-                // std::cout << "now decimal = " << decimal << std::endl;
             }
         }
         if (decimal == 0)
@@ -274,11 +259,6 @@ int	Response::DELETE(int &fd, Request &req, Conf &server, std::string dpath)
     std::string root =  server.locat.find(req.locationPath)->second.root;
     const char* path = root.c_str();
     const char* path2 = dpath.c_str();
-    // std::cout << "here1 : " << dpath  <<  std::endl;
-    // std::cout << "here1 : " << req.get_path()  <<  std::endl;
-
-    // exit(0);
-
     if(directoryExists(dpath.c_str()) && path2[dpath.size() - 1 ] != '/')
         throw conflict(server.confCherch("409"),req);
     char resolved_path[PATH_MAX];
@@ -311,24 +291,19 @@ int	Response::DELETE(int &fd, Request &req, Conf &server, std::string dpath)
             struct dirent* entry;
             while ((entry = readdir(dir)) != NULL) 
             {
-                // std::cout << " ----------   is dir  -----------\n" << entry->d_name <<std::endl;
                 if (strcmp(entry->d_name, ".") != 0 && strcmp(entry->d_name, "..") != 0) 
                 {
                     std::string filePath = str2 + entry->d_name;
                     if(directoryExists(filePath.c_str()))
                         filePath += "/";
-                    // std::cout << "DELETE : " << filePath <<std::endl;
                     DELETE(fd, req, server, filePath);
                 }
             }
             if(req.get_path() != str2)
             {
-                // std::cout << "hehe :" << tmp_ <<std::endl;
-                // std::cout << "heze :" << str2 <<std::endl;
 
                 if(str2 != str1 && str2 != tmp_)
                     rmdir(str2.c_str());
-
             }
             req.connexion = true;
             closedir(dir);

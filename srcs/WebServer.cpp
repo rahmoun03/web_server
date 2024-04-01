@@ -1,8 +1,4 @@
-#include "WebServer.hpp"
-// #include "../AYOUB/Client.hpp"
-// #include "../AYOUB/Client.hpp"
-// #include "../AYOUB/Request.hpp"
-// #include "../AYOUB/Response.hpp"
+#include "../includes/WebServer.hpp"
 
 void WebServer::printServer()
 {
@@ -75,7 +71,6 @@ void WebServer::servClient(int &i, int &fd)
                 client[fd].req.connexion = true;
                 throw (client[fd].res.serverError(server[client[fd].server_index].confCherch("500"), client[fd].req));
             }
-            // std::cout << "change event to " << (events[i].events == EPOLLOUT ? "EPOLLOUT" : "EPOLLIN") << std::endl;
         }
         catch(bool a)
         {
@@ -101,12 +96,9 @@ void WebServer::servClient(int &i, int &fd)
         {
             if(!client[fd].res.firstExcep)
             {
-                // std::cout<< BLUE<<"respone : \n"<<YOLLOW<< content  << std::endl;
 
                 if(send(fd, content.c_str(), content.size(), 0) < 0)
                 {
-                    // perror("send : ");
-                    
                     if(client[fd].res.pid != -1)
                     {
                         kill(client[fd].res.pid , SIGTERM);
@@ -121,12 +113,9 @@ void WebServer::servClient(int &i, int &fd)
             else
             {
                 std::string cont = client[fd].res.getResource(client[fd].res.file, client[fd].req, server[client[fd].server_index]);
-                // std::cout << RAN << cont << DEF << std::endl;
-                // std::cout << YOLLOW << "send response to client " << DEF << std::endl;
+
                 if(send(fd, cont.c_str(), cont.size(), 0) < 0)
                 {
-                    // perror("send : ");
-                    
                     if(client[fd].res.pid != -1)
                     {
                         kill(client[fd].res.pid , SIGTERM);
@@ -156,7 +145,6 @@ void WebServer::createServer(const char * os)
             serverNum = 0;
             while (!fg.eof()){
                 Conf conf(fg);
-                // std::cout << "the server  : " << serverNum << std::endl;
                 server[serverNum] = conf;
                 serverNum += conf.numOfserver;
             }
@@ -168,7 +156,6 @@ void WebServer::createServer(const char * os)
             exit(0);
         }
     }
-    // std::cout << "number of servers : " << serverNum << std::endl;
     checkDefaulLocation();
     int opt = 1;
     epoll_fd = epoll_create1(0);
@@ -194,7 +181,7 @@ void WebServer::createServer(const char * os)
         }
         else
         {
-            std::cout << "listning ...\n";
+            std::cout << "listning [*]\n";
             std::cout << "";
             std::cout << "      host :"<< BLUE << ((server[i].confCherch("host")) == "0" ? "127.0.0.1" : inet_ntoa(socketadress.sin_addr)) << DEF << std::endl;
             std::cout << "      port :"<< BLUE  << server[i].confCherch("port") << DEF << std::endl;
@@ -202,20 +189,22 @@ void WebServer::createServer(const char * os)
         listen(socket_fd[i],SOMAXCONN);
         if (socket_fd[i] == -1){
             perror("could not create socket");
-            exit(0);
+			if(serverNum == 1)
+            	exit(0);
         }
         event.data.fd = socket_fd[i];
         event.events = EPOLLIN ;
         if (epoll_ctl(epoll_fd,EPOLL_CTL_ADD,socket_fd[i],&event) == -1){
             perror("epoll_ctl");
-            exit(0);
+            if(serverNum == 1)
+				exit(0);
         }
     }
 }
 
 
-int WebServer::wait_event(){
-    // std::cout << "epoll waiting for events ...\n";
+int WebServer::wait_event()
+{
     int wait_fd = epoll_wait(epoll_fd, events, MAX_EVENTS, 10000);
     if(wait_fd == 0)
     {
@@ -226,7 +215,6 @@ int WebServer::wait_event(){
                 client[i].req.firstTime = true;
                 std::string res = client[i].res.timeOut(server[client[i].server_index].confCherch("408"), client[i].req);
                 send(i, res.c_str(), res.size(), 0);
-                // std::cout << YOLLOW <<"send response time out ..."<< DEF<< std::endl;
                 std::cout << BLUE << server[client[i].server_index].confCherch("server_name")<< " " << RED << "Client disconnected ==> " << DEF << inet_ntoa(client[i].addr.sin_addr) << std::endl;
                 if (epoll_ctl(epoll_fd, EPOLL_CTL_DEL, i, NULL) == -1) {
                     perror("epoll_ctl");
@@ -272,19 +260,14 @@ void WebServer::checkRequest(int &fd,ssize_t & bytes_read,int & i,char *buffer)
     {
         buffer[bytes_read] = '\0';
         client[fd].buf.write(buffer, bytes_read);
-        // std::cout << RAN << "buf :\n" << (client[fd].buf.str().empty() ? "empty" : client[fd].buf.str()) << DEF << std::endl;
         client[fd].endOf = findEndOfHeaders(const_cast<char *>(client[fd].buf.str().c_str()) , (ssize_t)client[fd].buf.str().size());
 
-        
-        /***********************************************************************/
-        // std::cout << "end of file is :"<< (int)client[fd].endOf << std::endl;
+
         if(client[fd].endOf != (size_t)-1)
         {
-            // std::cout << GREEN << "parse the request ... for " << DEF << fd << std::endl;
             client[fd].req.pars(client[fd].buf, client[fd].endOf);
             client[fd].req.ra += (client[fd].buf.str().size() - client[fd].endOf);
             client[fd].req.body_limit = std::atof(server[0].confCherch("body_size_limit").c_str());
-            // std::cout << "----limit is : " << server[0].confCherch("body_size_limit") << std::endl;
             if(client[fd].req.get_method() == "GET")
             {
                 events[i].events = EPOLLOUT;
@@ -306,7 +289,8 @@ void WebServer::checkRequest(int &fd,ssize_t & bytes_read,int & i,char *buffer)
 WebServer::WebServer(const char *os)
 {
     createServer(os);
-    // printServer();
+    std::cout<<"-----------------------------------------------------------\n";
+	std::cout << "Server Name		 Event			address\n";
     for (size_t i = 0; i < MAX_EVENTS; i++)
     {
         client[i].endOf = -1;
@@ -344,7 +328,6 @@ WebServer::WebServer(const char *os)
             }
             else
             {
-                // std::cout << BLUE << "serv the client : " << DEF << fd << std::endl;
                 char buffer[1024];
                 ssize_t bytes_read = -1;
                 if(events[i].events == EPOLLIN && client[fd].endOf == (size_t)-1)
@@ -360,11 +343,10 @@ WebServer::WebServer(const char *os)
                         }
                         bytes_read = 0;
                     }
-                    // std::cout << GREEN << "reading : "<< bytes_read << " request from : " << DEF << fd <<std::endl;
                 }
 
-                if (bytes_read == 0) {
-                    // std::cout << RED << "read 0 "<< DEF << std::endl;
+                if (bytes_read == 0) 
+				{
                     std::cout << BLUE << server[client[fd].server_index].confCherch("server_name") << RED << "     Client disconnected     	    " << DEF << inet_ntoa(client[fd].addr.sin_addr) << std::endl;
                     if (epoll_ctl(epoll_fd, EPOLL_CTL_DEL, fd, NULL) == -1) 
                     {

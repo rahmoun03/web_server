@@ -13,28 +13,23 @@
 
 #ifndef WEBSERVER_HPP
 #define WEBSERVER_HPP
-// #include "../Network.hpp"
-// #include <fcntl.h>
-// #include <arpa/inet.h>
+
 #include <sys/epoll.h>
 #include <sys/socket.h>
 #include <vector>
 #include <map>
 #include <arpa/inet.h>
 #include <sys/wait.h>
-// #include "../AYOUB/Client.hpp"
-// #include "Request.hpp"
-// #include "../AYOUB/.hpp"
-// #include "../AYOUB/Response.hpp"
+
 
 
 
 #include "conf.hpp"
-#include "../AYOUB/Client.hpp"
+#include "../includes/Client.hpp"
 class Client;
 
-#include "../AYOUB/Request.hpp"
-#include "../AYOUB/Response.hpp"
+#include "../includes/Request.hpp"
+#include "../includes/Response.hpp"
 #define MAX_EVENTS 1024
 
 

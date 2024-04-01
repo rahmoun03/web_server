@@ -1,5 +1,5 @@
 
-#include "conf.hpp"
+#include "../includes/conf.hpp"
 
 
 Conf::Conf(std::ifstream & fg)

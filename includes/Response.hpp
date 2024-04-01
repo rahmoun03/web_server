@@ -1,18 +1,14 @@
 #ifndef RESPONSE_HPP
 #define RESPONSE_HPP
-// #include "Request.hpp"
-// #include <filesystem>
+
 #include <fstream>
 #include <sys/epoll.h>
 #include <map>
 #include <stdint.h>
-#include "../CHEBCHOUB/conf.hpp"
+#include "conf.hpp"
 class Conf;
 class Request;
-// class WebServer;
-// class WebServer;
-// class Conf;
-// class Conf;
+
 class Response
 {
 	private:

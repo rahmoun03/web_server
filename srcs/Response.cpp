@@ -1,6 +1,6 @@
-#include "Response.hpp"
-#include "Request.hpp"
-#include "../CHEBCHOUB/conf.hpp"
+#include "../includes/Response.hpp"
+#include "../includes/Request.hpp"
+#include "../includes/conf.hpp"
 #include <sys/socket.h>
 #include <sys/epoll.h>
 #include <fcntl.h>

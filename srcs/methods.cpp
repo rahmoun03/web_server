@@ -13,7 +13,7 @@ void	Response::GET(int &fd, Request &req, Conf &server)
             Redirect(req.red_path, req, fd,server);
     else if(directoryExists(req.get_path()))
     {
-        if (access(req.get_path().c_str(), W_OK) != 0)
+        if (access(req.get_path().c_str(), R_OK) != 0)
             throw (forbidden(server.confCherch("403"),req));
         std::string root =  server.locat.find(req.locationPath)->second.root;
         const char* r_path = root.c_str();
@@ -30,8 +30,6 @@ void	Response::GET(int &fd, Request &req, Conf &server)
     }
     else if (fileExists(req.get_path()))
     {
-        if (access(req.get_path().c_str(), W_OK) != 0)
-            throw (forbidden(server.confCherch("403"),req));
         std::string root =  server.locat.find(req.locationPath)->second.root;
         const char* r_path = root.c_str();
         const char* path2 = req.get_path().c_str();
@@ -47,11 +45,14 @@ void	Response::GET(int &fd, Request &req, Conf &server)
         map_iterator it = mime_map.find(extension(req.get_path()));
         if(it != mime_map.end()) 
         {
+            if (access(req.get_path().c_str(), R_OK) != 0)
+                throw (forbidden(server.confCherch("403"),req));
             serv_file(it, fd, req, server);
         }
         else if (fileExists(req.get_path()) && server.locat.find(req.locationPath)->second.cgi && (extension(req.get_path()) == "php" || extension(req.get_path()) == "py"))
         {
-            std::cout << "exec  cgi" << std::endl;
+            if (access(req.get_path().c_str(), X_OK) != 0)
+                throw (forbidden(server.confCherch("403"),req));
             if(!serveCgi(req,fd))
             {
                 if (cgirespons)
@@ -64,7 +65,6 @@ void	Response::GET(int &fd, Request &req, Conf &server)
                     if(!req.get_header("Cookie").empty())
                             response << "Cookie: "<< req.get_header("Cookie") <<"\r\n";
                     response << res;
-                    std::cout <<response.str() << std::endl;
                     send(fd, response.str().c_str() , response.str().size(), 0);
                     req.connexion = true;
                     kill(pid, SIGKILL);
@@ -238,7 +238,7 @@ void	Response::POST(int &fd, Request &req, Conf &server, epoll_event &event)
         }
         if (decimal == 0)
         {
-            if (fileExists(req.get_path()) && fileExists(req.get_path()) && server.locat.find(req.locationPath)->second.cgi && (extension(req.get_path()) == "php" || extension(req.get_path()) == "py"))
+            if (server.locat.find(req.locationPath)->second.cgi && (extension(req.get_path()) == "php" || extension(req.get_path()) == "py"))
             {
                 std::ifstream ff(tmp_path.c_str());
                 req.query = std::string(std::istreambuf_iterator<char>(ff), std::istreambuf_iterator<char>()); 

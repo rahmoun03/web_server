@@ -156,6 +156,11 @@ void WebServer::createServer(const char * os)
             exit(0);
         }
     }
+    if(serverNum == 0)
+    {
+        std::cerr << "ERROR : SERVER NOT FOUND!" << std::endl;
+        exit(0);
+    }
     checkDefaulLocation();
     int opt = 1;
     epoll_fd = epoll_create1(0);
@@ -259,7 +264,6 @@ void WebServer::checkRequest(int &fd,ssize_t & bytes_read,int & i,char *buffer)
     if(client[fd].endOf == (size_t)-1 && bytes_read > -1 && events[i].events == EPOLLIN)
     {
         buffer[bytes_read] = '\0';
-        std::cout<< buffer << std::endl;
         client[fd].buf.write(buffer, bytes_read);
         client[fd].endOf = findEndOfHeaders(const_cast<char *>(client[fd].buf.str().c_str()) , (ssize_t)client[fd].buf.str().size());
 

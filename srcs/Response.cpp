@@ -134,7 +134,6 @@ void Response::serv_dir(int &fd, Request &req, Conf &server)
     {
         if (*(_path.end() - 1) == '/')
         {
-            // std::cout << GREEN <<"location : " << req.locationPath <<DEF << std::endl;
             if (server.locat.find(req.locationPath) != server.locat.end()
                 && server.locat.find(req.locationPath)->second.autoindex)
             {
@@ -161,11 +160,15 @@ void Response::serv_dir(int &fd, Request &req, Conf &server)
                 if (it != mime_map.end() && fileExists(_path))
                 {
                     req.get_path() = _path;
+                    if (access(req.get_path().c_str(), R_OK) != 0)
+                        throw (forbidden(server.confCherch("403"),req));
                     serv_file(it, fd, req, server);
                 }
                 else if (server.locat.find(req.locationPath)->second.cgi && (extension(_path) == "php" || extension(_path) == "py"))
                 {
                     req.get_path() = _path;
+                    if (access(req.get_path().c_str(), X_OK) != 0)
+                        throw (forbidden(server.confCherch("403"),req));
                     if(!serveCgi(req,fd))
                     {
                         if (cgirespons)
@@ -193,7 +196,6 @@ void Response::serv_dir(int &fd, Request &req, Conf &server)
                 }
                 else
                 {
-                    // std::cout << "this if forbidden folder" << std::endl;
                     throw(forbidden(server.confCherch("403"), req));
                 }
             }
@@ -209,7 +211,6 @@ void Response::serv_dir(int &fd, Request &req, Conf &server)
 void Response::checkHeaders(Request &req, Conf &server)
 {
     std::map<std::string, std::string> head;
-    // std::cout << "firts time  : " << req.firstTime << std::endl;
     head = req.get_headers();
     if (head.count("Transfer-Encoding:") && req.get_header("Transfer-Encoding:") != "chunked")
     {
@@ -217,58 +218,43 @@ void Response::checkHeaders(Request &req, Conf &server)
     }
     if (req.get_method() == "POST" && !head.count("Content-Type:"))
     {
-        // std::cout << "Content-Type Not exist" << std::endl;
         throw(notImplement(server.confCherch("501"), req));
     }
     if((req.get_method() != "GET") && (req.get_method() != "POST") && (req.get_method() != "DELETE"))
     {
-        // std::cout << "requist line not correct Method " << std::endl;
         throw (badRequest(server.confCherch("400"), req));
     }
     if(req.get_method().empty() || req.get_path().empty() || !req.startLineForma)
     {
-        // std::cout << "requist line not correct "<< (req.startLineForma ? "yes" : "no") << std::endl;
         throw(badRequest(server.confCherch("400"), req));
     }
     if(head.count("Content-Length:") && std::atol(req.get_header("Content-Length:").c_str()) <= 0)
     if(req.get_path().empty() || req.get_path()[0] != '/')
     {
-        // std::cout << "requist line not correct ohhhh "<< std::endl;
-        // std::cout << req.get_path()<< std::endl;
         throw(badRequest(server.confCherch("400"), req));
     }
-    // {
-        // std::cout << "requist line not correct "<< (req.startLineForma ? "yes" : "no") << std::endl;
-    //     throw(badRequest(server.confCherch("400"), req));
-    // }
     if (req.get_method() == "POST" && !head.count("Transfer-Encoding:") && !head.count("Content-Length:"))
     {
-        // std::cout << "TE and CL Not exist" << std::endl;
         throw(lengthRequired(server.confCherch("411"), req));
     }
     if ((req.get_method() == "GET") && (!req.get_body().empty() || head.count("Content-Length:")))
     {
-        // std::cout << "find Content-Lenght or Body" << std::endl;
         throw(badRequest(server.confCherch("400"), req));
     }
     if (head.count("Transfer-Encoding:") && head.count("Content-Length:"))
     {
-        // std::cout << "find TE and CL together" << std::endl;
         throw(badRequest(server.confCherch("400"), req));
     }
     if (req.get_protocol().empty() || req.get_protocol() != "HTTP/1.1")
     {
-        // std::cout << "protocol is : " << req.get_protocol() << std::endl;
         throw(httpVersion(server.confCherch("505"), req));
     }
     if (req.body_limit < std::atol(req.get_header("Content-Length:").c_str()))
     {
-        // std::cout << "Entity too large : " << req.body_limit << " < " << std::atol(req.get_header("Content-Length:").c_str()) << std::endl;
         throw(EntityTooLarge(server.confCherch("413"), req));
     }
     if (req.get_path().size() > 2048)
     {
-        // std::cout << "long URI" << std::endl;
         throw(longRequest(server.confCherch("414"), req));
     }
 }
@@ -289,8 +275,6 @@ std::string Response::getResource(int &file, Request &req, Conf &server)
     size_t a = read(file, buffer, 1023);
     if (a == (size_t)-1)
     {
-        // std::cout << "file : " << file << std::endl;
-        std::cerr << "---read---" << std::endl;
         throw true;
     }
     if (a < 1023)
@@ -510,7 +494,6 @@ int Response::serveCgi(Request &req, int &fd)
         const char* path = req.get_path().c_str();
         char resolved_path[PATH_MAX];
         std::string pp = realpath(path, resolved_path);
-        std::cout << pp <<std::endl;
         output_file = fopen(temp_file.c_str(), "w");
         if (!output_file) {
             std::cerr << "Failed to open temporary file for writing." << std::endl;
@@ -534,11 +517,9 @@ int Response::serveCgi(Request &req, int &fd)
                     };
                     env[6] = new char [("HTTP_COOKIE=" + req.get_header("Cookie:")).size() + 1];
                     strcpy(env[6],("HTTP_COOKIE=" + req.get_header("Cookie:")).c_str());
-                    env[7] = NULL;
         if (extension(req.get_path()) == "php"){
             args[0] = php_path.c_str();
             args[1] = req.get_path().c_str();
-            args[2]  = NULL;
             env[5] = new char [("SCRIPT_NAME=" + php_path).size() + 1];
             strcpy((char *)env[5],("SCRIPT_NAME=" + php_path).c_str());
         }
@@ -547,33 +528,34 @@ int Response::serveCgi(Request &req, int &fd)
             strcpy((char *)env[5],("SCRIPT_NAME=" + py_path).c_str());
             args[0] = py_path.c_str();
             args[1] = req.get_path().c_str();
-            args[2]  = NULL;
         }
-            pid = fork();
-            if (pid == 0)
+        args[2]  = NULL;
+        env[7] = NULL;
+        pid = fork();
+        if (pid == 0)
+        {
+        
+            if (freopen(temp_file.c_str(), "w", stdout) == NULL) 
             {
-            
-                if (freopen(temp_file.c_str(), "w", stdout) == NULL) 
-                {
-                    std::cerr << "Failed to freopen stdout." << std::endl;
-                    fclose(output_file);
-                    
-                    return 1 ;
-                }
-                if (execve(args[0], (char* const*)args, env) == -1) 
-                {
-                    std::cerr << "Failed to execute CGI script." << std::endl;
-                    fclose(output_file);
+                std::cerr << "Failed to freopen stdout." << std::endl;
+                fclose(output_file);
                 
-                    return 1;
-                }
-                int i = 0;
-                while (env[i]){
-                    delete[] env[i];
-                    i++;
-                }
-                delete[] env;
-            } 
+                return 1 ;
+            }
+            if (execve(args[0], (char* const*)args, env) == -1) 
+            {
+                std::cerr << "Failed to execute CGI script." << std::endl;
+                fclose(output_file);
+            
+                return 1;
+            }
+            int i = 0;
+            while (env[i]){
+                delete[] env[i];
+                i++;
+            }
+            delete[] env;
+        } 
     }
     else if (pid > 0)
     {
